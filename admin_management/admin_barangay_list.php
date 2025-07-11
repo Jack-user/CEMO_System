@@ -1,5 +1,5 @@
 <?php
-session_start();
+session_start(); //asdsadsadasdsa
 include '../includes/header.php'; // Includes the head section and styles
 
 // Check if the user is logged in
