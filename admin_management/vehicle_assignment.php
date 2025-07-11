@@ -90,7 +90,6 @@ if ($result2 && $result2->num_rows > 0) {
     </div>
 
     <div class="row">
-      
       <!-- 🗓️ Waste Collection Daily Schedule Card -->
       <!-- 🚛 Vehicle Assignment Card -->
 <div class="col-12 mb-8">

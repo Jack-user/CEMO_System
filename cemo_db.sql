@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 06, 2025 at 03:34 AM
+-- Generation Time: Jul 11, 2025 at 06:08 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -62,6 +62,8 @@ CREATE TABLE `barangays_table` (
   `latitude` double NOT NULL,
   `longitude` double NOT NULL,
   `city` varchar(225) NOT NULL,
+  `facebook_link` varchar(225) NOT NULL,
+  `link_text` varchar(225) NOT NULL,
   `schedule_id` int(225) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -69,37 +71,31 @@ CREATE TABLE `barangays_table` (
 -- Dumping data for table `barangays_table`
 --
 
-INSERT INTO `barangays_table` (`brgy_id`, `barangay`, `latitude`, `longitude`, `city`, `schedule_id`) VALUES
-(1, 'Abuanan', 10.525313, 122.992415, 'Bago City', 0),
-(2, 'Alianza', 10.47393, 122.92993, 'Bago City', 0),
-(3, 'Atipuluan', 10.51083, 122.95626, 'Bago City', 0),
-(4, 'Bacong-Montilla', 10.51895, 123.03452, 'Bago City', 0),
-(5, 'Bagroy', 10.47718, 122.87212, 'Bago City', 0),
-(6, 'Balingasag', 10.53161, 122.84595, 'Bago City', 0),
-(7, 'Binubuhan', 10.45755, 123.00718, 'Bago City', 0),
-(8, 'Busay', 10.53718, 122.88822, 'Bago City', 0),
-(9, 'Calumangan', 10.56009, 122.8768, 'Bago City', 0),
-(10, 'Caridad', 10.48198, 122.90567, 'Bago City', 0),
-(11, 'Don Jorge L. Araneta', 10.47642, 122.94615, 'Bago City', 0),
-(12, 'Dulao', 10.54916, 122.95165, 'Bago City', 0),
-(13, 'Ilijan', 10.453, 123.05486, 'Bago City', 0),
-(14, 'Lag-Asan', 10.53006, 122.838575, 'Bago City', 0),
-(15, 'Ma-ao', 10.49019, 122.99165, 'Bago City', 0),
-(16, 'Mailum', 10.46211, 123.0492, 'Bago City', 0),
-(17, 'Malingin', 10.49395, 122.91783, 'Bago City', 0),
-(18, 'Napoles', 10.51267, 122.89781, 'Bago City', 0),
-(19, 'Pacol', 10.49507, 122.86697, 'Bago City', 0),
-(20, 'Poblacion', 10.54115, 122.83539, 'Bago City', 0),
-(21, 'Sagasa', 10.46983, 122.89283, 'Bago City', 0),
-(22, 'Tabunan', 10.57625, 122.93727, 'Bago City', 0),
-(23, 'Taloc', 10.5873, 122.90942, 'Bago City', 0),
-(24, 'Sampinit', 10.54426, 122.85341, 'Bago City', 0),
-(28, 'Abuanan', 10.5401, 122.835, '', 0),
-(29, 'Alianza', 10.5382, 122.8305, '', 0),
-(30, 'Atipuluan', 10.535, 122.8288, '', 0),
-(31, 'Abuanan', 10.5401, 122.835, '', 0),
-(32, 'Alianza', 10.5382, 122.8305, '', 0),
-(33, 'Atipuluan', 10.535, 122.8288, '', 0);
+INSERT INTO `barangays_table` (`brgy_id`, `barangay`, `latitude`, `longitude`, `city`, `facebook_link`, `link_text`, `schedule_id`) VALUES
+(1, 'Abuanan', 10.525313, 122.992415, 'Bago City', 'https://www.google.com/', 'test', 0),
+(2, 'Alianza', 10.47393, 122.92993, 'Bago City', '', '', 0),
+(3, 'Atipuluan', 10.51083, 122.95626, 'Bago City', '', '', 0),
+(4, 'Bacong-Montilla', 10.51895, 123.03452, 'Bago City', '', '', 0),
+(5, 'Bagroy', 10.47718, 122.87212, 'Bago City', '', '', 0),
+(6, 'Balingasag', 10.53161, 122.84595, 'Bago City', '', '', 0),
+(7, 'Binubuhan', 10.45755, 123.00718, 'Bago City', '', '', 0),
+(8, 'Busay', 10.53718, 122.88822, 'Bago City', '', '', 0),
+(9, 'Calumangan', 10.56009, 122.8768, 'Bago City', '', '', 0),
+(10, 'Caridad', 10.48198, 122.90567, 'Bago City', '', '', 0),
+(11, 'Don Jorge L. Araneta', 10.47642, 122.94615, 'Bago City', '', '', 0),
+(12, 'Dulao', 10.54916, 122.95165, 'Bago City', '', '', 0),
+(13, 'Ilijan', 10.453, 123.05486, 'Bago City', '', '', 0),
+(14, 'Lag-Asan', 10.53006, 122.838575, 'Bago City', '', '', 0),
+(15, 'Ma-ao', 10.49019, 122.99165, 'Bago City', '', '', 0),
+(16, 'Mailum', 10.46211, 123.0492, 'Bago City', '', '', 0),
+(17, 'Malingin', 10.49395, 122.91783, 'Bago City', 'https://www.facebook.com/BrgyMalingin', 'Brgy Malingin Official', 0),
+(18, 'Napoles', 10.51267, 122.89781, 'Bago City', '', '', 0),
+(19, 'Pacol', 10.49507, 122.86697, 'Bago City', 'https://www.facebook.com/SKPacol', 'SK Brgy. Pacol', 0),
+(20, 'Poblacion', 10.54115, 122.83539, 'Bago City', '', '', 0),
+(21, 'Sagasa', 10.46983, 122.89283, 'Bago City', '', '', 0),
+(22, 'Tabunan', 10.57625, 122.93727, 'Bago City', '', '', 0),
+(23, 'Taloc', 10.5873, 122.90942, 'Bago City', '', '', 0),
+(24, 'Sampinit', 10.54426, 122.85341, 'Bago City', '', '', 0);
 
 -- --------------------------------------------------------
 
@@ -122,24 +118,8 @@ CREATE TABLE `client_table` (
 --
 
 INSERT INTO `client_table` (`client_id`, `first_name`, `last_name`, `contact`, `email`, `barangay`, `password`) VALUES
-(1, 'Angel', 'Adlaon', 2147483647, 'ren@gmail.com', 'Malingin', '$2y$10$MGFg7c4RmolmKmrIjPgTrOwigLKu9mvLpuYI7sMGarDLOrQUowoWq'),
-(2, 'Josh', 'Elgario', 912313123, 'josh@gmail.com', 'Ma-ao', '$2y$10$2rYEVYke79ckc2/6jY4xleR7JhVSStUNIzYTicCEH7eapfKFzOQdS'),
-(3, 'Admin', 'Narvaez', 912313123, 'admin@gmail.com', 'Lag-Asan', '$2y$10$hUUqx./wi0S9KmRkB80sNOo87m88hqX3qXeOYvw0Ezmip2L0Ds9lu'),
-(4, 'Jason', 'Test', 0, 'jason@gmail.com', 'Abuanan', '$2y$10$wXbTHV/FdAVehEG9lf1I9uUNYdxnJeNOqwnReUaw9VjwJyfVBXsrG'),
-(5, 'Jason', 'Test', 0, 'test@gmail.com', 'Abuanan', '$2y$10$6zR/Yw2yt0qivEHPVYLns.7jqebpX6Z02tfu0um6l6M3ykufbnFLO');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `client_waste`
---
-
-CREATE TABLE `client_waste` (
-  `client_waste_id` int(225) NOT NULL,
-  `client_id` int(225) NOT NULL,
-  `weight` varchar(225) NOT NULL,
-  `date_time` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+(1, 'Jason', 'Test', 0, 'jason@gmail.com', 'Busay', '$2y$10$7xVCoZKLJ/etEPlMMAALYurCMbI5SFHAqx.NNdOW8JShDB68hOjiG'),
+(2, 'Joshua', 'Elgario', 0, 'joshua@gmail.com', 'Alianza', '$2y$10$9ytvFSOUOOLQRrrKBcXs3Occ3FWW.0XBy9mxYhHh8jfYakLeldLfS');
 
 -- --------------------------------------------------------
 
@@ -180,6 +160,19 @@ CREATE TABLE `dumpsite_table` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `gps_location`
+--
+
+CREATE TABLE `gps_location` (
+  `location_id` int(11) NOT NULL,
+  `driver_id` int(11) NOT NULL,
+  `latitude` double NOT NULL,
+  `longitude` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `maintenance_table`
 --
 
@@ -189,18 +182,13 @@ CREATE TABLE `maintenance_table` (
   `waste_service_id` int(6) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `mobile_location`
+-- Dumping data for table `maintenance_table`
 --
 
-CREATE TABLE `mobile_location` (
-  `location_id` int(11) NOT NULL,
-  `driver_id` int(11) NOT NULL,
-  `latitude` double NOT NULL,
-  `longitude` double NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `maintenance_table` (`maintenance_id`, `date_time`, `waste_service_id`) VALUES
+(1, '0000-00-00 00:00:00', 1),
+(2, '0000-00-00 00:00:00', 2);
 
 -- --------------------------------------------------------
 
@@ -212,9 +200,17 @@ CREATE TABLE `route_table` (
   `route_id` int(225) NOT NULL,
   `brgy_id` int(225) NOT NULL,
   `waste_service_id` int(225) NOT NULL,
-  `start_point` double NOT NULL,
-  `end_point` double NOT NULL
+  `driver_id` int(11) NOT NULL,
+  `start_point` varchar(225) NOT NULL,
+  `end_point` varchar(225) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `route_table`
+--
+
+INSERT INTO `route_table` (`route_id`, `brgy_id`, `waste_service_id`, `driver_id`, `start_point`, `end_point`) VALUES
+(1, 14, 1, 1, 'Bago City Hall', 'Pacol');
 
 -- --------------------------------------------------------
 
@@ -224,8 +220,57 @@ CREATE TABLE `route_table` (
 
 CREATE TABLE `schedule_table` (
   `schedule_id` int(11) NOT NULL,
-  `date_time` datetime NOT NULL
+  `day` varchar(225) NOT NULL,
+  `time` time NOT NULL,
+  `status` varchar(225) NOT NULL,
+  `waste_service_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `schedule_table`
+--
+
+INSERT INTO `schedule_table` (`schedule_id`, `day`, `time`, `status`, `waste_service_id`) VALUES
+(1, 'Monday', '08:00:00', 'Assigned', 1),
+(2, 'Tuesday ', '00:00:00', 'Vacant', 1),
+(3, 'Wednesday', '00:00:00', 'Pending', 1),
+(4, 'Thursday', '00:00:00', 'Waste Collected	', 1),
+(5, 'Friday', '00:00:00', 'Waste Collected	', 1),
+(6, 'Saturday', '00:00:00', 'Pending', 1),
+(7, 'Sunday', '00:00:00', 'Vacant', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sensor`
+--
+
+CREATE TABLE `sensor` (
+  `sensor_id` int(11) NOT NULL,
+  `location_id` int(11) NOT NULL,
+  `timestamp` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `service_assignment_table`
+--
+
+CREATE TABLE `service_assignment_table` (
+  `service_ass_id` int(11) NOT NULL,
+  `waste_service_id` int(11) NOT NULL,
+  `vehicle_type` varchar(225) NOT NULL,
+  `schedule_id` int(225) NOT NULL,
+  `brgy_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `service_assignment_table`
+--
+
+INSERT INTO `service_assignment_table` (`service_ass_id`, `waste_service_id`, `vehicle_type`, `schedule_id`, `brgy_id`) VALUES
+(1, 1, 'Dump Truck', 1, 12);
 
 -- --------------------------------------------------------
 
@@ -250,7 +295,6 @@ CREATE TABLE `tracking_table` (
 CREATE TABLE `waste_collection_table` (
   `waste_collection_id` int(11) NOT NULL,
   `waste_service_id` int(11) NOT NULL,
-  `client_waste_id` int(11) NOT NULL,
   `status` varchar(225) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -274,11 +318,21 @@ CREATE TABLE `waste_management` (
 
 CREATE TABLE `waste_service_table` (
   `waste_service_id` int(6) NOT NULL,
+  `vehicle_name` varchar(225) NOT NULL,
   `driver_id` int(11) NOT NULL,
   `vehicle_capacity` varchar(225) NOT NULL,
   `schedule_id` int(225) NOT NULL,
-  `maintenance_id` int(225) NOT NULL
+  `maintenance_id` int(225) NOT NULL,
+  `route_id` int(11) NOT NULL,
+  `plate_no` int(225) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `waste_service_table`
+--
+
+INSERT INTO `waste_service_table` (`waste_service_id`, `vehicle_name`, `driver_id`, `vehicle_capacity`, `schedule_id`, `maintenance_id`, `route_id`, `plate_no`) VALUES
+(1, 'Vehicle 1', 1, '3 - 5 tons', 1, 2, 1, 3210);
 
 --
 -- Indexes for dumped tables
@@ -303,12 +357,6 @@ ALTER TABLE `client_table`
   ADD PRIMARY KEY (`client_id`);
 
 --
--- Indexes for table `client_waste`
---
-ALTER TABLE `client_waste`
-  ADD PRIMARY KEY (`client_waste_id`);
-
---
 -- Indexes for table `driver_table`
 --
 ALTER TABLE `driver_table`
@@ -321,16 +369,16 @@ ALTER TABLE `dumpsite_table`
   ADD PRIMARY KEY (`dump_id`);
 
 --
+-- Indexes for table `gps_location`
+--
+ALTER TABLE `gps_location`
+  ADD PRIMARY KEY (`location_id`);
+
+--
 -- Indexes for table `maintenance_table`
 --
 ALTER TABLE `maintenance_table`
   ADD PRIMARY KEY (`maintenance_id`);
-
---
--- Indexes for table `mobile_location`
---
-ALTER TABLE `mobile_location`
-  ADD PRIMARY KEY (`location_id`);
 
 --
 -- Indexes for table `route_table`
@@ -343,6 +391,18 @@ ALTER TABLE `route_table`
 --
 ALTER TABLE `schedule_table`
   ADD PRIMARY KEY (`schedule_id`);
+
+--
+-- Indexes for table `sensor`
+--
+ALTER TABLE `sensor`
+  ADD PRIMARY KEY (`sensor_id`);
+
+--
+-- Indexes for table `service_assignment_table`
+--
+ALTER TABLE `service_assignment_table`
+  ADD PRIMARY KEY (`service_ass_id`);
 
 --
 -- Indexes for table `tracking_table`
@@ -388,13 +448,7 @@ ALTER TABLE `barangays_table`
 -- AUTO_INCREMENT for table `client_table`
 --
 ALTER TABLE `client_table`
-  MODIFY `client_id` int(225) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `client_waste`
---
-ALTER TABLE `client_waste`
-  MODIFY `client_waste_id` int(225) NOT NULL AUTO_INCREMENT;
+  MODIFY `client_id` int(225) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `driver_table`
@@ -409,28 +463,40 @@ ALTER TABLE `dumpsite_table`
   MODIFY `dump_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `gps_location`
+--
+ALTER TABLE `gps_location`
+  MODIFY `location_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `maintenance_table`
 --
 ALTER TABLE `maintenance_table`
-  MODIFY `maintenance_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `mobile_location`
---
-ALTER TABLE `mobile_location`
-  MODIFY `location_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `maintenance_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `route_table`
 --
 ALTER TABLE `route_table`
-  MODIFY `route_id` int(225) NOT NULL AUTO_INCREMENT;
+  MODIFY `route_id` int(225) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `schedule_table`
 --
 ALTER TABLE `schedule_table`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `sensor`
+--
+ALTER TABLE `sensor`
+  MODIFY `sensor_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `service_assignment_table`
+--
+ALTER TABLE `service_assignment_table`
+  MODIFY `service_ass_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `tracking_table`
@@ -454,7 +520,7 @@ ALTER TABLE `waste_management`
 -- AUTO_INCREMENT for table `waste_service_table`
 --
 ALTER TABLE `waste_service_table`
-  MODIFY `waste_service_id` int(6) NOT NULL AUTO_INCREMENT;
+  MODIFY `waste_service_id` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

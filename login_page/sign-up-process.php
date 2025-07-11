@@ -1,11 +1,14 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once '../includes/conn.php'; // Ensure this file properly initializes $pdo
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Retrieve first_name and last_name separately
     $first_name = trim($_POST['first_name']);
     $last_name = trim($_POST['last_name']);
+    $contact = trim($_POST['contact']);
     $barangay = trim($_POST['barangay']);
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
@@ -13,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Combine into full_name
     // $full_name = $first_name . ' ' . $last_name;
 
-    if (empty($first_name) || empty($last_name) || empty($email) || empty($password)) {
+    if (empty($first_name) || empty($last_name) || empty($email) || empty($password) || empty($contact)) {
         $_SESSION['signup_error'] = "empty_fields";
         header("Location: sign-up.php");
         exit;
@@ -30,13 +33,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Check if contact number already exists
+    $stmt = $pdo->prepare("SELECT contact FROM client_table WHERE contact = :contact");
+    $stmt->bindParam(':contact', $contact);
+    $stmt->execute();
+
+    if ($stmt->fetch()) {
+        $_SESSION['signup_error'] = "contact_exists";
+        header("Location: sign-up.php");
+        exit;
+    }
+
+
     // ✅ Secure password hashing
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // ✅ Update the INSERT statement to store full_name
-    $stmt = $pdo->prepare("INSERT INTO client_table (first_name, last_name, barangay, email, password) VALUES (:first_name, :last_name, :barangay,:email, :password)");
+    $stmt = $pdo->prepare("INSERT INTO client_table (first_name, last_name, contact, barangay, email, password) VALUES (:first_name, :last_name, :contact, :barangay,:email, :password)");
     $stmt->bindParam(':first_name', $first_name);
     $stmt->bindParam(':last_name', $last_name);
+    $stmt->bindParam(':contact', $contact);
     $stmt->bindParam(':barangay', $barangay);
     $stmt->bindParam(':email', $email);
     $stmt->bindParam(':password', $hashed_password);
@@ -56,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $messages = [
     "empty_fields" => "Please fill in all fields.",
     "email_exists" => "This email is already registered.",
+    "contact_exists" => "The contact is already registered.",
     "signup_failed" => "Something went wrong. Please try again."
 ];
 

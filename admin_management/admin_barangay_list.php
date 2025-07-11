@@ -73,9 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
       <div class="row">
         <div class="col-12">
           <div class="card shadow-lg">
-            <div class="card-header bg-gradient-primary text-white">
-              <h5 class="text-center text-uppercase font-weight-bold mb-0">Barangay List</h5>
-            </div>
+              <div class="card-header p-0 position-relative mt-n4 mx-4 z-index-2">
+                <div style="background: linear-gradient(60deg, #66c05eff, #49755cff);" class="shadow-dark border-radius-lg pt-4 pb-3"> 
+                  <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">Barangay List</h5>
+                </div>
             <div class="card-body px-0 pb-2">
               <div class="table-responsive p-0">
                 <table class="table align-items-center mb-0">
@@ -91,16 +92,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                     <?php while ($row = mysqli_fetch_assoc($result)): ?>
                       <tr>
                         <td>
-                          <div class="d-flex align-items-center px-3 py-2">
+                          <div class="d-flex px-2 py-1">
                             <div>
-                              <img src="../assets/img/logo.png" class="avatar avatar-sm rounded-circle me-3 shadow" alt="<?= htmlspecialchars($row['barangay']); ?>">
+                              <img src="../assets/img/logo.png" class="avatar avatar-sm me-3 border-radius-lg" alt="<?= htmlspecialchars($row['barangay']); ?>">
                             </div>
                             <div class="d-flex flex-column justify-content-center">
                               <h6 class="mb-0 text-sm"><?= htmlspecialchars($row['barangay']); ?></h6>
                             </div>
                           </div>
                         </td>
-                        <td class="align-middle text-center text-sm">
+                        <td class="align-middle text-sm">
                           <?php if (!empty($row['facebook_link']) && !empty($row['link_text'])): ?>
                             <a href="<?= htmlspecialchars($row['facebook_link']); ?>" target="_blank" class="text-primary text-xs font-weight-bold" style="text-decoration: none;">
                               <?= htmlspecialchars($row['link_text']); ?>
@@ -109,9 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                             <span class="text-xs text-secondary">N/A</span>
                           <?php endif; ?>
                         </td>
-                        <td class="align-middle text-center text-sm">
+                        <td class="align-middle text-sm">
                           <?php if (!empty($row['latitude']) && !empty($row['longitude'])): ?>
-                            <a href="#" class="text-info text-xs font-weight-bold view-location-btn"
+                            <a href="#" class="badge badge-sm bg-gradient-secondary text-xs font-weight-bold view-location-btn"
                               data-bs-toggle="modal"
                               data-bs-target="#mapModal"
                               data-lat="<?= htmlspecialchars($row['latitude']); ?>"
@@ -124,10 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                           <?php endif; ?>
                         </td>
                         <td class="align-middle text-center">
-                          <button type="button" class="btn btn-link text-info px-2 py-1" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['brgy_id']; ?>"> 
+                          <button type="button" class="btn btn-link text-info px-2 py-1" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['brgy_id']; ?>">
                             <i class="material-symbols-rounded fs-5">edit</i>
                           </button>
-                          <!-- Edit Modal -->
+                          <!-- Modal (unchanged) -->
                           <div class="modal fade" id="editModal<?= $row['brgy_id']; ?>" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                               <div class="modal-content">
@@ -172,29 +173,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
               </div>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- Leaflet Map Modal -->
-<div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="mapModalLabel">Barangay Location</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="locationMap" style="width: 100%; height: 400px;"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-
-
+          <!-- Leaflet Map Modal -->
+        <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="mapModalLabel">Barangay Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div id="locationMap" style="width: 100%; height: 400px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
 
     <!-- Footer -->
     <?php include '../includes/footer.php'; ?>
