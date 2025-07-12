@@ -1,34 +1,56 @@
 <?php
 session_start();
-require_once '../includes/conn.php'; // Ensure this file properly initializes `$pdo`
+require_once '../includes/conn.php';
 
-    // Define Toast Messages
-    $messages = [
-      "empty_fields" => "Please fill in all fields.",
-      "invalid_user" => "No account found with this email.",
-      "wrong_password" => "Incorrect password.",
-      "success" => "Login successful! Redirecting...",
-      ];
-      
-      $status = $_GET['status'] ?? null;
-  
+// Define Toast Messages
+$messages = [
+  "empty_fields" => "Please fill in all fields.",
+  "invalid_user" => "No account found with this email.",
+  "wrong_password" => "Incorrect password.",
+  "success" => "Login successful! Redirecting...",
+];
+
+$status = $_GET['status'] ?? null;
 ?>
 
-<!-- Toast Notifications -->
 <?php if ($status && isset($messages[$status])): ?>
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
-        <div id="toastMessage" class="toast align-items-center text-white 
-            <?= ($status === 'success') ? 'bg-success' : 'bg-danger'; ?> border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <?= htmlspecialchars($messages[$status]) ?>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
+  <div class="container position-absolute top-0 start-50 translate-middle-x mt-4" style="z-index: 1050; max-width: 500px;">
+    <?php if ($status === 'success'): ?>
+      <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            <?= htmlspecialchars($messages[$status]) ?>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-    </div>
+      </div>
+      <script>
+        setTimeout(() => {
+          window.location.href = "../dashboard_management/admin_dashboard.php";
+        }, 3000);
+      </script>
+    <?php else: ?>
+      <div class="alert alert-danger alert-dismissible text-white fade show mb-0" role="alert">
+        <span class="text-sm">
+          <?= htmlspecialchars($messages[$status]) ?>
+          <?php if ($status === 'invalid_user'): ?>
+            <a href="javascript:;" class="alert-link text-white" data-bs-toggle="modal" data-bs-target="#signUpModal">Sign up</a> if you don’t have an account.
+          <?php endif; ?>
+        </span>
+        <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    <?php endif; ?>
+  </div>
+<?php endif; ?>
 
-    <script>
+
+
+
+
+
+    <!-- <script>
         document.addEventListener("DOMContentLoaded", function () {
             let toastEl = document.getElementById("toastMessage");
             let toast = new bootstrap.Toast(toastEl, { delay: 3000 }); // Set delay to 3 sec
@@ -36,15 +58,14 @@ require_once '../includes/conn.php'; // Ensure this file properly initializes `$
         });
     </script>
 
-    <!-- Auto Redirect if Login is Successful -->
-    <?php if ($status === 'success'): ?>
+    Auto Redirect if Login is Successful -->
+    <!-- <?php if ($status === 'success'): ?>
         <script>
             setTimeout(() => {
                 window.location.href = "../dashboard_management/admin_dashboard.php";
             }, 2000);
         </script>
-    <?php endif; ?>
-<?php endif; ?>
+    <?php endif; ?> -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -118,31 +139,34 @@ require_once '../includes/conn.php'; // Ensure this file properly initializes `$
 
 
           <!-- Sign-in Form -->
-        <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column ms-auto me-auto ms-lg-auto me-lg-5">
-          <div class="card card-plain">
-            <div class="card-header">
-              <h4 class="font-weight-bolder">Sign In</h4>
-              <p class="mb-0">Enter your email and password to access your account</p>
-            <div class="card-body">
-              <form role="form" method="POST" action="sign-in-process.php">
-              <div class="input-group input-group-outline mb-3">
+          <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column ms-auto me-auto ms-lg-auto me-lg-5">
+            <div class="card card-plain">
+              <div class="card-header">
+                <h4 class="font-weight-bolder">Sign In</h4>
+                <p class="mb-0">Enter your email and password to access your account</p>
+                <!-- Email -->
+                <div class="card-body">
+                  <form role="form" method="POST" action="sign-in-process.php">
+                    <div class="input-group input-group-outline mb-3">
                       <label class="form-label">Email</label>
-                      <input type="email" class="form-control"  name="email" required>
+                      <input type="email" class="form-control" name="email" id="email-input" 
+                            required autocomplete="username"
+                            value="<?= htmlspecialchars($_GET['email'] ?? '') ?>">
                     </div>
-                    <div class="input-group input-group-outline mb-3 position-relative">
-    <label class="form-label">Password</label>
-    <input type="password" class="form-control pe-5" name="password" id="password-input" required>
-    <span class="input-group-text position-absolute toggle-password" 
-          style="top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">
-        👁️
-    </span>
-</div>
-                <!-- <div class="form-check form-check-info text-start ps-0">
-                  <input class="form-check-input" type="checkbox" value="" id="rememberMe">
-                  <label class="form-check-label" for="rememberMe">
-                    Remember me
-                  </label>
-                </div> -->
+                    <!-- Password -->
+                      <div class="input-group input-group-outline mb-3 position-relative">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" name="password" id="password-input" required autocomplete="current-password">
+                        <button type="button" id="togglePassword" class="btn position-absolute " 
+                            style="top: 50%; right: 10px; transform: translateY(-50%); z-index: 10; background: none; border: none;">
+                          <span id="togglePassword"
+                            style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
+                              cursor: pointer; font-size: 1.2rem;">👁️
+                          </span>
+                        </button>
+                      </div>
+                      <small id="emailError" class="text-danger text-center d-block d-none">Email must end with @gmail.com</small>
+
                 <!-- Show "Reset Password?" Link If Login Fails -->
                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
                 <p class="mt-2 text-center">
@@ -160,10 +184,10 @@ require_once '../includes/conn.php'; // Ensure this file properly initializes `$
                 <a href="" class="text-primary text-gradient font-weight-bold" data-bs-toggle="modal" data-bs-target="#signUpModal">Sign up</a>
                 </p>
               </div>
+              
               </div>
             </div>
           </div>
-        </div>
           </div>
         </div>
       </div>
@@ -175,29 +199,140 @@ require_once '../includes/conn.php'; // Ensure this file properly initializes `$
   <?php include 'sign-in-process.php'; ?>
   <?php include 'sign-up-process.php'; ?>
 
-  <!-- Toggle Password Visibility Script -->
+  <!-- Toggle Password Visibility & Input Outline Color Script -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Toggle password visibility for all password fields
-    document.querySelectorAll(".toggle-password").forEach(toggle => {
-        toggle.addEventListener("click", function () {
-            // Find the associated password input field
-            let passwordInput = this.closest(".input-group").querySelector("input[type='password'], input[type='text']");
-            
-            if (passwordInput) {
-                // Toggle the input type between 'password' and 'text'
-                if (passwordInput.type === "password") {
-                    passwordInput.type = "text";
-                    this.innerHTML = "👁️‍🗨️"; // Open eye icon
-                } else {
-                    passwordInput.type = "password";
-                    this.innerHTML = "👁️"; // Closed eye icon
-                }
-            }
-        });
+  document.addEventListener("DOMContentLoaded", function () {
+    const emailInput = document.getElementById("email-input");
+    const emailGroup = emailInput.closest(".input-group");
+
+    // Check if input has a value on load (e.g., from $_GET['email']) and apply 'is-filled'
+    if (emailInput.value.trim() !== "") {
+      emailGroup.classList.add("is-filled");
+    }
+
+    // Keep updating on user typing
+    emailInput.addEventListener("input", () => {
+      if (emailInput.value.trim() !== "") {
+        emailGroup.classList.add("is-filled");
+      } else {
+        emailGroup.classList.remove("is-filled");
+      }
     });
+  });
+
+  setTimeout(() => {
+    const alert = document.querySelector('.alert');
+    if (alert) {
+      alert.classList.remove('show');
+      alert.classList.add('hide');
+    }
+  }, 2000); // 2 seconds
+
+  document.addEventListener("DOMContentLoaded", function () {
+  const passwordInput = document.getElementById("password-input");
+  const emailInput = document.getElementById("email-input");
+  const toggleBtn = document.getElementById("togglePassword");
+  const emailError = document.getElementById("emailError");
+  const form = document.querySelector("form");
+
+  toggleBtn.addEventListener("click", function () {
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+    this.textContent = type === "password" ? "👁️" : "👁️‍🗨️";
+  });
+
+  // Remove outlines on input
+  passwordInput.addEventListener("input", () => {
+    passwordInput.classList.remove("is-valid", "is-invalid");
+  });
+
+  emailInput.addEventListener("input", () => {
+    emailInput.classList.remove("is-valid", "is-invalid");
+    emailError.classList.add("d-none");
+  });
+
+  // Email domain validation
+  form.addEventListener("submit", function (e) {
+    const emailValue = emailInput.value.trim();
+
+    if (!emailValue.endsWith("@gmail.com")) {
+      e.preventDefault(); // Prevent form from submitting
+      emailError.classList.remove("d-none");
+      emailInput.classList.add("is-invalid");
+    }
+  });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const passwordInput = document.getElementById("password-input");
+  const toggleBtn = document.getElementById("togglePassword");
+
+  toggleBtn.addEventListener("click", function () {
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+    this.textContent = type === "password" ? "👁️" : "👁️‍🗨️";
+  });
+
+  // Clear Material Dashboard auto-outline
+  passwordInput.addEventListener("input", () => {
+    passwordInput.classList.remove("is-valid", "is-invalid");
+  });
+
+  const emailInput = document.getElementById("email-input");
+  emailInput.addEventListener("input", () => {
+    emailInput.classList.remove("is-valid", "is-invalid");
+  });
 });
+});
+
+
 </script>
+
+  <!-- Custom Styles -->
+  <style>
+/* Normal (not focused) state */
+.input-group.input-group-outline .form-control {
+  border-bottom: 1px solid #aaa; /* Change this to your desired default color */
+}
+
+/* Focused state (Material JS adds .is-focused) */
+.input-group.input-group-outline.is-focused .form-label {
+  color:rgb(121, 146, 127) !important; /* Label color on focus (green in this example) */
+}
+
+.input-group.input-group-outline.is-focused .form-control {
+  border-color:rgb(124, 168, 134) !important; /* Outline/underline color on focus */
+  box-shadow: none;
+}
+/* Outlined Alert Styles (Material UI Style) */
+/* Filled Alerts (Mimicking Material UI's "filled" variant) */
+.alert.filled-error {
+  background-color: #f44336;
+  color: #fff;
+  border: none;
+}
+
+.alert.filled-success {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+}
+
+.alert.filled-info {
+  background-color: #2196f3;
+  color: #fff;
+  border: none;
+}
+
+.alert.filled-warning {
+  background-color: #ff9800;
+  color: #fff;
+  border: none;
+}
+
+</style>
+
+
+
 
   <script src="../assets/js/core/popper.min.js"></script>
   <script src="../assets/js/core/bootstrap.min.js"></script>
@@ -207,8 +342,8 @@ document.addEventListener("DOMContentLoaded", function () {
   <script src="../assets/css/material-dashboard.css?v=3.2.0"></script>
   
 
- <!-- Github buttons -->
- <script async defer src="https://buttons.github.io/buttons.js"></script>
+<!-- Github buttons -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
 

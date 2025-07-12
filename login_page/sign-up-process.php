@@ -22,23 +22,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Check if email already exists
-    $stmt = $pdo->prepare("SELECT email FROM client_table WHERE email = :email");
-    $stmt->bindParam(':email', $email);
-    $stmt->execute();
-    
-    if ($stmt->fetch()) {
+    // Check if email already exists in any table
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM admin_table WHERE email = :email");
+    $stmt->execute([':email' => $email]);
+    $email_exists = $stmt->fetchColumn() > 0;
+
+    if (!$email_exists) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM client_table WHERE email = :email");
+        $stmt->execute([':email' => $email]);
+        $email_exists = $stmt->fetchColumn() > 0;
+    }
+    if ($email_exists) {
         $_SESSION['signup_error'] = "email_exists";
         header("Location: sign-up.php");
         exit;
     }
 
-    // Check if contact number already exists
-    $stmt = $pdo->prepare("SELECT contact FROM client_table WHERE contact = :contact");
-    $stmt->bindParam(':contact', $contact);
-    $stmt->execute();
+    // Check if contact already exists in any table
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM admin_table WHERE contact = :contact");
+    $stmt->execute([':contact' => $contact]);
+    $contact_exists = $stmt->fetchColumn() > 0;
 
-    if ($stmt->fetch()) {
+    if (!$contact_exists) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM client_table WHERE contact = :contact");
+        $stmt->execute([':contact' => $contact]);
+        $contact_exists = $stmt->fetchColumn() > 0;
+    }
+    if (!$contact_exists) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM driver_table WHERE contact = :contact");
+        $stmt->execute([':contact' => $contact]);
+        $contact_exists = $stmt->fetchColumn() > 0;
+    }
+    if ($contact_exists) {
         $_SESSION['signup_error'] = "contact_exists";
         header("Location: sign-up.php");
         exit;

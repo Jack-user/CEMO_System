@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($email) || empty($password)) {
         $_SESSION['login_error'] = "empty_fields";
-        header("Location: sign-in.php");
+        header("Location: sign-in.php?status=empty_fields&email=" . urlencode($email));
         exit;
     }
 
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if the user exists in either table
     if (!$adminUser && !$clientUser) {
         $_SESSION['login_error'] = "invalid_user";
-        header("Location: sign-in.php");
+        header("Location: sign-in.php?status=invalid_user&email=" . urlencode($email));
         exit;
     }
 
@@ -59,13 +59,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // ✅ Login Successful
         unset($_SESSION['login_error'], $_SESSION['login_attempt_email']);
-        header('Location: ../client_management/client_dashboard.php'); // Use your actual client dashboard path
+        header('Location: ../dashboard_management/client_dashboard.php'); // Use your actual client dashboard path
         exit;
     }
 
     // If no valid credentials were found
-    $_SESSION['login_error'] = "wrong_password";
-    header("Location: sign-in.php");
-    exit;
+    // Example: Wrong password
+    header("Location: sign-in.php?status=wrong_password&email=" . urlencode($_POST['email']));
+    exit();
+
 }
 ?>

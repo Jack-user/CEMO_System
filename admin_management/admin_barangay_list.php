@@ -93,9 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                       <tr>
                         <td>
                           <div class="d-flex px-2 py-1">
-                            <div>
-                              <img src="../assets/img/logo.png" class="avatar avatar-sm me-3 border-radius-lg" alt="<?= htmlspecialchars($row['barangay']); ?>">
-                            </div>
                             <div class="d-flex flex-column justify-content-center">
                               <h6 class="mb-0 text-sm"><?= htmlspecialchars($row['barangay']); ?></h6>
                             </div>
