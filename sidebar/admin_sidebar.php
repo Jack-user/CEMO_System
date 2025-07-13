@@ -2,21 +2,27 @@
 $current_page = basename($_SERVER['PHP_SELF']); // Get current page for active state
 ?>
 
-<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2" id="sidenav-main">
+<aside
+  class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 my-2"
+  id="sidenav-main"
+  style="background-color: #1c2e4a;"
+>
+
     
     <div class="sidenav-header">
-        <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-        <a class="navbar-brand px-4 py-3 m-0" href="#">
-            <img src="../assets/img/logo.png" class="navbar-brand-img" width="30" height="30" alt="main_logo">
-            <span class="ms-1 text-sm text-dark">BAGO CITY - CEMO</span>
-        </a>
-    </div>
+  <i class="fas fa-times p-3 cursor-pointer text-white opacity-75 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
+  <a class="navbar-brand px-4 py-3 m-0" href="#">
+    <img src="../assets/img/logo.png" class="navbar-brand-img" width="30" height="30" alt="main_logo">
+    <span class="ms-1 text-sm text-white">BAGO CITY - CEMO</span>
+  </a>
+</div>
+
                 <!-- Admin Management Section -->
     <hr class="horizontal dark mt-0 mb-2">
     <!-- <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main" style="overflow-y: auto; max-height: 100vh;"> -->
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == 'dashboard.php') ? 'active bg-gradient-dark text-white' : 'text-dark'; ?>" 
+                <a class="nav-link <?php echo ($current_page == 'dashboard.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" 
                 href="../dashboard_management/admin_dashboard.php">
                     <i class="material-symbols-rounded opacity-5">recycling</i>
                     <span class="nav-link-text ms-1"> Waste Dashboard</span>
@@ -24,7 +30,7 @@ $current_page = basename($_SERVER['PHP_SELF']); // Get current page for active s
             </li>
 
             <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == 'dashboard.php') ? 'active bg-gradient-dark text-white' : 'text-dark'; ?>" 
+                <a class="nav-link <?php echo ($current_page == 'dashboard.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" 
                 href="../admin_management/admin_map.php">
                     <i class="material-symbols-rounded opacity-5">public</i>
                     <span class="nav-link-text ms-1">Map Dashboard</span>
@@ -32,40 +38,41 @@ $current_page = basename($_SERVER['PHP_SELF']); // Get current page for active s
             </li>
             <!-- Barangay Management -->
             <li class="nav-item mt-3">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Barangay Management</h6>
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Barangay Management</h6>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == '../admin_management/admin_barangay_list.php') ? 'active bg-gradient-dark text-white' : 'text-dark'; ?>" href="../admin_management/admin_barangay_list.php">
+                <a class="nav-link <?php echo ($current_page == '../admin_management/admin_barangay_list.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../admin_management/admin_barangay_list.php">
                     <i class="material-symbols-rounded opacity-5">article</i>
                     <span class="nav-link-text ms-1">Barangay List</span>
                 </a>
             </li>
+
             <!-- User Client Management -->
             <li class="nav-item mt-3">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Client Management</h6>
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Client Management</h6>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == '../admin_management/admin_user_client.php') ? 'active bg-gradient-dark text-white' : 'text-dark'; ?>" href="../admin_management/admin_user_client.php">
+                <a class="nav-link <?php echo ($current_page == '../admin_management/admin_user_client.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../admin_management/admin_user_client.php">
                     <i class="material-symbols-rounded opacity-5">article</i>
                     <span class="nav-link-text ms-1">Client List</span>
                 </a>
             </li>
             <!-- User Role Management -->
             <li class="nav-item mt-3">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">User Role Management</h6>
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">User Role Management</h6>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == '../admin_management/admin_role_list.php') ? 'active bg-gradient-dark text-white' : 'text-dark'; ?>" href="../admin_management/admin_role_list.php">
+                <a class="nav-link <?php echo ($current_page == '../admin_management/admin_role_list.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../admin_management/admin_role_list.php">
                     <i class="material-symbols-rounded opacity-5">article</i>
                     <span class="nav-link-text ms-1">Role List</span>
                 </a>
             </li>
              <!-- Vehicle  Management -->
              <li class="nav-item mt-3">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Vehicle Management</h6>
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Vehicle Management</h6>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == '../admin_management/vehicle_management.php') ? 'active bg-gradient-dark text-white' : 'text-dark'; ?>" href="../admin_management/vehicle_management.php">
+                <a class="nav-link <?php echo ($current_page == '../admin_management/vehicle_management.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../admin_management/vehicle_management.php">
                     <i class="material-symbols-rounded opacity-5">article</i>
                     <span class="nav-link-text ms-1">Vehicle List</span>
                 </a>
@@ -73,23 +80,23 @@ $current_page = basename($_SERVER['PHP_SELF']); // Get current page for active s
 
 
             <li class="nav-item mt-3">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Account pages</h6>
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Account pages</h6>
             </li>
             <!-- <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == 'profile.php') ? 'active bg-gradient-dark text-white' : 'text-dark'; ?>" href="profile.php">
+                <a class="nav-link <?php echo ($current_page == 'profile.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="profile.php">
                     <i class="material-symbols-rounded opacity-5">person</i>
                     <span class="nav-link-text ms-1">Profile</span>
                 </a>
             </li> -->
             <!-- <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == 'sign-in.php') ? 'active bg-gradient-dark text-white' : 'text-dark'; ?>"
+                <a class="nav-link <?php echo ($current_page == 'sign-in.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>"
                 href="../login_page/sign-in.php">
                     <i class="material-symbols-rounded opacity-5">login</i>
                     <span class="nav-link-text ms-1">Sign In</span>
                 </a>
             </li> -->
             <li class="nav-item">
-    <a class="nav-link text-dark" href="javascript:void(0);" onclick="showLogoutToast();">
+    <a class="nav-link text-light" href="javascript:void(0);" onclick="showLogoutToast();">
         <i class="material-symbols-rounded opacity-5">logout</i>
         <span class="nav-link-text ms-1">Logout</span>
     </a>

@@ -44,12 +44,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                     WHERE brgy_id = '$brgy_id'";
 
     if (mysqli_query($conn, $update_query)) {
-        echo "<script>alert('Barangay details updated successfully!');</script>";
+        $_SESSION['success_message'] = "Barangay details updated successfully!";
     } else {
-        echo "<script>alert('Error updating barangay details: " . mysqli_error($conn) . "');</script>";
+        $_SESSION['error_message'] = "Error updating barangay details: " . mysqli_error($conn);
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,8 +67,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
   <?php include '../sidebar/admin_sidebar.php'; ?>
   <!-- Main Content -->
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+    
     <!-- Navbar -->
     <?php include '../includes/navbar.php'; ?>
+    <?php if (isset($_SESSION['success_message'])): ?>
+  <div class="alert alert-success alert-dismissible text-white" role="alert">
+    <span class="text-sm"><?= $_SESSION['success_message']; ?></span>
+    <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['error_message'])): ?>
+  <div class="alert alert-danger alert-dismissible text-white" role="alert">
+    <span class="text-sm"><?= $_SESSION['error_message']; ?></span>
+    <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <?php unset($_SESSION['error_message']); ?>
+<?php endif; ?>
+
     <!-- Page Content -->
     <div class="container-fluid py-4">
       <div class="row">
@@ -77,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                 <div style="background: linear-gradient(60deg, #66c05eff, #49755cff);" class="shadow-dark border-radius-lg pt-4 pb-3"> 
                   <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">Barangay List</h5>
                 </div>
+              </div>
             <div class="card-body px-0 pb-2">
               <div class="table-responsive p-0">
                 <table class="table align-items-center mb-0">
@@ -127,41 +150,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                           </button>
                           <!-- Modal (unchanged) -->
                           <div class="modal fade" id="editModal<?= $row['brgy_id']; ?>" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                              <div class="modal-content">
-                                <div class="modal-header">
-                                  <h5 class="modal-title" id="editModalLabel">Edit Barangay Details</h5>
-                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                  <form method="POST" action="">
-                                    <input type="hidden" name="brgy_id" value="<?= htmlspecialchars($row['brgy_id']); ?>">
-                                    <div class="mb-3">
-                                      <label for="barangay" class="form-label">Barangay Name</label>
-                                      <input type="text" class="form-control" id="barangay" name="barangay" value="<?= htmlspecialchars($row['barangay']); ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                      <label for="latitude" class="form-label">Latitude</label>
-                                      <input type="text" class="form-control" id="latitude" name="latitude" value="<?= htmlspecialchars($row['latitude'] ?? ''); ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                      <label for="longitude" class="form-label">Longitude</label>
-                                      <input type="text" class="form-control" id="longitude" name="longitude" value="<?= htmlspecialchars($row['longitude'] ?? ''); ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                      <label for="facebook_link" class="form-label">Facebook Link</label>
-                                      <input type="url" class="form-control" id="facebook_link" name="facebook_link" value="<?= htmlspecialchars($row['facebook_link'] ?? ''); ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                      <label for="link_text" class="form-label">Link Text</label>
-                                      <input type="text" class="form-control" id="link_text" name="link_text" value="<?= htmlspecialchars($row['link_text'] ?? ''); ?>" required>
-                                    </div>
-                                    <button type="submit" name="update_brgy" class="btn btn-primary">Save Changes</button>
-                                  </form>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit Barangay Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="">
+          <input type="hidden" name="brgy_id" value="<?= htmlspecialchars($row['brgy_id']); ?>">
+          <div class="mb-3">
+            <label for="barangay" class="form-label">Barangay Name</label>
+            <input type="text" class="form-control" id="barangay" name="barangay" value="<?= htmlspecialchars($row['barangay']); ?>" readonly>
+          </div>
+          <div class="mb-3 d-none">
+            <label for="latitude" class="form-label">Latitude</label>
+            <input type="text" class="form-control" id="latitude" name="latitude" value="<?= htmlspecialchars($row['latitude'] ?? ''); ?>" required>
+          </div>
+          <div class="mb-3 d-none">
+            <label for="longitude" class="form-label">Longitude</label>
+            <input type="text" class="form-control" id="longitude" name="longitude" value="<?= htmlspecialchars($row['longitude'] ?? ''); ?>" required>
+          </div>
+          <div class="mb-3">
+            <label for="facebook_link" class="form-label">Facebook Link</label>
+            <input type="url" class="form-control" id="facebook_link" name="facebook_link" value="<?= htmlspecialchars($row['facebook_link'] ?? ''); ?>" required>
+          </div>
+          <div class="mb-3">
+            <label for="link_text" class="form-label">Link Text</label>
+            <input type="text" class="form-control" id="link_text" name="link_text" value="<?= htmlspecialchars($row['link_text'] ?? ''); ?>" required>
+          </div>
+          <button type="submit" name="update_brgy" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
                         </td>
                       </tr>
                     <?php endwhile; ?>

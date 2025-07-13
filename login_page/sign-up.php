@@ -74,101 +74,101 @@
         </div>
 
         <script>
-        document.addEventListener("DOMContentLoaded", function () {
-          // Toggle password visibility
-          document.querySelectorAll(".toggle-password").forEach(toggle => {
-              toggle.addEventListener("click", function () {
-              let passwordInput = this.closest(".input-group").querySelector("input[type='password'], input[type='text']");
-              if (passwordInput.type === "password") {
-                  passwordInput.type = "text";
-                  this.innerHTML = "👁️‍🗨️";
-              } else {
-                  passwordInput.type = "password";
-                  this.innerHTML = "👁️";
-              }
-              });
-          });
+            document.addEventListener("DOMContentLoaded", function () {
+            // Toggle password visibility
+            document.querySelectorAll(".toggle-password").forEach(toggle => {
+                toggle.addEventListener("click", function () {
+                let passwordInput = this.closest(".input-group").querySelector("input[type='password'], input[type='text']");
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    this.innerHTML = "👁️‍🗨️";
+                } else {
+                    passwordInput.type = "password";
+                    this.innerHTML = "👁️";
+                }
+                });
+            });
 
           // Real-Time Validation
-          const form = document.getElementById("signupForm");
-          const submitButton = document.getElementById("signup-submit");
-          const emailInput = document.getElementById("signup-email");
-          const emailError = document.getElementById("email-error");
-          const emailIcon = document.getElementById("email-icon");
-          const contactInput = document.getElementById("signup-contact");
-          const contactError = document.getElementById("contact-error");
-          const contactIcon = contactInput.parentElement.querySelector(".validation-icon");
-          const passwordInput = document.getElementById("signup-password");
-          const passwordIcon = passwordInput.parentElement.querySelector(".validation-icon");
-          const firstNameInput = document.getElementById("signup-firstname");
-          const lastNameInput = document.getElementById("signup-lastname");
-          const firstnameIcon = document.getElementById("firstname-icon");
-          const lastnameIcon = document.getElementById("lastname-icon");
-          const barangayInput = document.getElementById("signup-barangay");
+            const form = document.getElementById("signupForm");
+            const submitButton = document.getElementById("signup-submit");
+            const emailInput = document.getElementById("signup-email");
+            const emailError = document.getElementById("email-error");
+            const emailIcon = document.getElementById("email-icon");
+            const contactInput = document.getElementById("signup-contact");
+            const contactError = document.getElementById("contact-error");
+            const contactIcon = contactInput.parentElement.querySelector(".validation-icon");
+            const passwordInput = document.getElementById("signup-password");
+            const passwordIcon = passwordInput.parentElement.querySelector(".validation-icon");
+            const firstNameInput = document.getElementById("signup-firstname");
+            const lastNameInput = document.getElementById("signup-lastname");
+            const firstnameIcon = document.getElementById("firstname-icon");
+            const lastnameIcon = document.getElementById("lastname-icon");
+            const barangayInput = document.getElementById("signup-barangay");
 
-          let emailValid = false, contactValid = false, passwordValid = false, firstNameValid = false, lastNameValid = false, barangayValid = false;
+            let emailValid = false, contactValid = false, passwordValid = false, firstNameValid = false, lastNameValid = false, barangayValid = false;
 
-          // Helper validation functions
-          function validateFirstName() {
-            if (firstNameInput.value.trim().length > 1) {
-              firstnameIcon.textContent = "✅";
-              firstNameValid = true;
-            } else {
-              firstnameIcon.textContent = "";
-              firstNameValid = false;
-            }
-            updateSubmit();
-          }
-
-          function validateLastName() {
-            if (lastNameInput.value.trim().length > 1) {
-              lastnameIcon.textContent = "✅";
-              lastNameValid = true;
-            } else {
-              lastnameIcon.textContent = "";
-              lastNameValid = false;
-            }
-            updateSubmit();
-          }
-
-          function validateEmail() {
-            const value = emailInput.value.trim().toLowerCase();
-            const formatHint = document.getElementById("email-format-hint");
-
-            // Only allow emails ending with @gmail.com
-            if (!/^([a-zA-Z0-9_.+-])+@gmail\.com$/.test(value)) {
-              emailError.textContent = "";
-              emailIcon.textContent = "";
-              formatHint.style.display = value.length > 0 ? "block" : "none";
-              emailValid = false;
-              updateSubmit();
-              return;
-            } else {
-              formatHint.style.display = "none";
-            }
-
-            // AJAX check for email uniqueness
-            fetch("check-email.php?email=" + encodeURIComponent(value))
-              .then(response => response.json())
-              .then(data => {
-                if (data.exists) {
-                  emailError.textContent = "Email is already registered!";
-                  emailIcon.textContent = "❌";
-                  emailValid = false;
+            // Helper validation functions
+            function validateFirstName() {
+                if (firstNameInput.value.trim().length > 1) {
+                firstnameIcon.textContent = "✅";
+                firstNameValid = true;
                 } else {
-                  emailError.textContent = "";
-                  emailIcon.textContent = "✅";
-                  emailValid = true;
+                firstnameIcon.textContent = "";
+                firstNameValid = false;
                 }
                 updateSubmit();
-              })
-              .catch(() => {
-                emailError.textContent = "Could not check email. Please try again.";
-                emailIcon.textContent = "❌";
+            }
+
+            function validateLastName() {
+                if (lastNameInput.value.trim().length > 1) {
+                lastnameIcon.textContent = "✅";
+                lastNameValid = true;
+                } else {
+                lastnameIcon.textContent = "";
+                lastNameValid = false;
+                }
+                updateSubmit();
+            }
+
+            function validateEmail() {
+                const value = emailInput.value.trim().toLowerCase();
+                const formatHint = document.getElementById("email-format-hint");
+
+                // Only allow emails ending with @gmail.com
+                if (!/^([a-zA-Z0-9_.+-])+@gmail\.com$/.test(value)) {
+                emailError.textContent = "";
+                emailIcon.textContent = "";
+                formatHint.style.display = value.length > 0 ? "block" : "none";
                 emailValid = false;
                 updateSubmit();
-              });
-          }
+                return;
+                } else {
+                formatHint.style.display = "none";
+                }
+
+                // AJAX check for email uniqueness
+                fetch("check-email.php?email=" + encodeURIComponent(value))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                    emailError.textContent = "Email is already registered!";
+                    emailIcon.textContent = "❌";
+                    emailValid = false;
+                    } else {
+                    emailError.textContent = "";
+                    emailIcon.textContent = "✅";
+                    emailValid = true;
+                    }
+                    updateSubmit();
+                })
+                .catch(() => {
+                    emailError.textContent = "Could not check email. Please try again.";
+                    emailIcon.textContent = "❌";
+                    emailValid = false;
+                    updateSubmit();
+                });
+            }
 
 
         function validateContact() {
@@ -281,30 +281,24 @@
         box-shadow: none;
         }
         .input-group-outline .form-control {
-  padding-right: 2.5rem;
-}
-
-.validation-icon {
-  pointer-events: none;
-  font-size: 1rem;
-}
-
-small.text-danger,
-small.text-muted {
-  font-size: 0.85rem;
-}
-
-small.text-danger {
-  color: #dc3545;
-}
-
-.input-group-outline {
-  margin-bottom: 0.25rem; /* Reduce spacing here */
-}
-
-.input-group + small {
-  margin-left: 0.25rem;
-  margin-top: 0.25rem;
-}
-
+        padding-right: 2.5rem;
+        }
+        .validation-icon {
+        pointer-events: none;
+        font-size: 1rem;
+        }
+        small.text-danger,
+        small.text-muted {
+        font-size: 0.85rem;
+        }
+        small.text-danger {
+        color: #dc3545;
+        }
+        .input-group-outline {
+        margin-bottom: 0.25rem; /* Reduce spacing here */
+        }
+        .input-group + small {
+        margin-left: 0.25rem;
+        margin-top: 0.25rem;
+        }
         </style>
