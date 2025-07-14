@@ -94,9 +94,10 @@ if ($result2 && $result2->num_rows > 0) {
       <!-- 🚛 Vehicle Assignment Card -->
 <div class="col-12 mb-8">
         <div class="card shadow-lg">
-          <div class="card-header text-white" style="background: linear-gradient(90deg,rgb(61, 144, 238), #4364f7);">
-  <h5 class="text-center text-uppercase font-weight-bold mb-0">Waste Collection Daily Schedule</h5>
-</div>
+          <div class="card-header p-0 position-relative mt-n4 mx-4 z-index-2">
+                    <div style="background: linear-gradient(60deg, #66c05eff, #49755cff);" class="shadow-dark border-radius-lg pt-4 pb-3"> 
+                  <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">WASTE COLLECTION DAILY SCHEDULE</h5>
+                </div>
           <div class="card-body px-0 pb-2">
             <div class="table-responsive p-0">
               <table class="table table-bordered align-items-center mb-0 text-center">
@@ -130,13 +131,12 @@ if ($result2 && $result2->num_rows > 0) {
           </div>
         </div>
       </div>
-
       <!-- 🚛 Vehicle Assignment Card -->
-      <div class="col-12 col-md-10 col-lg-8 mx-auto mt-4 mb-4">
+      <div class="col-12 col-md-10 col-lg-6 mx-auto mt-4 mb-8">
         <div class="card shadow-lg">
-          <div class="card-header text-white" style="background: linear-gradient(90deg,rgb(81, 206, 168),rgb(64, 189, 172));">
-  <h5 class="text-center text-uppercase font-weight-bold mb-0">Vehicle Assignments</h5>
-</div>
+            <div style="background: linear-gradient(90deg,rgb(81, 206, 168),rgb(64, 189, 172));" class="shadow-dark border-radius-lg pt-4 pb-3"> 
+                  <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">Vehicle Assignment</h5>
+              </div>
           <div class="card-body px-0 pb-2">
             <div class="table-responsive p-0">
               <table class="table table-bordered align-items-center mb-0 text-center">
