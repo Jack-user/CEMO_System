@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
         </div>
       </div>
     </div>
-          <!-- Leaflet Map Modal -->
+          <!-- Leaflet Map Modal-->
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -225,12 +225,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <!-- Leaflet Routing Machine CSS & JS -->
+    <!-- Leaflet Routing Machine CSS & JS --> 
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
   <script>
      // Create a red icon
+
+    // Create a red icon
 const redIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -252,6 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 
   function initializeMap(callback) {
+    function initializeMap(callback) {
         map = L.map('locationMap', {
             center: [10.5379, 122.8333],
             zoom: 13,
@@ -358,6 +361,7 @@ document.addEventListener('DOMContentLoaded', function () {
         for (const polygon of Object.values(barangayPolygons)) {
             map.removeLayer(polygon);
         }
+      
     });
 });
 </script>
