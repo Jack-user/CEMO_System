@@ -1,38 +1,55 @@
 <?php
 session_start();
 include '../includes/conn.php';
+header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $vehicleName = $_POST['vehicle_name'];
-  $day = $_POST['day'];
-  $status = $_POST['status'];
-
-  // Optional: sanitize inputs
-
-  // Get waste_service_id based on vehicle name (or insert logic if needed)
-  $stmt = $conn->prepare("SELECT waste_service_id FROM waste_service_table WHERE vehicle_name = ?");
-  $stmt->bind_param("s", $vehicleName);
-  $stmt->execute();
-  $result = $stmt->get_result();
-
-  if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $wasteServiceId = $row['waste_service_id'];
-
-    $insert = $conn->prepare("INSERT INTO schedule_table (waste_service_id, day, status) VALUES (?, ?, ?)");
-    $insert->bind_param("iss", $wasteServiceId, $day, $status);
-    $insert->execute();
-  }
-
-  $stmt->close();
-  $conn->close();
-  header("Location: waste_service_sched.php"); // redirect back to calendar
+if (!isset($_SESSION['admin_id'])) {
+  echo json_encode(['success' => false, 'message' => 'Unauthorized access.']);
   exit();
 }
 
-// If you want to support AJAX, you can add:
-if ($_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
-  echo json_encode(['success' => true]);
-  exit();
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  $schedule_type = $_POST["schedule_type"];
+  $status = $schedule_type === 'Event' ? $_POST["status"] : $_POST["maintenance_status"];
+
+  if ($schedule_type === 'Event') {
+    $event_name = trim($_POST["event_name"]);
+    $day = $_POST["day"];
+    $time = $_POST["time"];
+
+    if (!empty($event_name) && !empty($day) && !empty($time) && !empty($status)) {
+      $stmt = $conn->prepare("INSERT INTO schedule_table (event_name, day, time, status) VALUES (?, ?, ?, ?)");
+      $stmt->bind_param("ssss", $event_name, $day, $time, $status);
+
+      if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+      } else {
+        echo json_encode(['success' => false, 'message' => 'Database error.']);
+      }
+    } else {
+      echo json_encode(['success' => false, 'message' => 'Please fill in all event fields.']);
+    }
+
+  } elseif ($schedule_type === 'Maintenance') {
+    $m_name = trim($_POST["maintenance_name"]);
+    $m_date = $_POST["m_date"];
+    $m_time = $_POST["m_time"];
+
+    if (!empty($m_name) && !empty($m_date) && !empty($m_time) && !empty($status)) {
+      $stmt = $conn->prepare("INSERT INTO maintenance_table (m_name, m_date, m_time, m_status) VALUES (?, ?, ?, ?)");
+      $stmt->bind_param("ssss", $m_name, $m_date, $m_time, $status);
+
+      if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+      } else {
+        echo json_encode(['success' => false, 'message' => 'Database error.']);
+      }
+    } else {
+      echo json_encode(['success' => false, 'message' => 'Please fill in all maintenance fields.']);
+    }
+
+  } else {
+    echo json_encode(['success' => false, 'message' => 'Invalid schedule type.']);
+  }
 }
 ?>

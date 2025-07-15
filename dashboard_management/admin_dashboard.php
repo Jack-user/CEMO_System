@@ -12,7 +12,8 @@ include '../includes/header.php'; // Includes the head section and styles
 <body>
     <!-- Include the Sidebar -->
     <?php include '../sidebar/admin_sidebar.php'; ?>
-
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+        <!-- Main Content -->
     <!-- Main Content -->
     <div class="main-content">
         <?php include '../includes/navbar.php'; ?>
@@ -143,9 +144,8 @@ include '../includes/header.php'; // Includes the head section and styles
     </div>
 
     <!-- Include the Footer -->
-</body>
 <?php include '../includes/footer.php'; ?>
-
+</main>
 <!-- Chart Scripts -->
 <script src="../assets/js/plugins/chartjs.min.js"></script>
 <script>
@@ -320,3 +320,4 @@ include '../includes/header.php'; // Includes the head section and styles
     });
 </script>
 </html>
+</body>

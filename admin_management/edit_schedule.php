@@ -2,50 +2,52 @@
 session_start();
 include '../includes/conn.php';
 
-header('Content-Type: application/json');
-
 if (!isset($_SESSION['admin_id'])) {
-  echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+  echo json_encode(['success' => false, 'message' => 'Unauthorized']);
   exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // Delete
-  if (isset($_POST['delete']) && $_POST['delete'] == '1') {
-    $schedule_id = intval($_POST['schedule_id']);
+// Delete Schedule
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['delete']) && isset($_POST['schedule_id'])) {
+  $schedule_id = $_POST['schedule_id'];
+
+  // 🟢 Added support for maintenance schedule deletion
+  if (strpos($schedule_id, 'event_') === 0) {
+    $id = str_replace('event_', '', $schedule_id);
     $stmt = $conn->prepare("DELETE FROM schedule_table WHERE schedule_id = ?");
-    $stmt->bind_param("i", $schedule_id);
+    $stmt->bind_param("i", $id);
+    $success = $stmt->execute();
+    $stmt->close();
+    echo json_encode(['success' => $success]);
+    exit();
+  } elseif (strpos($schedule_id, 'maint_') === 0) {
+    $id = str_replace('maint_', '', $schedule_id);
+    $stmt = $conn->prepare("DELETE FROM maintenance_table WHERE maintenance_id = ?");
+    $stmt->bind_param("i", $id);
     $success = $stmt->execute();
     $stmt->close();
     echo json_encode(['success' => $success]);
     exit();
   }
+}
 
-  // Edit
-  $schedule_id = intval($_POST['schedule_id']);
-  $vehicle_name = $_POST['vehicle_name'];
+// Update Schedule
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['schedule_id'])) {
+  $schedule_id = $_POST['schedule_id'];
+  $event_name = trim($_POST['event_name']);
   $day = $_POST['day'];
+  $time = $_POST['time'];
   $status = $_POST['status'];
 
-  // Get waste_service_id
-  $stmt = $conn->prepare("SELECT waste_service_id FROM waste_service_table WHERE vehicle_name = ?");
-  $stmt->bind_param("s", $vehicle_name);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $waste_service_id = $row['waste_service_id'];
-    $stmt->close();
+  $stmt = $conn->prepare("UPDATE schedule_table SET event_name = ?, day = ?, time = ?, status = ? WHERE schedule_id = ?");
+  $stmt->bind_param("ssssi", $event_name, $day, $time, $status, $schedule_id);
+  $success = $stmt->execute();
+  $stmt->close();
 
-    $update = $conn->prepare("UPDATE schedule_table SET waste_service_id = ?, day = ?, status = ? WHERE schedule_id = ?");
-    $update->bind_param("issi", $waste_service_id, $day, $status, $schedule_id);
-    $success = $update->execute();
-    $update->close();
-    echo json_encode(['success' => $success]);
-    exit();
-  }
-  echo json_encode(['success' => false]);
+  echo json_encode(['success' => $success]);
   exit();
 }
-echo json_encode(['success' => false]);
+
+echo json_encode(['success' => false, 'message' => 'Invalid request']);
+exit();
 ?>

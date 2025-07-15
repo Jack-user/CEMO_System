@@ -307,14 +307,17 @@ else:
 
                 // Add routing control
                 const routingControl = L.Routing.control({
-                    waypoints: [
-                        L.latLng(startPoint[0], startPoint[1]),
-                        L.latLng(endPoint[0], endPoint[1])
-                    ],
-                    routeWhileDragging: false,
-                    lineOptions: { styles: [{ color: 'green', weight: 4 }] },
-                    createMarker: function () { return null; } // Hide default markers
-                }).addTo(map);
+                waypoints: [
+                    L.latLng(startPoint[0], startPoint[1]),
+                    L.latLng(endPoint[0], endPoint[1])
+                ],
+                routeWhileDragging: false,
+                lineOptions: { styles: [{ color: 'green', weight: 4 }] },
+                createMarker: function () { return null; }, // ← ✅ Add comma here
+                show: false, // 🚫 Hides the routing panel
+                addWaypoints: false,
+                draggableWaypoints: false
+            }).addTo(map);
 
                 // Fit bounds when route is found
                 routingControl.on('routesfound', function (e) {

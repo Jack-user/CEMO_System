@@ -146,12 +146,15 @@ if (isset($_GET['delete_driver_id'])) {
                       <input type="date" name="birth_date" class="form-control" required>
                     </div>
                     <div class="col-md-6">
-                      <label for="editPassword">Password</label>
-                      <div class="input-group">
-                        <input type="password" name="password" id="editPassword" class="form-control" required>
-                        <button type="button" class="btn btn-outline-secondary toggle-password" data-target="editPassword">👁️‍🗨️</button>
-                      </div>
+                    <label for="editPassword">Password</label>
+                    <div class="position-relative">
+                      <input type="password" name="password" id="editPassword" class="form-control pe-5" required>
+                      <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-2 p-0 border-0 bg-transparent toggle-password" data-target="editPassword" tabindex="-1">
+                        👁️‍🗨️
+                      </button>
                     </div>
+                  </div>
+
 
                   </div>
                 </div>
@@ -197,7 +200,8 @@ if (isset($_GET['delete_driver_id'])) {
                       </div>
                       <div class="col-md-6">
                         <label>Contact</label>
-                        <input type="text" name="contact" id="editContact" class="form-control" required pattern="^[0-9]{11}$">
+                        <input type="text" name="contact" id="editContact" class="form-control"  
+                        maxlength="11" minlength="11" required pattern="^[0-9]{11}$">
                         <div id="editContactFeedback" class="form-text text-danger"></div>
                       </div>
                       <div class="col-md-6">
@@ -213,11 +217,13 @@ if (isset($_GET['delete_driver_id'])) {
                         </select>
                       </div>
                       <div class="col-md-6">
-                        <label>Password</label>
-                        <div class="input-group">
-                          <input type="password" name="password" id="editPassword" class="form-control">
-                          <button type="button" class="btn btn-outline-secondary toggle-password" data-target="editPassword">👁️‍🗨️</button>
-                        </div>
+                    <label for="editPassword">Password</label>
+                    <div class="position-relative">
+                      <input type="password" name="password" id="editPassword" class="form-control pe-5">
+                      <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-2 p-0 border-0 bg-transparent toggle-password" data-target="editPassword" tabindex="-1">
+                        👁️‍🗨️
+                      </button>
+                    </div>
                         <div class="form-text">Leave blank if you don’t want to change password</div>
                       </div>
                     </div>
@@ -315,12 +321,6 @@ if (isset($_GET['delete_driver_id'])) {
           👷 Driver List
         </button>
       </div>
-      
-      
-
-
-
-    
     <!-- Driver List Section (hidden by default) -->
       <div id="driverListSection" class="container-fluid py-4" style="display: none;">
         <div class="row">
@@ -426,7 +426,8 @@ if (isset($_GET['delete_driver_id'])) {
                 </div>
                 <div class="col-md-6">
                   <label>Contact</label>
-                  <input type="text" name="contact" id="editDriverContact" class="form-control" required pattern="^[0-9]{11}$">
+                  <input type="text" name="contact" id="editDriverContact" class="form-control"
+                  maxlength="11" minlength="11" required pattern="^[0-9]{11}$">
                 </div>
                 <div class="col-md-6">
                   <label>Address</label>
@@ -458,18 +459,22 @@ if (isset($_GET['delete_driver_id'])) {
                   <input type="date" name="birth_date" id="editDriverBirthDate" class="form-control" required>
                 </div> -->
                 <div class="col-md-6">
+                  <label for="editDriverLicenseNo">License No.</label>
                   <div class="input-group">
-                    <label>License No.</label>
+                    <input type="hidden" name="driver_id" id="editDriverId">
                     <input type="text" name="license_no" id="editDriverLicenseNo" class="form-control" required>
-                    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="editDriverLicenseNo">👁️‍🗨️</button>
+                    <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-2 p-0 border-0 bg-transparent toggle-password" data-target="editDriverLicenseNo">👁️‍🗨️</button>
                   </div>
                 </div>
+                
                 <div class="col-md-6">
-                  <label for="editDriverPassword">Password</label>
-                  <div class="input-group">
-                    <input type="password" name="password" id="editDriverPassword" class="form-control">
-                    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="editDriverPassword">👁️‍🗨️</button>
-                  </div>
+                    <label for="editPassword">Password</label>
+                    <div class="position-relative">
+                      <input type="password" name="password" id="editPassword" class="form-control pe-5">
+                      <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-2 p-0 border-0 bg-transparent toggle-password" data-target="editPassword" tabindex="-1">
+                        👁️‍🗨️
+                      </button>
+                    </div>
                   <div class="form-text">Leave blank if you don’t want to change password</div>
                 </div>
               </div>
@@ -481,8 +486,6 @@ if (isset($_GET['delete_driver_id'])) {
         </form>
       </div>
     </div>
-
-
     <!-- Footer -->
     <?php include '../includes/footer.php'; ?>
   </main>
@@ -496,7 +499,6 @@ if (isset($_GET['delete_driver_id'])) {
   <!-- Material Dashboard JS -->
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
       <script>
         // 🧠 Fill the modal when edit button is clicked
           document.querySelectorAll('.edit-btn').forEach(button => {
@@ -511,16 +513,18 @@ if (isset($_GET['delete_driver_id'])) {
             });
           });
 
-          // 👁️ Password toggle
+          // 👁️ Password toggle👁️‍🗨️ 
           document.querySelectorAll('.toggle-password').forEach(button => {
             button.addEventListener('click', function () {
-              const target = document.getElementById(this.getAttribute('data-target'));
-              const type = target.getAttribute('type') === 'password' ? 'text' : 'password';
-              target.setAttribute('type', type);
-              this.textContent = type === 'password' ? '👁️‍🗨️' : '👁️';
+              const targetId = this.dataset.target;
+              const input = document.getElementById(targetId);
+              const isPassword = input.type === 'password';
+
+              input.type = isPassword ? 'text' : 'password';
+              this.textContent = isPassword ? '👁️' : '👁️‍🗨️'; // Toggle icon emoji
             });
           });
-
+        
       const staffEmail = document.getElementById('staffEmail');
       const staffContact = document.getElementById('staffContact');
       const emailFeedback = document.getElementById('emailFeedback');
@@ -672,13 +676,7 @@ if (isset($_GET['delete_driver_id'])) {
     }
   });
 });
-
-
-
-
-
-
-    </script>
+</script>
 
 </body>
 </html>

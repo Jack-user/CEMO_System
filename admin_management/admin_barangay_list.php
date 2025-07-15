@@ -116,6 +116,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                       <tr>
                         <td>
                           <div class="d-flex px-2 py-1">
+                            <div>
+                            <img src="../assets/img/logo.png" class="avatar avatar-sm rounded-circle me-3 shadow">
+                          </div>
                             <div class="d-flex flex-column justify-content-center">
                               <h6 class="mb-0 text-sm"><?= htmlspecialchars($row['barangay']); ?></h6>
                             </div>
@@ -150,41 +153,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                           </button>
                           <!-- Modal (unchanged) -->
                           <div class="modal fade" id="editModal<?= $row['brgy_id']; ?>" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editModalLabel">Edit Barangay Details</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form method="POST" action="">
-          <input type="hidden" name="brgy_id" value="<?= htmlspecialchars($row['brgy_id']); ?>">
-          <div class="mb-3">
-            <label for="barangay" class="form-label">Barangay Name</label>
-            <input type="text" class="form-control" id="barangay" name="barangay" value="<?= htmlspecialchars($row['barangay']); ?>" readonly>
-          </div>
-          <div class="mb-3 d-none">
-            <label for="latitude" class="form-label">Latitude</label>
-            <input type="text" class="form-control" id="latitude" name="latitude" value="<?= htmlspecialchars($row['latitude'] ?? ''); ?>" required>
-          </div>
-          <div class="mb-3 d-none">
-            <label for="longitude" class="form-label">Longitude</label>
-            <input type="text" class="form-control" id="longitude" name="longitude" value="<?= htmlspecialchars($row['longitude'] ?? ''); ?>" required>
-          </div>
-          <div class="mb-3">
-            <label for="facebook_link" class="form-label">Facebook Link</label>
-            <input type="url" class="form-control" id="facebook_link" name="facebook_link" value="<?= htmlspecialchars($row['facebook_link'] ?? ''); ?>" required>
-          </div>
-          <div class="mb-3">
-            <label for="link_text" class="form-label">Link Text</label>
-            <input type="text" class="form-control" id="link_text" name="link_text" value="<?= htmlspecialchars($row['link_text'] ?? ''); ?>" required>
-          </div>
-          <button type="submit" name="update_brgy" class="btn btn-primary">Save Changes</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="editModalLabel">Edit Barangay Details</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <form method="POST" action="">
+                                    <input type="hidden" name="brgy_id" value="<?= htmlspecialchars($row['brgy_id']); ?>">
+                                    <div class="mb-3">
+                                      <label for="barangay" class="form-label">Barangay Name</label>
+                                      <input type="text" class="form-control" id="barangay" name="barangay" value="<?= htmlspecialchars($row['barangay']); ?>" readonly>
+                                    </div>
+                                    <div class="mb-3 d-none">
+                                      <label for="latitude" class="form-label">Latitude</label>
+                                      <input type="text" class="form-control" id="latitude" name="latitude" value="<?= htmlspecialchars($row['latitude'] ?? ''); ?>" required>
+                                    </div>
+                                    <div class="mb-3 d-none">
+                                      <label for="longitude" class="form-label">Longitude</label>
+                                      <input type="text" class="form-control" id="longitude" name="longitude" value="<?= htmlspecialchars($row['longitude'] ?? ''); ?>" required>
+                                    </div>
+                                    <div class="mb-3">
+                                      <label for="facebook_link" class="form-label">Facebook Link</label>
+                                      <input type="url" class="form-control" id="facebook_link" name="facebook_link" value="<?= htmlspecialchars($row['facebook_link'] ?? ''); ?>" required>
+                                    </div>
+                                    <div class="mb-3">
+                                      <label for="link_text" class="form-label">Link Text</label>
+                                      <input type="text" class="form-control" id="link_text" name="link_text" value="<?= htmlspecialchars($row['link_text'] ?? ''); ?>" required>
+                                    </div>
+                                    <button type="submit" name="update_brgy" class="btn btn-primary">Save Changes</button>
+                                  </form>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     <?php endwhile; ?>
@@ -227,6 +230,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
   <script>
+     // Create a red icon
+const redIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     let map;
     let barangayPolygons = {};
@@ -238,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
         L.latLng(10.6500, 123.1000)
     );
 
-    function initializeMap() {
+  function initializeMap(callback) {
         map = L.map('locationMap', {
             center: [10.5379, 122.8333],
             zoom: 13,
@@ -252,109 +265,97 @@ document.addEventListener('DOMContentLoaded', function () {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        const barangayGeoFences = {
-            <?php
-            mysqli_data_seek($result, 0);
-            while ($row = mysqli_fetch_assoc($result)) {
-                if (!empty($row['latitude']) && !empty($row['longitude'])) {
-                    $lat = floatval($row['latitude']);
-                    $lng = floatval($row['longitude']);
-                    $brgyName = addslashes($row['barangay']);
-                    echo "'$brgyName': [
-                        [$lat, $lng],
-                        [" . ($lat + 0.001) . ", $lng],
-                        [" . ($lat + 0.001) . ", " . ($lng + 0.001) . "],
-                        [$lat, " . ($lng + 0.001) . "],
-                        [$lat, $lng]
-                    ],";
-                }
-            }
-            ?>
-        };
+        // Load GeoJSON
+        fetch('../barangay_api/brgy.geojson')
+            .then(response => response.json())
+            .then(data => {
+                data.features.forEach(feature => {
+                    const polygon = L.geoJSON(feature, {
+                        style: {
+                            color: '#0077B6',       
+                            fillColor: '#0077B6',
+                            fillOpacity: 0.05,
+                            weight: 2
+                        }
+                    }).bindPopup(`<b>${feature.properties.name}</b> Geo-Fence`);
 
-        for (const [brgyName, coordinates] of Object.entries(barangayGeoFences)) {
-            const polygon = L.polygon(coordinates, {
-                color: 'blue',
-                fillColor: '#3388ff',
-                fillOpacity: 0.2,
-                weight: 1.5,
-                interactive: false
-            }).addTo(map);
-            polygon.bindPopup(`<b>${brgyName}</b> Geo-Fence`);
-            barangayPolygons[brgyName] = polygon;
-            polygon.setStyle({opacity: 0}); // Hide all by default
-            polygon.remove(); // Remove from map by default
-        }
+                    barangayPolygons[feature.properties.name] = polygon;
+                });
+                mapInitialized = true;
 
-        mapInitialized = true;
+                if (callback) callback(); // Call back AFTER loading
+            });
     }
 
-    // Show only the selected barangay's geo-fence
     function showBarangayGeoFence(name) {
-        // Remove all polygons from map
-        for (const [brgyName, polygon] of Object.entries(barangayPolygons)) {
+        // Remove all polygons
+        for (const polygon of Object.values(barangayPolygons)) {
             map.removeLayer(polygon);
         }
-        // Add and highlight only the selected polygon
+        // Show the selected polygon
         if (barangayPolygons[name]) {
             barangayPolygons[name].addTo(map);
             barangayPolygons[name].setStyle({
-                fillOpacity: 0.6,
-                color: 'red',
+                fillOpacity: 0.4,
+                color: '#0077B6',
                 weight: 2,
                 opacity: 1
             });
         }
     }
 
-    // Bootstrap modal event
-    var mapModal = document.getElementById('mapModal');
-    mapModal.addEventListener('shown.bs.modal', function (event) {
-        let button = document.querySelector('.view-location-btn[data-bs-target="#mapModal"].active-trigger');
+    const mapModal = document.getElementById('mapModal');
+
+    mapModal.addEventListener('shown.bs.modal', function () {
+        let button = document.querySelector('.view-location-btn.active-trigger');
+
         if (!button) {
             button = document.querySelector('.view-location-btn[data-bs-target="#mapModal"]');
         }
-        if (!mapInitialized) {
-            initializeMap();
-        }
-        if (button) {
-            const lat = parseFloat(button.getAttribute('data-lat'));
-            const lng = parseFloat(button.getAttribute('data-lng'));
-            const name = button.getAttribute('data-name');
 
+        const lat = parseFloat(button.getAttribute('data-lat'));
+        const lng = parseFloat(button.getAttribute('data-lng'));
+        const name = button.getAttribute('data-name');
+
+        function showOnMap() {
             map.setView([lat, lng], 14);
 
             showBarangayGeoFence(name);
 
             if (!marker) {
-                marker = L.marker([lat, lng]).addTo(map);
+              marker = L.marker([lat, lng], { icon: redIcon }).addTo(map);
             } else {
-                marker.setLatLng([lat, lng]);
+              marker.setLatLng([lat, lng]);
+              marker.setIcon(redIcon);
             }
 
             marker.bindPopup(`<b>${name}</b>`).openPopup();
+
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 200);
         }
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 200);
+
+        if (!mapInitialized) {
+            initializeMap(showOnMap);
+        } else {
+            showOnMap();
+        }
     });
 
-    // Track which button was clicked
-    document.querySelectorAll('.view-location-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    document.querySelectorAll('.view-location-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
             document.querySelectorAll('.view-location-btn').forEach(b => b.classList.remove('active-trigger'));
             this.classList.add('active-trigger');
         });
     });
 
-    // Remove marker and geo-fence highlight when modal is closed
     mapModal.addEventListener('hidden.bs.modal', function () {
         if (marker) {
             map.removeLayer(marker);
             marker = null;
         }
-        // Remove all polygons from map
-        for (const [brgyName, polygon] of Object.entries(barangayPolygons)) {
+        for (const polygon of Object.values(barangayPolygons)) {
             map.removeLayer(polygon);
         }
     });

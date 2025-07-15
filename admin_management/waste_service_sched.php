@@ -10,37 +10,47 @@ if (!isset($_SESSION['admin_id'])) {
 
 // Fetch events from DB
 $calendarEvents = [];
-$sql = "SELECT s.schedule_id, w.vehicle_name, s.day, s.status 
-        FROM schedule_table s 
-        LEFT JOIN waste_service_table w ON w.waste_service_id = s.waste_service_id 
-        ORDER BY s.day";
 
-$result = $conn->query($sql);
+// 1. Fetch Events from schedule_table
+$sqlEvent = "SELECT schedule_id, event_name, day, time, status FROM schedule_table ORDER BY day, time";
+$resultEvent = $conn->query($sqlEvent);
 
-// if ($result && $result->num_rows > 0) {
-//   while ($row = $result->fetch_assoc()) {
-//     $calendarEvents[] = [
-//       'id'    => $row['schedule_id'],
-//       'title' => $row['vehicle_name'] . ' - ' . $row['status'],
-//       'start' => $row['day'],
-//       'color' => ($row['status'] === 'Scheduled') ? '#198754' : '#6c757d',
-//     ];
-//   }
-// }
-
-$result = $conn->query($sql);
-
-if ($result && $result->num_rows > 0) {
-  while ($row = $result->fetch_assoc()) {
+if ($resultEvent && $resultEvent->num_rows > 0) {
+  while ($row = $resultEvent->fetch_assoc()) {
+    if ($row['status'] === 'Completed') continue; // ✅ Skip completed
     $icon = ($row['status'] === 'Scheduled') ? '🟢' : '✅';
+    $time = strlen($row['time']) === 5 ? $row['time'] . ':00' : $row['time'];
+    $startDateTime = $row['day'] . 'T' . $time;
+
     $calendarEvents[] = [
-      'id'    => $row['schedule_id'],
-      'title' => $icon . ' ' . $row['vehicle_name'] . ' - ' . $row['status'],
-      'start' => $row['day'],
-      'color' => ($row['status'] === 'Scheduled') ? '#198754' : '#6c757d',
+      'id'    => 'event_' . $row['schedule_id'],
+      'title' => $icon . ' ' . $row['event_name'] . ' - ' . $row['status'],
+      'start' => $startDateTime,
+      'color' => ($row['status'] === 'Scheduled') ? '#0a0b0bff' : '#6c757d',
     ];
   }
 }
+
+// 2. Fetch Maintenance from maintenance_table
+$sqlMaint = "SELECT maintenance_id, m_name, m_date, m_time, m_status FROM maintenance_table ORDER BY m_date, m_time";
+$resultMaint = $conn->query($sqlMaint);
+
+if ($resultMaint && $resultMaint->num_rows > 0) {
+  while ($row = $resultMaint->fetch_assoc()) {
+    if ($row['m_status'] === 'Completed') continue; // ✅ Skip completed
+    $icon = ($row['m_status'] === 'Scheduled') ? '🚛' : '✅';
+    $time = strlen($row['m_time']) === 5 ? $row['m_time'] . ':00' : $row['m_time'];
+    $startDateTime = $row['m_date'] . 'T' . $time;
+
+    $calendarEvents[] = [
+      'id'    => 'maint_' . $row['maintenance_id'],
+      'title' => $icon . ' ' . $row['m_name'] . ' - ' . $row['m_status'],
+      'start' => $startDateTime,
+      'color' => ($row['m_status'] === 'Scheduled') ? '#b8860b' : '#6c757d',
+    ];
+  }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,6 +60,7 @@ if ($result && $result->num_rows > 0) {
   <title>Waste Collection Schedule</title>
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
   <link href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
   body {
     background: #f6f8fa;
@@ -61,14 +72,9 @@ if ($result && $result->num_rows > 0) {
     align-items: flex-start;
   }
   .calendar-sidebar {
-    min-width: 200px;
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 2px 8px rgba(102,192,94,0.06);
-    padding: 20px 16px;
-    margin-right: 0;
-    height: fit-content;
-    border: 1px solid #e3e6ea;
+  background: transparent;
+  border: none;
+  padding: 0;
   }
   .calendar-sidebar h6 {
     font-weight: 600;
@@ -92,14 +98,23 @@ if ($result && $result->num_rows > 0) {
     border: 1px solid #e3e6ea;
     min-height: 600px;
   }
-  .calendar-card {
-    width: 100%;
-    background: transparent;
-    border-radius: 16px;
-    box-shadow: none;
-    overflow: visible;
-    padding: 0;
-  }
+  .calendar-box {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e3e6ea;
+  margin-bottom: 24px;
+}
+
+.calendar-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid #e3e6ea;
+}
+
   .calendar-header {
     background: #49755c;
     color: #fff;
@@ -122,12 +137,12 @@ if ($result && $result->num_rows > 0) {
     letter-spacing: 0.5px;
   }
   .fc-button {
-    border-radius: 8px !important;
+    border-radius: 20px !important;
     background: #49755c !important;
     color: #fff !important;
     border: none !important;
     font-weight: 500;
-    padding: 7px 18px !important;
+    padding: 5px 10px !important;
     box-shadow: none !important;
     transition: background 0.2s;
     font-size: 0.97rem !important;
@@ -222,6 +237,40 @@ if ($result && $result->num_rows > 0) {
   .floating-btn:hover {
     background: #66c05e;
   }
+  .next-event-highlight {
+  background-color: #e9f7ff !important;
+  border-left: 5px solid #007bff !important;
+}
+
+.swal2-popup.blinking-alert {
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0% { box-shadow: 0 0 5px red; }
+  50% { box-shadow: 0 0 15px orange; }
+  100% { box-shadow: 0 0 5px red; }
+}
+
+#upcomingEventsBox h6 {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #49755c;
+}
+
+#upcomingEventsBox .list-group-item {
+  font-size: 0.9rem;
+  border: none;
+  padding: 6px 8px;
+}
+
+.btn-outline-success {
+  border-color: #66c05e;
+  color: #49755c;
+}
+.btn-outline-success:hover {
+  background-color: #66c05e;
+  color: white;
+}
   </style>
 
 </head>
@@ -229,91 +278,111 @@ if ($result && $result->num_rows > 0) {
 <?php include '../sidebar/admin_sidebar.php'; ?>
 <main class="main-content position-relative h-100 border-radius-lg">
   <?php include '../includes/navbar.php'; ?>
-
-  <div class="dropdown d-flex justify-content-end mt-2 mb-2 me-3">
-    <!-- <button class="btn btn-success fw-bold dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-      📅 View 
-    </button>
-    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-      <li><a class="dropdown-item" href="vehicle_assignment.php">Vehicle Assignment</a></li>
-      <li><a class="dropdown-item" href="waste_service_sched.php">Waste Collection Schedule</a></li>
-    </ul> -->
   </div>
-    <div class="container-fluid px-4">
-    <div class="row">
-      <div class="col-12 mb-2">  
-        <div class="card shadow-lg">
-          <div class="card-header p-0 position-relative mt-n4 mx-4 z-index-2">
-            <div class="calendar-header shadow-dark border-radius-lg pt-4 pb-3"> 
-              <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">WASTE CALENDAR</h5>
-            </div>
-            <div class="card-body px-4 pt-4">
-              <div class="calendar-wrapper">
-                <aside class="calendar-sidebar">
-                  <h6>Filter by Status</h6>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" value="Scheduled" id="filterScheduled" checked>
-                    <label class="form-check-label" for="filterScheduled">Scheduled</label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" value="Completed" id="filterCompleted" checked>
-                    <label class="form-check-label" for="filterCompleted">Completed</label>
-                  </div>
-                  <!-- Add more filters as needed -->
-                </aside>
-                <div class="calendar-card">
-                  <div id="calendar"></div>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- Calendar Content -->
+  <div class="card-body px-4 pt-4">
+    <div class="calendar-box">
+      <!-- Filter Panel -->
+      <div class="calendar-sidebar d-flex justify-content-start mb-3" style="gap: 24px; flex-wrap: wrap;">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="Scheduled" id="filterScheduled" checked>
+          <label class="form-check-label" for="filterScheduled">Scheduled</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="Completed" id="filterCompleted" checked>
+          <label class="form-check-label" for="filterCompleted">Completed</label>
         </div>
       </div>
+      <!-- Calendar Box -->
+      <div id="calendar"></div>
     </div>
   </div>
+
   <button class="floating-btn" title="Add Schedule" data-bs-toggle="modal" data-bs-target="#addScheduleModal">+</button>
 
-  <!-- Add Schedule Modal -->
-  <div class="modal fade" id="addScheduleModal" tabindex="-1" aria-labelledby="addScheduleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="addScheduleForm" method="POST" action="add_schedule.php">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addScheduleModalLabel">Add Schedule</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <!-- Updated Add Schedule Modal -->
+<div class="modal fade" id="addScheduleModal" tabindex="-1" aria-labelledby="addScheduleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="addScheduleForm" method="POST" action="add_schedule.php">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addScheduleModalLabel">Add Schedule</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Schedule Type Selector -->
+          <div class="mb-3">
+            <label for="schedule_type" class="form-label">Schedule Type</label>
+            <select class="form-select" id="schedule_type" name="schedule_type" required>
+              <option value="Event" selected>Event</option>
+              <option value="Maintenance">Maintenance</option>
+            </select>
           </div>
-          <div class="modal-body">
+
+          <!-- Event Schedule Section -->
+          <div id="eventSection">
             <div class="mb-3">
-              <label for="vehicle_name" class="form-label">Vehicle Name</label>
-              <select class="form-select" name="vehicle_name" id="vehicle_name" required>
+              <label for="event_name" class="form-label">Event Name</label>
+              <input type="text" class="form-control" name="event_name" id="event_name">
+            </div>
+            <div class="mb-3">
+              <label for="day" class="form-label">Date</label>
+              <input type="date" class="form-control" name="day" id="day">
+            </div>
+            <div class="mb-3">
+              <label for="time" class="form-label">Time</label>
+              <input type="time" class="form-control" name="time" id="time">
+            </div>
+            <div class="mb-3">
+              <label for="status" class="form-label">Status</label>
+              <select class="form-select" name="status" id="status">
+                <option value="Scheduled">Scheduled</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Maintenance Schedule Section -->
+          <div id="maintenanceSection" style="display: none;">
+            <div class="mb-3">
+              <label for="maintenance_name" class="form-label">Select Vehicle</label>
+                <select class="form-select" name="maintenance_name" id="maintenance_name" required>
+                <option value="" disabled selected>Select Vehicle</option>
                 <?php
-                $vehicles = $conn->query("SELECT vehicle_name FROM waste_service_table");
-                while ($v = $vehicles->fetch_assoc()) {
+                $vehicleQuery = $conn->query("SELECT vehicle_name FROM waste_service_table ORDER BY vehicle_name ASC");
+                while ($v = $vehicleQuery->fetch_assoc()) {
                   echo '<option value="' . htmlspecialchars($v['vehicle_name']) . '">' . htmlspecialchars($v['vehicle_name']) . '</option>';
                 }
                 ?>
               </select>
             </div>
             <div class="mb-3">
-              <label for="day" class="form-label">Date</label>
-              <input type="date" class="form-control" name="day" id="day" required>
+              <label for="m_date" class="form-label">Date</label>
+              <input type="date" class="form-control" name="m_date" id="m_date">
             </div>
             <div class="mb-3">
-              <label for="status" class="form-label">Status</label>
-              <select class="form-select" name="status" id="status" required>
+              <label for="m_time" class="form-label">Time</label>
+              <input type="time" class="form-control" name="m_time" id="m_time">
+            </div>
+            <div class="mb-3">
+              <label for="maintenance_status" class="form-label">Status</label>
+              <select class="form-select" name="maintenance_status" id="maintenance_status">
                 <option value="Scheduled">Scheduled</option>
                 <option value="Completed">Completed</option>
               </select>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-success">Add</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          </div>
+
         </div>
-      </form>
-    </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Add</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </form>
   </div>
+</div>
 
   <!-- Edit/Delete Modal -->
   <div class="modal fade" id="editScheduleModal" tabindex="-1" aria-labelledby="editScheduleModalLabel" aria-hidden="true">
@@ -327,19 +396,16 @@ if ($result && $result->num_rows > 0) {
           <div class="modal-body">
             <input type="hidden" name="schedule_id" id="edit_schedule_id">
             <div class="mb-3">
-              <label for="edit_vehicle_name" class="form-label">Vehicle Name</label>
-              <select class="form-select" name="vehicle_name" id="edit_vehicle_name" required>
-                <?php
-                $vehicles = $conn->query("SELECT vehicle_name FROM waste_service_table");
-                while ($v = $vehicles->fetch_assoc()) {
-                  echo '<option value="' . htmlspecialchars($v['vehicle_name']) . '">' . htmlspecialchars($v['vehicle_name']) . '</option>';
-                }
-                ?>
-              </select>
+              <label for="edit_event_name" class="form-label">Event Name</label>
+              <input type="text" class="form-control" name="event_name" id="edit_event_name" required>
             </div>
             <div class="mb-3">
               <label for="edit_day" class="form-label">Date</label>
               <input type="date" class="form-control" name="day" id="edit_day" required>
+            </div>
+            <div class="mb-3">
+              <label for="edit_time" class="form-label">Time</label>
+              <input type="time" class="form-control" name="time" id="edit_time" required>
             </div>
             <div class="mb-3">
               <label for="edit_status" class="form-label">Status</label>
@@ -365,128 +431,241 @@ if ($result && $result->num_rows > 0) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+
+document.addEventListener('DOMContentLoaded', function () {
   const calendarEl = document.getElementById('calendar');
   let allEvents = <?php echo json_encode($calendarEvents); ?>;
 
+  const now = new Date();
+  const inOneMinute = new Date(now.getTime() + 1 * 60 * 1000);
+
+  // Find and highlight next upcoming scheduled event
+  let upcomingEvents = allEvents
+    .filter(e => new Date(e.start) > now && e.title.includes("Scheduled"))
+    .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+  if (upcomingEvents.length > 0) {
+    upcomingEvents[0].className = 'next-event-highlight';
+  }
+
+  // Alert for event within 1 minute
+  allEvents.forEach(event => {
+    const eventDate = new Date(event.start);
+    if (
+      event.title.includes('Scheduled') &&
+      eventDate > now &&
+      eventDate <= inOneMinute
+    ) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Upcoming Schedule',
+        html: `<strong>${event.title.replace(/^🟢/, '').split(' - ')[0]}</strong> is scheduled soon.`,
+        timer: 5000,
+        showConfirmButton: false,
+        customClass: {
+          popup: 'blinking-alert'
+        }
+      });
+    }
+  });
+
+  // Calendar setup
   const calendar = new FullCalendar.Calendar(calendarEl, {
-    timeZone: 'UTC',
-    themeSystem: 'bootstrap5',
     initialView: 'dayGridMonth',
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
     },
-    weekNumbers: true,
-    dayMaxEvents: true,
     events: allEvents,
     eventClick: function(info) {
-      alert(`Vehicle: ${info.event.title}\nStatus: ${info.event.extendedProps.status}\nDate: ${info.event.startStr}`);
-    },
-    datesSet: function() {
-      // Remove any existing 'Today' tags to prevent duplicates
-      document.querySelectorAll('.fc-day-today .today-label').forEach(el => el.remove());
-
-      // Add 'Today' label inside the .fc-day-today cell
-      const todayCell = document.querySelector('.fc-day-today');
-      if (todayCell) {
-        const label = document.createElement('div');
-        label.className = 'today-label';
-        label.textContent = '';
-        label.style.fontSize = '0.7rem';
-        label.style.marginTop = '2px';
-        label.style.fontWeight = 'bold';
-        // label.style.color = '#e12626'; // match your theme if needed
-        todayCell.appendChild(label);
-      }
+      const event = info.event;
+      document.getElementById('edit_schedule_id').value = event.id;
+      document.getElementById('edit_event_name').value = event.title.split(' - ')[0].replace(/^🟢|✅/, '').trim();
+      const iso = event.start.toISOString();
+      document.getElementById('edit_day').value = iso.split("T")[0];
+      document.getElementById('edit_time').value = iso.split("T")[1].substring(0, 5);
+      document.getElementById('edit_status').value = event.title.split(' - ')[1];
+      var editModal = new bootstrap.Modal(document.getElementById('editScheduleModal'));
+      editModal.show();
     }
   });
 
   calendar.render();
+
+  // Toggleable Upcoming Events Card
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'btn btn-sm btn-outline-success mb-2';
+  toggleBtn.innerHTML = 'Show Upcoming Events';
+  toggleBtn.style.marginBottom = '10px';
+
+  const upcomingBox = document.createElement('div');
+  upcomingBox.className = 'calendar-card mt-2';
+  upcomingBox.style.display = 'none';
+  upcomingBox.id = 'upcomingEventsBox';
+  upcomingBox.innerHTML = `<h6>Upcoming Events & Maintenance</h6><ul class="list-group list-group-flush">
+  ${upcomingEvents.slice(0, 4).map(ev => {
+    const date = new Date(ev.start);
+    const type = ev.id.startsWith('maint_') ? 'Maintenance' : 'Event';
+    const status = ev.title.split(' - ')[1].trim();
+    return `<li class="list-group-item small">
+      <strong>${type}</strong> <span class="badge bg-light text-dark">${status}</span><br>
+      ${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+    </li>`;
+  }).join('')}
+</ul>`;
+
+
+
+  toggleBtn.addEventListener('click', () => {
+    const box = document.getElementById('upcomingEventsBox');
+    const visible = box.style.display === 'block';
+    box.style.display = visible ? 'none' : 'block';
+    toggleBtn.textContent = visible ? 'Show Upcoming Events' : 'Hide Upcoming Events';
+  });
+
+  const calendarBox = document.querySelector('.calendar-box');
+  calendarBox.prepend(upcomingBox);
+  calendarBox.prepend(toggleBtn);
 });
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    let allEvents = <?php echo json_encode($calendarEvents); ?>;
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-      },
-      events: allEvents,
-      eventClick: function(info) {
-        // Populate modal fields
-        const event = info.event;
-        const eventData = allEvents.find(ev => ev.id == event.id);
-        document.getElementById('edit_schedule_id').value = event.id;
-        document.getElementById('edit_vehicle_name').value = event.title.split(' - ')[0];
-        document.getElementById('edit_day').value = event.startStr;
-        document.getElementById('edit_status').value = event.title.split(' - ')[1];
-        var editModal = new bootstrap.Modal(document.getElementById('editScheduleModal'));
-        editModal.show();
-      }
+// Filters
+function filterEvents() {
+  const showScheduled = document.getElementById('filterScheduled').checked;
+  const showCompleted = document.getElementById('filterCompleted').checked;
+  const filtered = allEvents.filter(ev => {
+    if (ev.title.includes('Scheduled') && showScheduled) return true;
+    if (ev.title.includes('Completed') && showCompleted) return true;
+    return false;
+  });
+  calendar.removeAllEvents();
+  filtered.forEach(ev => calendar.addEvent(ev));
+}
+document.getElementById('filterScheduled').addEventListener('change', filterEvents);
+document.getElementById('filterCompleted').addEventListener('change', filterEvents);
+
+// Add Schedule Submit
+document.getElementById('addScheduleForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  const selectedDate = new Date(document.getElementById('day').value + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (selectedDate < today) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Date',
+      text: "You can't schedule an event in the past.",
     });
-    calendar.render();
+    return;
+  }
 
-    // Filter logic
-    function filterEvents() {
-      const showScheduled = document.getElementById('filterScheduled').checked;
-      const showCompleted = document.getElementById('filterCompleted').checked;
-      const filtered = allEvents.filter(ev => {
-        if (ev.title.includes('Scheduled') && showScheduled) return true;
-        if (ev.title.includes('Completed') && showCompleted) return true;
-        return false;
+  fetch('add_schedule.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Added!',
+        text: 'Schedule added successfully.',
+        timer: 1500,
+        showConfirmButton: false
+      }).then(() => {
+        location.reload();
       });
-      calendar.removeAllEvents();
-      filtered.forEach(ev => calendar.addEvent(ev));
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to add schedule.'
+      });
     }
-    document.getElementById('filterScheduled').addEventListener('change', filterEvents);
-    document.getElementById('filterCompleted').addEventListener('change', filterEvents);
+  });
+});
 
-    // Edit Schedule AJAX
-    document.getElementById('editScheduleForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
+// Edit Schedule
+document.getElementById('editScheduleForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  fetch('edit_schedule.php', {
+    method: 'POST',
+    body: formData
+  }).then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire({ icon: 'success', title: 'Updated!', text: 'Schedule updated.' })
+        .then(() => location.reload());
+    } else {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update schedule.' });
+    }
+  });
+});
+
+// Delete Schedule
+document.getElementById('deleteScheduleBtn').addEventListener('click', function() {
+  const scheduleId = document.getElementById('edit_schedule_id').value;
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'This schedule will be deleted permanently.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+  }).then(result => {
+    if (result.isConfirmed) {
       fetch('edit_schedule.php', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'delete=1&schedule_id=' + encodeURIComponent(scheduleId)
       }).then(res => res.json())
       .then(data => {
         if (data.success) {
-          location.reload();
+          Swal.fire({ icon: 'success', title: 'Deleted!', text: 'Schedule removed.' })
+            .then(() => location.reload());
         } else {
-          alert('Failed to update schedule.');
+          Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to delete schedule.' });
         }
       });
-    });
-
-    // Delete Schedule AJAX
-    document.getElementById('deleteScheduleBtn').addEventListener('click', function() {
-      const scheduleId = document.getElementById('edit_schedule_id').value;
-      if (confirm('Are you sure you want to delete this schedule?')) {
-        fetch('edit_schedule.php', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: 'delete=1&schedule_id=' + encodeURIComponent(scheduleId)
-        }).then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            location.reload();
-          } else {
-            alert('Failed to delete schedule.');
-          }
-        });
-      }
-    });
+    }
   });
+});
+// Toggle between Event and Maintenance form
+document.getElementById('schedule_type').addEventListener('change', function () {
+  const type = this.value;
+  const eventSection = document.getElementById('eventSection');
+  const maintenanceSection = document.getElementById('maintenanceSection');
 
-  
+  const eventInputs = eventSection.querySelectorAll('input, select');
+  const maintenanceInputs = maintenanceSection.querySelectorAll('input, select');
+
+  if (type === 'Event') {
+    eventSection.style.display = 'block';
+    maintenanceSection.style.display = 'none';
+
+    // Enable required on Event fields
+    eventInputs.forEach(input => input.setAttribute('required', 'required'));
+    // Disable required on Maintenance fields
+    maintenanceInputs.forEach(input => input.removeAttribute('required'));
+
+  } else {
+    eventSection.style.display = 'none';
+    maintenanceSection.style.display = 'block';
+
+    // Enable required on Maintenance fields
+    maintenanceInputs.forEach(input => input.setAttribute('required', 'required'));
+    // Disable required on Event fields
+    eventInputs.forEach(input => input.removeAttribute('required'));
+  }
+});
+
+// ✅ Trigger it immediately on load (in case Event is selected by default)
+document.getElementById('schedule_type').dispatchEvent(new Event('change'));
+
 </script>
-
 </body>
 </html>
-<?php
 
