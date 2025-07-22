@@ -44,12 +44,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                     WHERE brgy_id = '$brgy_id'";
 
     if (mysqli_query($conn, $update_query)) {
-        echo "<script>alert('Barangay details updated successfully!');</script>";
+        $_SESSION['success_message'] = "Barangay details updated successfully!";
     } else {
-        echo "<script>alert('Error updating barangay details: " . mysqli_error($conn) . "');</script>";
+        $_SESSION['error_message'] = "Error updating barangay details: " . mysqli_error($conn);
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,8 +67,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
   <?php include '../sidebar/admin_sidebar.php'; ?>
   <!-- Main Content -->
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+    
     <!-- Navbar -->
     <?php include '../includes/navbar.php'; ?>
+    <?php if (isset($_SESSION['success_message'])): ?>
+  <div class="alert alert-success alert-dismissible text-white" role="alert">
+    <span class="text-sm"><?= $_SESSION['success_message']; ?></span>
+    <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['error_message'])): ?>
+  <div class="alert alert-danger alert-dismissible text-white" role="alert">
+    <span class="text-sm"><?= $_SESSION['error_message']; ?></span>
+    <button type="button" class="btn-close text-lg py-3 opacity-10" data-bs-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <?php unset($_SESSION['error_message']); ?>
+<?php endif; ?>
+
     <!-- Page Content -->
     <div class="container-fluid py-4">
       <div class="row">
@@ -77,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                 <div style="background: linear-gradient(60deg, #66c05eff, #49755cff);" class="shadow-dark border-radius-lg pt-4 pb-3"> 
                   <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">Barangay List</h5>
                 </div>
+              </div>
             <div class="card-body px-0 pb-2">
               <div class="table-responsive p-0">
                 <table class="table align-items-center mb-0">
@@ -93,6 +116,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                       <tr>
                         <td>
                           <div class="d-flex px-2 py-1">
+                            <div>
+                            <img src="../assets/img/logo.png" class="avatar avatar-sm rounded-circle me-3 shadow">
+                          </div>
                             <div class="d-flex flex-column justify-content-center">
                               <h6 class="mb-0 text-sm"><?= htmlspecialchars($row['barangay']); ?></h6>
                             </div>
@@ -138,13 +164,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
                                     <input type="hidden" name="brgy_id" value="<?= htmlspecialchars($row['brgy_id']); ?>">
                                     <div class="mb-3">
                                       <label for="barangay" class="form-label">Barangay Name</label>
-                                      <input type="text" class="form-control" id="barangay" name="barangay" value="<?= htmlspecialchars($row['barangay']); ?>" required>
+                                      <input type="text" class="form-control" id="barangay" name="barangay" value="<?= htmlspecialchars($row['barangay']); ?>" readonly>
                                     </div>
-                                    <div class="mb-3">
+                                    <div class="mb-3 d-none">
                                       <label for="latitude" class="form-label">Latitude</label>
                                       <input type="text" class="form-control" id="latitude" name="latitude" value="<?= htmlspecialchars($row['latitude'] ?? ''); ?>" required>
                                     </div>
-                                    <div class="mb-3">
+                                    <div class="mb-3 d-none">
                                       <label for="longitude" class="form-label">Longitude</label>
                                       <input type="text" class="form-control" id="longitude" name="longitude" value="<?= htmlspecialchars($row['longitude'] ?? ''); ?>" required>
                                     </div>
@@ -204,8 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
   <script>
-
-    // Create a red icon
+     // Create a red icon
 const redIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -215,12 +240,13 @@ const redIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
-
+// ...existing code...
 document.addEventListener('DOMContentLoaded', function () {
     let map;
     let barangayPolygons = {};
     let marker;
     let mapInitialized = false;
+    let geoJsonLoaded = false;
 
     const bagoBounds = L.latLngBounds(
         L.latLng(10.4300, 122.7800),
@@ -241,26 +267,34 @@ document.addEventListener('DOMContentLoaded', function () {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // Load GeoJSON
-        fetch('../barangay_api/brgy.geojson')
-            .then(response => response.json())
-            .then(data => {
-                data.features.forEach(feature => {
-                    const polygon = L.geoJSON(feature, {
-                        style: {
-                            color: '#0077B6',       
-                            fillColor: '#0077B6',
-                            fillOpacity: 0.05,
-                            weight: 2
-                        }
-                    }).bindPopup(`<b>${feature.properties.name}</b> Geo-Fence`);
-
-                    barangayPolygons[feature.properties.name] = polygon;
+        // Load GeoJSON only once
+        if (!geoJsonLoaded) {
+            fetch('../barangay_api/brgy.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    data.features.forEach(feature => {
+                        const brgyName = feature.properties.name.trim();
+                        const polygon = L.geoJSON(feature, {
+                            style: {
+                                color: '#0077B6',       
+                                fillColor: '#0077B6',
+                                fillOpacity: 0.05,
+                                weight: 2
+                            }
+                        }).bindPopup(`<b>${brgyName}</b> Geo-Fence`);
+                        barangayPolygons[brgyName] = polygon;
+                    });
+                    geoJsonLoaded = true;
+                    mapInitialized = true;
+                    if (callback) callback();
+                })
+                .catch(err => {
+                    alert('Failed to load GeoJSON: ' + err);
                 });
-                mapInitialized = true;
-
-                if (callback) callback(); // Call back AFTER loading
-            });
+        } else {
+            mapInitialized = true;
+            if (callback) callback();
+        }
     }
 
     function showBarangayGeoFence(name) {
@@ -268,15 +302,28 @@ document.addEventListener('DOMContentLoaded', function () {
         for (const polygon of Object.values(barangayPolygons)) {
             map.removeLayer(polygon);
         }
-        // Show the selected polygon
-        if (barangayPolygons[name]) {
-            barangayPolygons[name].addTo(map);
-            barangayPolygons[name].setStyle({
+        // Try exact match, then case-insensitive match
+        let polygon = barangayPolygons[name.trim()];
+        if (!polygon) {
+            // Try case-insensitive match
+            for (const key in barangayPolygons) {
+                if (key.toLowerCase() === name.trim().toLowerCase()) {
+                    polygon = barangayPolygons[key];
+                    break;
+                }
+            }
+        }
+        if (polygon) {
+            polygon.addTo(map);
+            polygon.setStyle({
                 fillOpacity: 0.4,
                 color: '#0077B6',
                 weight: 2,
                 opacity: 1
             });
+        } else {
+            // Debug: show a warning if not found
+            console.warn('Barangay polygon not found for:', name);
         }
     }
 
@@ -284,29 +331,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     mapModal.addEventListener('shown.bs.modal', function () {
         let button = document.querySelector('.view-location-btn.active-trigger');
-
         if (!button) {
             button = document.querySelector('.view-location-btn[data-bs-target="#mapModal"]');
         }
-
         const lat = parseFloat(button.getAttribute('data-lat'));
         const lng = parseFloat(button.getAttribute('data-lng'));
         const name = button.getAttribute('data-name');
 
         function showOnMap() {
             map.setView([lat, lng], 14);
-
             showBarangayGeoFence(name);
-
             if (!marker) {
-              marker = L.marker([lat, lng], { icon: redIcon }).addTo(map);
+                marker = L.marker([lat, lng], { icon: redIcon }).addTo(map);
             } else {
-              marker.setLatLng([lat, lng]);
-              marker.setIcon(redIcon);
+                marker.setLatLng([lat, lng]);
+                marker.setIcon(redIcon);
             }
-
             marker.bindPopup(`<b>${name}</b>`).openPopup();
-
             setTimeout(() => {
                 map.invalidateSize();
             }, 200);
@@ -336,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+// ...existing code...
 </script>
 
 </body>
