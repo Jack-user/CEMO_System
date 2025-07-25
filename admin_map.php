@@ -8,38 +8,26 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-
 $page_title = "Bago City Map";
 include '../includes/header.php'; // Includes the head section and styles
-    ?>
-    <body class="g-sidenav-show bg-gray-200">
-        <!-- Sidebar -->
-        <?php include '../sidebar/admin_sidebar.php'; ?>
+?>
+<body class="g-sidenav-show bg-gray-200">
+    <!-- Sidebar -->
+    <?php include '../sidebar/admin_sidebar.php'; ?>
 
-        <!-- Main Content Wrapper -->
-        <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
-            <!-- Navbar -->
-            <?php include '../includes/navbar.php'; ?>
-            <?php include '../includes/conn.php'; ?>
+    <!-- Main Content Wrapper -->
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+        <!-- Navbar -->
+        <?php include '../includes/navbar.php'; ?>
+        <?php include '../includes/conn.php'; ?>
 
-            <?php if (isset($_SESSION['msg'])): ?>
-    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-        <?= $_SESSION['msg']; unset($_SESSION['msg']); ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <?php endif; ?>
+        <?php if (isset($_SESSION['msg'])): ?>
+  <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+    <?= $_SESSION['msg']; unset($_SESSION['msg']); ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<?php endif; ?>
 
-            <!-- Main Content -->
-
-        <?php
-        // --- Fetch latest coordinates
-        $currentLocation = null;
-        $sql = "SELECT latitude, longitude FROM gps_location ORDER BY location_id DESC LIMIT 1";
-        $result = $conn->query($sql);
-        if ($result && $result->num_rows > 0) {
-            $currentLocation = $result->fetch_assoc();
-        }
-        ?>
 
         <!-- Fetch all barangays -->
         <?php
@@ -177,7 +165,6 @@ else:
           <button type="submit" class="btn btn-success">Update Route</button>
         </div>
       </div>
-      
     </form>
   </div>
 </div>
@@ -265,37 +252,6 @@ else:
         maxZoom: 18                // Optional zoom limit
     }
     );
-    // Initial marker placeholder
-let gpsMarker;
-function updateGpsMarker() {
-    fetch('get_latest_gps.php')
-        .then(res => res.json())
-        .then(data => {
-            if (!data.latitude || !data.longitude) return;
-
-            const latLng = [data.latitude, data.longitude];
-
-            if (gpsMarker) {
-                gpsMarker.setLatLng(latLng);
-            } else {
-                gpsMarker = L.marker(latLng, {
-                    icon: L.icon({
-                        iconUrl: '../assets/img/gps-icon.png', // Optional: Use your own icon
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 32],
-                        popupAnchor: [0, -32]
-                    })
-                }).addTo(map).bindPopup("📍 Current GPS Location");
-                // Don't open the popup automatically and don't pan/zoom to it
-                // gpsMarker.openPopup(); <-- removed this line
-            }
-        });
-}
-
-// Load initial and repeat every 10 seconds
-updateGpsMarker();
-setInterval(updateGpsMarker, 1000);
-
 
     // Add OpenStreetMap tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
