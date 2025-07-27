@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
         </div>
       </div>
     </div>
-          <!-- Leaflet Map Modal-->
+          <!-- Leaflet Map Modal -->
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -254,7 +254,6 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 
   function initializeMap(callback) {
-    function initializeMap(callback) {
         map = L.map('locationMap', {
             center: [10.5379, 122.8333],
             zoom: 13,
@@ -286,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 mapInitialized = true;
 
-                if (callback) callback(); // Call back AFTER loading
+                if (callback) callback(); // Call back AFTER loading initializemap
             });
     }
 
@@ -368,6 +367,3 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </body>
 </html>
-
-
-

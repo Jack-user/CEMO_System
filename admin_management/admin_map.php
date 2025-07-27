@@ -28,17 +28,6 @@ include '../includes/header.php'; // Includes the head section and styles
   </div>
 <?php endif; ?>
 
-            <!-- Main Content -->
-
-        <?php
-        // --- Fetch latest coordinates
-        $currentLocation = null;
-        $sql = "SELECT latitude, longitude FROM gps_location ORDER BY location_id DESC LIMIT 1";
-        $result = $conn->query($sql);
-        if ($result && $result->num_rows > 0) {
-            $currentLocation = $result->fetch_assoc();
-        }
-        ?>
 
         <!-- Fetch all barangays -->
         <?php
@@ -263,37 +252,6 @@ else:
         maxZoom: 18                // Optional zoom limit
     }
     );
-    // Initial marker placeholder
-let gpsMarker;
-function updateGpsMarker() {
-    fetch('get_latest_gps.php')
-        .then(res => res.json())
-        .then(data => {
-            if (!data.latitude || !data.longitude) return;
-
-            const latLng = [data.latitude, data.longitude];
-
-            if (gpsMarker) {
-                gpsMarker.setLatLng(latLng);
-            } else {
-                gpsMarker = L.marker(latLng, {
-                    icon: L.icon({
-                        iconUrl: '../assets/img/gps-icon.png', // Optional: Use your own icon
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 32],
-                        popupAnchor: [0, -32]
-                    })
-                }).addTo(map).bindPopup("📍 Current GPS Location");
-                // Don't open the popup automatically and don't pan/zoom to it
-                // gpsMarker.openPopup(); <-- removed this line
-            }
-        });
-}
-
-// Load initial and repeat every 10 seconds
-updateGpsMarker();
-setInterval(updateGpsMarker, 1000);
-
 
     // Add OpenStreetMap tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -419,5 +377,3 @@ Sagasa 10.46983 122.89283
 Tabunan 10.57625 122.93727                 
 Taloc 10.58730 122.90942                 
 Sampinit 10.54426 122.85341                    -->
-
-

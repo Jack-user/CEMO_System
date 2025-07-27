@@ -75,7 +75,7 @@ $status = $_GET['status'] ?? null;
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <title>
-    CEMO - City Environment Management Office
+    CEMO - City Environment Management Office 
   </title>
   <style>
   .background-overlay {
@@ -125,7 +125,7 @@ $status = $_GET['status'] ?? null;
           
                   <!-- Title -->
                   <h4 class="font-weight-bolder m-0">
-                      City Environment Management Office
+                      City Environment Management Office 
                   </h4>
           
                   <!-- Background Image Inside the Box -->

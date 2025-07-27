@@ -369,7 +369,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           <li><a class="dropdown-item" href="vehicle_assignment.php">Vehicle Assignment</a></li>
-          <li><a class="dropdown-item" href="waste_service_sched.php">Waste Callendar</a></li>
+          <li><a class="dropdown-item" href="waste_service_sched.php">Waste Calendar</a></li>
           <!-- <li><a class="dropdown-item" href="#.php">Vehicle Management</a></li> -->
         </ul>
       </div>
