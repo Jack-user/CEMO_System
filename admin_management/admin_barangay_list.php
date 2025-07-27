@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_brgy'])) {
         </div>
       </div>
     </div>
-          <!-- Leaflet Map Modal -->
+          <!-- Leaflet Map Modal-->
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -242,18 +242,20 @@ const redIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
+// ...existing code...
 document.addEventListener('DOMContentLoaded', function () {
     let map;
     let barangayPolygons = {};
     let marker;
     let mapInitialized = false;
+    let geoJsonLoaded = false;
 
     const bagoBounds = L.latLngBounds(
         L.latLng(10.4300, 122.7800),
         L.latLng(10.6500, 123.1000)
     );
 
-  function initializeMap(callback) {
+    function initializeMap(callback) {
         map = L.map('locationMap', {
             center: [10.5379, 122.8333],
             zoom: 13,
@@ -267,26 +269,34 @@ document.addEventListener('DOMContentLoaded', function () {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // Load GeoJSON
-        fetch('../barangay_api/brgy.geojson')
-            .then(response => response.json())
-            .then(data => {
-                data.features.forEach(feature => {
-                    const polygon = L.geoJSON(feature, {
-                        style: {
-                            color: '#0077B6',       
-                            fillColor: '#0077B6',
-                            fillOpacity: 0.05,
-                            weight: 2
-                        }
-                    }).bindPopup(`<b>${feature.properties.name}</b> Geo-Fence`);
-
-                    barangayPolygons[feature.properties.name] = polygon;
+        // Load GeoJSON only once
+        if (!geoJsonLoaded) {
+            fetch('../barangay_api/brgy.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    data.features.forEach(feature => {
+                        const brgyName = feature.properties.name.trim();
+                        const polygon = L.geoJSON(feature, {
+                            style: {
+                                color: '#0077B6',       
+                                fillColor: '#0077B6',
+                                fillOpacity: 0.05,
+                                weight: 2
+                            }
+                        }).bindPopup(`<b>${brgyName}</b> Geo-Fence`);
+                        barangayPolygons[brgyName] = polygon;
+                    });
+                    geoJsonLoaded = true;
+                    mapInitialized = true;
+                    if (callback) callback();
+                })
+                .catch(err => {
+                    alert('Failed to load GeoJSON: ' + err);
                 });
-                mapInitialized = true;
-
-                if (callback) callback(); // Call back AFTER loading initializemap
-            });
+        } else {
+            mapInitialized = true;
+            if (callback) callback();
+        }
     }
 
     function showBarangayGeoFence(name) {
@@ -294,15 +304,28 @@ document.addEventListener('DOMContentLoaded', function () {
         for (const polygon of Object.values(barangayPolygons)) {
             map.removeLayer(polygon);
         }
-        // Show the selected polygon
-        if (barangayPolygons[name]) {
-            barangayPolygons[name].addTo(map);
-            barangayPolygons[name].setStyle({
+        // Try exact match, then case-insensitive match
+        let polygon = barangayPolygons[name.trim()];
+        if (!polygon) {
+            // Try case-insensitive match
+            for (const key in barangayPolygons) {
+                if (key.toLowerCase() === name.trim().toLowerCase()) {
+                    polygon = barangayPolygons[key];
+                    break;
+                }
+            }
+        }
+        if (polygon) {
+            polygon.addTo(map);
+            polygon.setStyle({
                 fillOpacity: 0.4,
                 color: '#0077B6',
                 weight: 2,
                 opacity: 1
             });
+        } else {
+            // Debug: show a warning if not found
+            console.warn('Barangay polygon not found for:', name);
         }
     }
 
@@ -310,29 +333,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     mapModal.addEventListener('shown.bs.modal', function () {
         let button = document.querySelector('.view-location-btn.active-trigger');
-
         if (!button) {
             button = document.querySelector('.view-location-btn[data-bs-target="#mapModal"]');
         }
-
         const lat = parseFloat(button.getAttribute('data-lat'));
         const lng = parseFloat(button.getAttribute('data-lng'));
         const name = button.getAttribute('data-name');
 
         function showOnMap() {
             map.setView([lat, lng], 14);
-
             showBarangayGeoFence(name);
-
             if (!marker) {
-              marker = L.marker([lat, lng], { icon: redIcon }).addTo(map);
+                marker = L.marker([lat, lng], { icon: redIcon }).addTo(map);
             } else {
-              marker.setLatLng([lat, lng]);
-              marker.setIcon(redIcon);
+                marker.setLatLng([lat, lng]);
+                marker.setIcon(redIcon);
             }
-
             marker.bindPopup(`<b>${name}</b>`).openPopup();
-
             setTimeout(() => {
                 map.invalidateSize();
             }, 200);
@@ -363,6 +380,7 @@ document.addEventListener('DOMContentLoaded', function () {
       
     });
 });
+// ...existing code...
 </script>
 
 </body>

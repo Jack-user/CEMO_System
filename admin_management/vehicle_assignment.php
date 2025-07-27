@@ -162,11 +162,6 @@ if (isset($_GET['delete'])) {
 
 ?>
 
-
-
-
-?>
-
 <!DOCTYPE html> 
 <html lang="en">
 <head>
@@ -373,111 +368,101 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
           <!-- <li><a class="dropdown-item" href="#.php">Vehicle Management</a></li> -->
         </ul>
       </div>
+  <div class="container-fluid py-4">
+    <div class="d-flex justify-content-start mt-2 mb-4">
+      <div class="dropdown">
+  <button class="btn btn-success dropdown-toggle" 
+          type="button" 
+          id="dropdownMenuButton" 
+          data-bs-toggle="dropdown" 
+          aria-expanded="false">
+    📅 View
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <li><a class="dropdown-item" href="vehicle_assignment.php">Vehicle Assignment</a></li>
+    <li><a class="dropdown-item" href="waste_service_sched.php">Waste Collection Schedule</a></li>
+    <li><a class="dropdown-item" href="vehicle_management.php">Vehicle Management</a></li>
+  </ul>
+</div>
     </div>
-    <div class="container-fluid py-4">
-  <div class="d-flex justify-content-start mt-0 mb-0">
-    <!-- Optional: Add buttons here -->
-  </div>
-  <div class="row">
-    <div class="col-12">
-      <div class="card shadow-lg">
-        <div class="card-header p-0 position-relative mt-n4 mx-4 z-index-2">
-          <div style="background: linear-gradient(60deg, #66c05eff, #49755cff);" class="shadow-dark border-radius-lg pt-4 pb-3"> 
-            <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">Vehicle Assignment</h5>
+
+    <div class="row">
+      <!-- 🗓️ Waste Collection Daily Schedule Card -->
+      <!-- 🚛 Vehicle Assignment Card -->
+<div class="col-12 mb-8">
+        <div class="card shadow-lg">
+          <div class="card-header text-white" style="background: linear-gradient(90deg,rgb(61, 144, 238), #4364f7);">
+  <h5 class="text-center text-uppercase font-weight-bold mb-0">Waste Collection Daily Schedule</h5>
+</div>
+          <div class="card-body px-0 pb-2">
+            <div class="table-responsive p-0">
+              <table class="table table-bordered align-items-center mb-0 text-center">
+                <thead class="bg-light">
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                    <th>Saturday</th>
+                    <th>Sunday</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($wasteCollectionSchedules as $vehicle => $days): ?>
+                    <tr>
+                      <td><strong><?= htmlspecialchars($vehicle) ?></strong></td>
+                      <?php
+                        $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        foreach ($weekdays as $day) {
+                          echo '<td>' . (!empty($days[$day]) ? htmlspecialchars($days[$day]) : 'Vacant') . '</td>';
+                        }
+                      ?>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="card-body px-0 pb-2">
-          <div class="table-responsive p-0">
-            <table class="table align-items-center mb-0">
-              <thead>
-                <tr>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">Vehicle Name</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">Vehicle Type</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">Capacity</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3">Area</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-3 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach ($schedules as $key => $info): ?>
+      <!-- 🚛 Vehicle Assignment Card -->
+      <div class="col-12 col-md-10 col-lg-8 mx-auto mt-4 mb-4">
+        <div class="card shadow-lg">
+          <div class="card-header text-white" style="background: linear-gradient(90deg,rgb(81, 206, 168),rgb(64, 189, 172));">
+  <h5 class="text-center text-uppercase font-weight-bold mb-0">Vehicle Assignments</h5>
+</div>
+          <div class="card-body px-0 pb-2">
+            <div class="table-responsive p-0">
+              <table class="table table-bordered align-items-center mb-0 text-center">
+                <thead class="bg-light">
                   <tr>
-                    <td>
-                      <div class="d-flex align-items-center px-3 py-2">
-                        <div>
-                          <img src="../assets/img/logo.png" class="avatar avatar-sm rounded-circle me-3 shadow" alt="vehicle">
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                          <h6 class="mb-0 text-sm"><?= htmlspecialchars($info['vehicle_name']) ?></h6>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="align-middle text-sm">
-                      <p class="text-xs text-secondary mb-0"><?= htmlspecialchars($info['vehicle_type']) ?></p>
-                    </td>
-                    <td class="align-middle text-sm">
-                      <p class="text-xs text-secondary mb-0"><?= htmlspecialchars($info['vehicle_capacity']) ?></p>
-                    </td>
-                    <td class="align-middle text-sm">
-                      <p class="text-xs text-secondary mb-0"><?= htmlspecialchars($info['barangay']) ?></p>
-                    </td>
-                    <td class="align-middle text-center">
-                      <a href="#" 
-                        class="btn btn-link text-info px-2 py-1" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#editModal<?= md5($key); ?>">
-                        <i class="material-symbols-rounded fs-5">edit</i>
-                      </a>
-                      <a href="?delete=<?= urlencode($info['vehicle_name']) ?>"
-                        class="btn btn-link text-danger px-2 py-1 delete-btn"
-                        data-name="<?= htmlspecialchars($info['vehicle_name']) ?>">
-                        <i class="material-symbols-rounded fs-5">delete</i>
-                      </a>
-
-
-
-                      <!-- Edit Modal -->
-                      <div class="modal fade" id="editModal<?= md5($key); ?>" tabindex="-1" aria-labelledby="editModalLabel<?= md5($key); ?>" aria-hidden="true">
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h5 class="modal-title">Edit Vehicle Assignment</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                              <form method="POST">
-                                <input type="hidden" name="vehicle_name" value="<?= htmlspecialchars($info['vehicle_name']); ?>">
-                                <div class="mb-3">
-                                  <label class="form-label">Vehicle Type</label>
-                                  <input type="text" class="form-control" name="vehicle_type" value="<?= htmlspecialchars($info['vehicle_type']); ?>" required>
-                                </div>
-                                <div class="mb-3">
-                                  <label class="form-label">Capacity</label>
-                                  <input type="text" class="form-control" name="vehicle_capacity" value="<?= htmlspecialchars($info['vehicle_capacity']); ?>" required>
-                                </div>
-                                <div class="mb-3">
-                                  <label class="form-label">Barangay</label>
-                                  <input type="text" class="form-control" name="barangay" value="<?= htmlspecialchars($info['barangay']); ?>" required>
-                                </div>
-                                <button type="submit" name="update_vehicle" class="btn btn-primary">Save Changes</button>
-                              </form>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+                    <th>Vehicle</th>
+                    <th>Vehicle Type</th>
+                    <th>Capacity</th>
+                    <th>Area</th>
                   </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div> <!-- .table-responsive -->
-        </div> <!-- .card-body -->
-      </div> <!-- .card -->
-    </div> <!-- .col-12 -->
-  </div> <!-- .row -->
-</div> <!-- .container-fluid -->
+                </thead>
+                <tbody>
+                  <?php foreach ($schedules as $key => $info): ?>
+                    <tr>
+                      <td><strong><?= htmlspecialchars($info['vehicle_name']) ?></strong></td>
+                      <td><?= htmlspecialchars($info['vehicle_type']) ?></td>
+                      <td><?= htmlspecialchars($info['vehicle_capacity']) ?></td>
+                      <td><?= htmlspecialchars($info['barangay']) ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <?php include '../includes/footer.php'; ?>
+    </div>
+  </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
@@ -572,5 +557,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+<script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
 </body>
 </html>
