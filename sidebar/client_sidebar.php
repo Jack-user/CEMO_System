@@ -1,19 +1,16 @@
-<?php
-$current_page = basename($_SERVER['PHP_SELF']); // Get current page for active state
-?>
 
-<aside
-  class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 my-2"
-  id="sidenav-main"
-  style="background-color: #1c2e4a;"
->
+    <aside
+    class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 my-2"
+    id="sidenav-main"
+    style="background-color: #1c2e4a;"
+    >
+
     <div class="sidenav-header">
-        <i class="fas fa-times p-3 cursor-pointer text-light opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
         <a class="navbar-brand px-4 py-3 m-0" href="#">
-            <img src="../assets/img/logo-ct-dark.png" class="navbar-brand-img" width="26" height="26" alt="main_logo">
-            <span class="ms-1 text-sm text-light">Creative Tim</span>
+            <img src="../assets/img/logo.png" class="navbar-brand-img" width="30" height="30" alt="main_logo">
+            <span class="ms-1 text-sm text-white">BAGO CITY - CEMO</span>
         </a>
-    </div>
+</div>
     <hr class="horizontal light mt-0 mb-2">
     <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
         <ul class="navbar-nav">
@@ -24,6 +21,19 @@ $current_page = basename($_SERVER['PHP_SELF']); // Get current page for active s
                     <span class="nav-link-text ms-1">Dashboard</span>
                 </a>
             </li>
+
+            
+            <li class="nav-item mt-3">
+                <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Event pages</h6>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo ($current_page == 'client_event_view.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../client_management/client_event_view.php">
+                    <i class="material-symbols-rounded opacity-5">event</i>
+                    <span class="nav-link-text ms-1">Event</span>
+                </a>
+            </li>
+
+
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Account pages</h6>
             </li>

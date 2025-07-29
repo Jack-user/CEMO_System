@@ -2,188 +2,215 @@
 session_start();
 require_once '../includes/conn.php';
 
-// Check if the user is logged in
 if (!isset($_SESSION['client_id'])) {
     header("Location: ../login_page/sign-in.php");
     exit();
 }
 
 $page_title = "Your Profile";
-include '../includes/header.php'; // Head and styles 
+include '../includes/header.php';
 
-// Load client data
 $client_id = $_SESSION['client_id'];
-$stmt = $pdo->prepare("SELECT first_name, last_name, email FROM client_table WHERE client_id = ?");
-$stmt->execute([$client_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user) {
-    die("Client not found.");
+// ✅ Fetch client info safely
+$user = null;
+$query = $conn->query("SELECT * FROM client_table WHERE client_id = $client_id");
+
+if ($query && $query->num_rows > 0) {
+    $user = $query->fetch_assoc();
+} else {
+    echo "<script>alert('Client not found.'); window.location.href='../login_page/sign-in.php';</script>";
+    exit();
 }
 
-$profile_image = '../assets/default-profile.png';
+// ✅ Fetch barangay list
+$barangayOptions = '';
+$barangayQuery = $conn->query("SELECT barangay FROM barangays_table");
+while ($row = $barangayQuery->fetch_assoc()) {
+    $selected = ($row['barangay'] == $user['barangay']) ? 'selected' : '';
+    $barangayOptions .= "<option value='" . htmlspecialchars($row['barangay']) . "' $selected>" . htmlspecialchars($row['barangay']) . "</option>";
+}
+
+$profile_image = '../assets/img/logo.png';
 ?>
 <body class="g-sidenav-show bg-gray-200">
-<!-- Sidebar -->
 <?php include '../sidebar/client_sidebar.php'; ?>
 
-<!-- Main Content -->
 <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
-  <!-- Navbar -->
   <?php include '../includes/navbar.php'; ?>
 
-  <?php if (isset($_SESSION['msg'])): ?>
-    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-      <?= $_SESSION['msg']; unset($_SESSION['msg']); ?>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  <?php endif; ?>
-
   <div class="container py-4">
-    <div class="card mx-auto" style="max-width: 600px; min-height: 500px;">
-      <div class="card-body text-center py-5">
+    <?php if (isset($_SESSION['msg'])): ?>
+      <script>
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: '<?php echo $_SESSION["msg"]; ?>',
+          confirmButtonColor: '#3085d6'
+        });
+      </script>
+      <?php unset($_SESSION['msg']); ?>
+    <?php endif; ?>
+
+
+<div class="card shadow-sm bg-white p-4 mb-4">
+  <div class="row justify-content-center align-items-start g-4">
+
+    <!-- ✅ Profile Image Section -->
+    <div class="col-md-4">
+      <div class="card shadow-sm text-center p-4 h-100">
         <img src="<?php echo htmlspecialchars($profile_image); ?>"
              alt="Profile Picture"
-             class="rounded-circle mb-4"
-             style="width: 200px; height: 200px; object-fit: cover;">
+             class="rounded-circle mx-auto"
+             style="width: 180px; height: 180px; object-fit: cover;">
 
-        <h2 class="fw-bold mb-2" style="font-size: 2rem;">
+        <form method="post" enctype="multipart/form-data" action="../profile_management/upload_photo.php" class="mt-3">
+          <input type="file" name="profile_photo" accept="image/*" class="form-control mb-2" required>
+          <button type="submit" class="btn btn-outline-success w-100">Upload</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ✅ Profile Info Section -->
+    <div class="col-md-6">
+      <div class="card shadow-sm p-4 h-100">
+        <h4 class="fw-bold mb-3">
           <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>
-        </h2>
+        </h4>
 
-        <p class="text-muted mb-4" style="font-size: 1.1rem;">
-          <?php echo htmlspecialchars($user['email']); ?>
-        </p>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?>
+          </li>
+          <li class="list-group-item">
+            <strong>Contact:</strong> <?php echo htmlspecialchars($user['contact']); ?>
+          </li>
+          <li class="list-group-item">
+            <strong>Barangay:</strong> <?php echo htmlspecialchars($user['barangay']); ?>
+          </li>
+        </ul>
 
-        <div class="d-grid gap-2 col-6 mx-auto">
-          <!-- This button opens the modal -->
-          <button id="openEditProfileModal" class="btn btn-primary btn-lg">
-            Edit Profile
-          </button>
+        <div class="mt-4">
+          <button id="openEditProfileModal" class="btn btn-primary bg-success w-100">Edit Profile</button>
         </div>
       </div>
     </div>
   </div>
-</main>
+</div>
+<!-- Edit Profile Modal (Clean, Bootstrap) -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="editProfileLabel">Edit Profile</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
 
-<!-- ✅ MODAL HTML -->
-<div id="editProfileModal" class="modal">
-  <div class="modal-content">
-    <span id="closeEditProfileModal" class="close">&times;</span>
-    <h2>Edit Profile</h2>
-    <form method="post" action="../profile_management/update_profile.php">
-      <input type="hidden" name="client_id" value="<?php echo htmlspecialchars($client_id); ?>">
+      <form id="editProfileForm" method="post" action="../profile_management/update_profile.php">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="first_name" class="form-label">First Name</label>
+              <input type="text" name="first_name" id="first_name" class="form-control" value="<?php echo htmlspecialchars($user['first_name']); ?>" required>
+            </div>
 
-      <label for="first_name">First Name:</label><br>
-      <input type="text" name="first_name" value="<?php echo htmlspecialchars($user['first_name']); ?>" required><br><br>
+            <div class="col-md-6">
+              <label for="last_name" class="form-label">Last Name</label>
+              <input type="text" name="last_name" id="last_name" class="form-control" value="<?php echo htmlspecialchars($user['last_name']); ?>" required>
+            </div>
 
-      <label for="last_name">Last Name:</label><br>
-      <input type="text" name="last_name" value="<?php echo htmlspecialchars($user['last_name']); ?>" required><br><br>
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" name="email" id="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+            </div>
 
-      <label for="email">Email:</label><br>
-      <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required><br><br>
+            <div class="col-md-6">
+              <label for="contact" class="form-label">Contact</label>
+              <input type="text" name="contact" id="contact" class="form-control" value="<?php echo htmlspecialchars($user['contact']); ?>" required>
+            </div>
 
-      <button type="submit">Save Changes</button>
-    </form>
+            <select name="barangay" class="form-select" required>
+  <option value="" disabled>Select Barangay</option>
+  <?= $barangayOptions ?>
+</select>
+            <div class="col-md-6">
+              <label for="password" class="form-label">New Password (optional)</label>
+              <input type="password" name="password" id="password" class="form-control" placeholder="Leave blank to keep current password">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success w-100">Save Changes</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
-<!-- ✅ MODAL STYLES -->
 <style>
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
+  .card img {
+  transition: transform 0.3s ease;
 }
-.modal.show {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 6px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  width: 90%;
-  max-width: 400px;
-  position: relative;
-  animation: fadeIn 0.3s ease;
-  font: 15px Arial, sans-serif;
-  line-height: 1.4;
-}
-@keyframes fadeIn {
-  from {opacity:0;transform:scale(0.95);}
-  to {opacity:1;transform:scale(1);}
-}
-.close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  font-size: 22px;
-  font-weight: bold;
-  color: #333;
-  cursor: pointer;
-}
-.close:hover {color:#007bff;}
-.modal-content h2 {
-  margin:0 0 10px;
-  font-size:1.3rem;
-  text-align:center;
-}
-.modal-content form {
-  display:flex;
-  flex-direction:column;
-}
-.modal-content label {
-  margin-top:10px;
-  font-size:0.9rem;
-  color:#555;
-}
-.modal-content input {
-  padding:8px;
-  margin-top:4px;
-  border:1px solid #ccc;
-  border-radius:4px;
-  font-size:0.95rem;
-}
-.modal-content button[type="submit"] {
-  margin-top:16px;
-  padding:10px;
-  background:#007bff;
-  border:none;
-  color:#fff;
-  font-size:1rem;
-  border-radius:4px;
-  cursor:pointer;
-}
-.modal-content button[type="submit"]:hover {
-  background:#0056b3;
+.card img:hover {
+  transform: scale(1.05);
 }
 </style>
-
-<!-- ✅ MODAL SCRIPT -->
 <script>
-const modal = document.getElementById('editProfileModal');
-const openBtn = document.getElementById('openEditProfileModal');
-const closeBtn = document.getElementById('closeEditProfileModal');
+  document.getElementById('openEditProfileModal').addEventListener('click', function () {
+    var modal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+    modal.show();
+  });
 
-openBtn.onclick = function () {
-  modal.classList.add('show');
-};
-closeBtn.onclick = function () {
-  modal.classList.remove('show');
-};
-window.onclick = function (event) {
-  if (event.target === modal) {
-    modal.classList.remove('show');
-  }
-};
+  document.getElementById('editProfileForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "Save your profile changes?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, save it!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.submit();
+      }
+    });
+  });
+
+document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const form = this;
+  const formData = new FormData(form);
+
+  fetch('../profile_management/update_profile.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Profile Updated',
+        text: data.message
+      }).then(() => location.reload());
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Update Failed',
+        text: data.message
+      });
+    }
+  })
+  .catch(err => {
+    Swal.fire('Error', 'Something went wrong.', 'error');
+    console.error(err);
+  });
+});
 </script>
-
+ <?php include '../includes/footer.php'; ?>
+</main>
 </body>
 </html>

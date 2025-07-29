@@ -2,28 +2,57 @@
 session_start();
 require_once '../includes/conn.php';
 
-// Make sure the user is logged in
 if (!isset($_SESSION['client_id'])) {
-    header("Location: ../login_page/sign-in.php");
+    http_response_code(403);
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit();
 }
 
-$clientId = $_SESSION['client_id']; // ✅ Use the session, not $_POST
+$client_id = $_SESSION['client_id'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $firstName = trim($_POST['first_name']);
-    $lastName = trim($_POST['last_name']);
-    $email = trim($_POST['email']);
+$first_name = trim($_POST['first_name'] ?? '');
+$last_name = trim($_POST['last_name'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$contact = trim($_POST['contact'] ?? '');
+$barangay = trim($_POST['barangay'] ?? '');
+$password = $_POST['password'] ?? '';
 
-    if (empty($firstName) || empty($lastName) || empty($email)) {
-        die("Please fill in all fields.");
-    }
-
-    $stmt = $pdo->prepare("UPDATE client_table SET first_name = ?, last_name = ?, email = ? WHERE client_id = ?");
-    $stmt->execute([$firstName, $lastName, $email, $clientId]);
-
-    $_SESSION['msg'] = "Profile updated successfully!";
-    header("Location: ../client_management/client_profile.php");
+// Validate required fields
+if ($first_name === '' || $last_name === '' || $email === '' || $barangay === '') {
+    echo json_encode(['status' => 'error', 'message' => 'Please fill out all required fields.']);
     exit();
 }
+
+// Check for existing email
+$check = $conn->prepare("SELECT client_id FROM client_table WHERE email = ? AND client_id != ?");
+$check->bind_param("si", $email, $client_id);
+$check->execute();
+$check->store_result();
+
+if ($check->num_rows > 0) {
+    echo json_encode(['status' => 'error', 'message' => 'Email already in use.']);
+    exit();
+}
+$check->close();
+
+// If password is provided, hash it
+if (!empty($password)) {
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    $sql = "UPDATE client_table SET first_name = ?, last_name = ?, email = ?, contact = ?, barangay = ?, password = ? WHERE client_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssssssi", $first_name, $last_name, $email, $contact, $barangay, $hashed_password, $client_id);
+} else {
+    $sql = "UPDATE client_table SET first_name = ?, last_name = ?, email = ?, contact = ?, barangay = ? WHERE client_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sssssi", $first_name, $last_name, $email, $contact, $barangay, $client_id);
+}
+
+if ($stmt->execute()) {
+    echo json_encode(['status' => 'success', 'message' => 'Profile updated successfully.']);
+} else {
+    echo json_encode(['status' => 'error', 'message' => 'Update failed.']);
+}
+
+$stmt->close();
+$conn->close();
 ?>

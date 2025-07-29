@@ -106,8 +106,8 @@ include '../includes/header.php'; // Includes the head section and styles
                 <div class="col-lg-4 col-md-6 mt-4 mb-4">
                     <div class="card">
                         <div class="card-body">
-                            <h6 class="mb-0">Brgy Waste Volume</h6>
-                            <p class="text-sm">Yearly Waste Volume Prediction for Each Barangay</p>
+                            <h6 class="mb-0">Brgy Waste Volume</h6> 
+                            <p class="text-sm">Monthly Waste Volume Prediction for Each Barangay</p>
                             <div class="pe-2">
                                 <div class="chart">
                                     <canvas id="chart-line" class="chart-canvas" height="170"></canvas>
@@ -125,7 +125,7 @@ include '../includes/header.php'; // Includes the head section and styles
                     <div class="card">
                         <div class="card-body">
                             <h6 class="mb-0">Dumpsite Area</h6>
-                            <p class="text-sm">Yearly Waste Forecast for Dumpsite Capacity</p>
+                            <p class="text-sm">Monthly Waste Forecast for Dumpsite Capacity</p>
                             <div class="pe-2">
                                 <div class="chart">
                                     <canvas id="chart-line-tasks" class="chart-canvas" height="170"></canvas>
