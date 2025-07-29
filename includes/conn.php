@@ -1,5 +1,10 @@
 <?php
 // Database connection file
+// $host = 'localhost'; 
+// $dbname = 'u520834156_DBWasteTracker'; 
+// $username = 'u520834156_userWT2025'; 
+// $password = '^Lx|Aii1'; 
+
 $host = 'localhost'; 
 $dbname = 'cemo_db'; 
 $username = 'root'; 

@@ -1,6 +1,4 @@
-<?php
-$current_page = basename($_SERVER['PHP_SELF']); // Get current page for active state
-?>
+
 
 <aside
   class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 my-2"
@@ -16,6 +14,8 @@ $current_page = basename($_SERVER['PHP_SELF']); // Get current page for active s
     <span class="ms-1 text-sm text-white">BAGO CITY - CEMO</span>
   </a>
 </div>
+
+
 
                 <!-- Admin Management Section -->
     <hr class="horizontal dark mt-0 mb-2">
@@ -103,7 +103,7 @@ $current_page = basename($_SERVER['PHP_SELF']); // Get current page for active s
 </li>
 
 <!-- Toast Container (Centered at Top) -->
-<d iv class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;">
+<div iv class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;">
     <div id="logoutToast" class="toast text-bg-light border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <strong class="me-auto">Confirm Logout</strong>
@@ -120,7 +120,7 @@ $current_page = basename($_SERVER['PHP_SELF']); // Get current page for active s
             </div>
         </div>
     </div>
-</d>
+</div>
 
 <!-- JavaScript -->
 <script>
@@ -139,9 +139,6 @@ function logoutUser() {
 <!-- Add this in your <head> -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
         </ul>
     </div>
 </aside>

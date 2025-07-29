@@ -32,21 +32,21 @@ if ($resultEvent && $resultEvent->num_rows > 0) {
 }
 
 // 2. Fetch Maintenance from maintenance_table
-$sqlMaint = "SELECT maintenance_id, m_name, m_date, m_time, m_status FROM maintenance_table ORDER BY m_date, m_time";
+$sqlMaint = "SELECT maintenance_id, m_name, m_date, m_time, status FROM maintenance_table ORDER BY m_date, m_time";
 $resultMaint = $conn->query($sqlMaint);
 
 if ($resultMaint && $resultMaint->num_rows > 0) {
   while ($row = $resultMaint->fetch_assoc()) {
-    if ($row['m_status'] === 'Completed') continue; // ✅ Skip completed
-    $icon = ($row['m_status'] === 'Scheduled') ? '🚛' : '✅';
+    if ($row['status'] === 'Completed') continue; // ✅ Skip completed
+    $icon = ($row['status'] === 'Scheduled') ? '🚛' : '✅';
     $time = strlen($row['m_time']) === 5 ? $row['m_time'] . ':00' : $row['m_time'];
     $startDateTime = $row['m_date'] . 'T' . $time;
 
     $calendarEvents[] = [
       'id'    => 'maint_' . $row['maintenance_id'],
-      'title' => $icon . ' ' . $row['m_name'] . ' - ' . $row['m_status'],
+      'title' => $icon . ' ' . $row['m_name'] . ' - ' . $row['status'],
       'start' => $startDateTime,
-      'color' => ($row['m_status'] === 'Scheduled') ? '#b8860b' : '#6c757d',
+      'color' => ($row['status'] === 'Scheduled') ? '#b8860b' : '#6c757d',
     ];
   }
 }
@@ -61,218 +61,7 @@ if ($resultMaint && $resultMaint->num_rows > 0) {
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
   <link href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-  body {
-    background: #f6f8fa;
-    font-family: 'Segoe UI', Arial, sans-serif;
-  }
-  .calendar-wrapper {
-    display: flex;
-    gap: 32px;
-    align-items: flex-start;
-  }
-  .calendar-sidebar {
-  background: transparent;
-  border: none;
-  padding: 0;
-  }
-  .calendar-sidebar h6 {
-    font-weight: 600;
-    color: #49755c;
-    margin-bottom: 16px;
-    font-size: 1rem;
-    letter-spacing: 0.5px;
-  }
-  .calendar-sidebar .form-check-label {
-    font-weight: 400;
-    color: #49755c;
-    margin-left: 6px;
-    font-size: 0.97rem;
-  }
-  #calendar {
-    width: 100%;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(102,192,94,0.06);
-    padding: 18px;
-    border: 1px solid #e3e6ea;
-    min-height: 600px;
-  }
-  .calendar-box {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e3e6ea;
-  margin-bottom: 24px;
-}
-
-.calendar-card {
-  width: 100%;
-  background: #fff;
-  border-radius: 16px;
-  padding: 12px;
-  border: 1px solid #e3e6ea;
-}
-
-  .calendar-header {
-    background: #49755c;
-    color: #fff;
-    padding: 22px 0 12px 0;
-    border-bottom: 1px solid #e3e6ea;
-    text-align: center;
-    border-radius: 16px 16px 0 0;
-    margin-bottom: 18px;
-  }
-  .calendar-header h5 {
-    font-size: 1.35rem;
-    font-weight: 600;
-    margin: 0;
-    letter-spacing: 0.5px;
-  }
-  .fc-toolbar-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #49755c;
-    letter-spacing: 0.5px;
-  }
-  .fc-button {
-    border-radius: 20px !important;
-    background: #49755c !important;
-    color: #fff !important;
-    border: none !important;
-    font-weight: 500;
-    padding: 5px 10px !important;
-    box-shadow: none !important;
-    transition: background 0.2s;
-    font-size: 0.97rem !important;
-  }
-  .fc-button:hover, .fc-button-active, .fc-button-primary:not(:disabled):active {
-    background: #66c05e !important;
-  }
-  .fc-event {
-    border-radius: 10px;
-    box-shadow: none;
-    font-size: 0.98rem;
-    padding: 6px 12px;
-    border: none;
-    background: #eaf7ee !important;
-    color: #49755c !important;
-    margin-bottom: 3px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-  }
-  .fc-event:hover {
-    background: #d4f5e9 !important;
-    color: #2d4c3c !important;
-  }
-  .fc-daygrid-event-dot {
-    display: none;
-  }
-  .fc-daygrid-day-number {
-    font-weight: 600;
-    color: #49755c;
-    background: #eaf7ee;
-    border-radius: 50%;
-    padding: 2px 7px;
-    margin-right: 2px;
-    font-size: 0.97rem;
-  }
-  .today-label {
-    font-size: 0.7rem;
-    font-weight: bold;
-    position: start;
-    top: 2px;
-    right: 4px;
-    z-index: 10;
-  }
-  .fc-day-today {
-  position: relative; /* Ensure the cell is the positioning context */
-}
-
-.fc-day-today::after {
-  content: 'Today';
-  font-size: 0.65rem;
-  color: #e12626;
-  font-weight: bold;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* Center horizontally and vertically */
-  background: #fff;
-  padding: 2px 4px;
-  border-radius: 4px;
-  z-index: 10;
-}
-
-  .fc-col-header-cell-cushion {
-    font-weight: 600;
-    color: #49755c;
-    font-size: 0.98rem;
-  }
-  .fc-scrollgrid {
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid #e3e6ea;
-  }
-  .floating-btn {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    z-index: 999;
-    background: #49755c;
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 54px;
-    height: 54px;
-    font-size: 1.7rem;
-    box-shadow: 0 2px 8px rgba(102,192,94,0.10);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .floating-btn:hover {
-    background: #66c05e;
-  }
-  .next-event-highlight {
-  background-color: #e9f7ff !important;
-  border-left: 5px solid #007bff !important;
-}
-
-.swal2-popup.blinking-alert {
-  animation: blink 1s infinite;
-}
-@keyframes blink {
-  0% { box-shadow: 0 0 5px red; }
-  50% { box-shadow: 0 0 15px orange; }
-  100% { box-shadow: 0 0 5px red; }
-}
-
-#upcomingEventsBox h6 {
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: #49755c;
-}
-
-#upcomingEventsBox .list-group-item {
-  font-size: 0.9rem;
-  border: none;
-  padding: 6px 8px;
-}
-
-.btn-outline-success {
-  border-color: #66c05e;
-  color: #49755c;
-}
-.btn-outline-success:hover {
-  background-color: #66c05e;
-  color: white;
-}
-  </style>
-
+  
 </head>
 <body>
 <?php include '../sidebar/admin_sidebar.php'; ?>
@@ -294,6 +83,7 @@ if ($resultMaint && $resultMaint->num_rows > 0) {
         </div>
       </div>
       <!-- Calendar Box -->
+      <!-- Removed event table, only calendar below -->
       <div id="calendar"></div>
     </div>
   </div>
@@ -665,7 +455,275 @@ document.getElementById('schedule_type').addEventListener('change', function () 
 // ✅ Trigger it immediately on load (in case Event is selected by default)
 document.getElementById('schedule_type').dispatchEvent(new Event('change'));
 
+
+// Event hover popover for calendar events
+document.addEventListener('DOMContentLoaded', function () {
+  const calendarEl = document.getElementById('calendar');
+  let allEvents = <?php echo json_encode($calendarEvents); ?>;
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    events: allEvents,
+    eventClick: function(info) {
+      const event = info.event;
+      document.getElementById('edit_schedule_id').value = event.id;
+      document.getElementById('edit_event_name').value = event.title.split(' - ')[0].replace(/^🟢|✅/, '').trim();
+      const iso = event.start.toISOString();
+      document.getElementById('edit_day').value = iso.split("T")[0];
+      document.getElementById('edit_time').value = iso.split("T")[1].substring(0, 5);
+      document.getElementById('edit_status').value = event.title.split(' - ')[1];
+      var editModal = new bootstrap.Modal(document.getElementById('editScheduleModal'));
+      editModal.show();
+    },
+    eventMouseEnter: function(info) {
+      const event = info.event;
+      const eventName = event.title.split(' - ')[0].replace(/^🟢|✅/, '').trim();
+      const eventDate = event.start.toLocaleDateString();
+      const eventTime = event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const eventStatus = event.title.split(' - ')[1];
+      const popover = document.createElement('div');
+      popover.className = 'popover bs-popover-top show';
+      popover.style.position = 'absolute';
+      popover.style.zIndex = '9999';
+      popover.style.background = '#fff';
+      popover.style.border = '1px solid #e3e6ea';
+      popover.style.borderRadius = '8px';
+      popover.style.boxShadow = '0 2px 8px rgba(102,192,94,0.10)';
+      popover.style.padding = '12px 18px';
+      popover.innerHTML = `<strong>${eventName}</strong><br>Date: ${eventDate}<br>Time: ${eventTime}<br>Status: ${eventStatus}`;
+      document.body.appendChild(popover);
+      // Position popover near mouse
+      const mouseX = info.jsEvent.clientX;
+      const mouseY = info.jsEvent.clientY;
+      popover.style.top = (mouseY + window.scrollY - popover.offsetHeight - 10) + 'px';
+      popover.style.left = (mouseX + window.scrollX - popover.offsetWidth/2) + 'px';
+      info.el._popover = popover;
+    },
+    eventMouseLeave: function(info) {
+      if (info.el._popover) {
+        info.el._popover.remove();
+        info.el._popover = null;
+      }
+    }
+  });
+  calendar.render();
+});
 </script>
 </body>
 </html>
 
+<style>
+  body {
+    background: #f6f8fa;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .calendar-wrapper {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+  .calendar-sidebar {
+  background: transparent;
+  border: none;
+  padding: 0;
+  }
+  .calendar-sidebar h6 {
+    font-weight: 600;
+    color: #49755c;
+    margin-bottom: 16px;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+  }
+  .calendar-sidebar .form-check-label {
+    font-weight: 400;
+    color: #49755c;
+    margin-left: 6px;
+    font-size: 0.97rem;
+  }
+  #calendar {
+    width: 100%;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(102,192,94,0.06);
+    padding: 18px;
+    border: 1px solid #e3e6ea;
+    min-height: 600px;
+  }
+  .calendar-box {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e3e6ea;
+  margin-bottom: 24px;
+}
+
+.calendar-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid #e3e6ea;
+}
+
+  .calendar-header {
+    background: #49755c;
+    color: #fff;
+    padding: 22px 0 12px 0;
+    border-bottom: 1px solid #e3e6ea;
+    text-align: center;
+    border-radius: 16px 16px 0 0;
+    margin-bottom: 18px;
+  }
+  .calendar-header h5 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.5px;
+  }
+  .fc-toolbar-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #49755c;
+    letter-spacing: 0.5px;
+  }
+  .fc-button {
+    border-radius: 20px !important;
+    background: #49755c !important;
+    color: #fff !important;
+    border: none !important;
+    font-weight: 500;
+    padding: 5px 10px !important;
+    box-shadow: none !important;
+    transition: background 0.2s;
+    font-size: 0.97rem !important;
+  }
+  .fc-button:hover, .fc-button-active, .fc-button-primary:not(:disabled):active {
+    background: #66c05e !important;
+  }
+  .fc-event {
+    border-radius: 10px;
+    box-shadow: none;
+    font-size: 0.98rem;
+    padding: 6px 12px;
+    border: none;
+    background: #eaf7ee !important;
+    color: #49755c !important;
+    margin-bottom: 3px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .fc-event:hover {
+    background: #d4f5e9 !important;
+    color: #2d4c3c !important;
+  }
+  .fc-daygrid-event-dot {
+    display: none;
+  }
+  .fc-daygrid-day-number {
+    font-weight: 600;
+    color: #49755c;
+    background: #eaf7ee;
+    border-radius: 50%;
+    padding: 2px 7px;
+    margin-right: 2px;
+    font-size: 0.97rem;
+  }
+  .today-label {
+    font-size: 0.7rem;
+    font-weight: bold;
+    position: start;
+    top: 2px;
+    right: 4px;
+    z-index: 10;
+  }
+  .fc-day-today {
+  position: relative; /* Ensure the cell is the positioning context */
+}
+
+.fc-day-today::after {
+  content: 'Today';
+  font-size: 0.65rem;
+  color: #e12626;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center horizontally and vertically */
+  background: #fff;
+  padding: 2px 4px;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+  .fc-col-header-cell-cushion {
+    font-weight: 600;
+    color: #49755c;
+    font-size: 0.98rem;
+  }
+  .fc-scrollgrid {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #e3e6ea;
+  }
+  .floating-btn {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 999;
+    background: #49755c;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 54px;
+    height: 54px;
+    font-size: 1.7rem;
+    box-shadow: 0 2px 8px rgba(102,192,94,0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .floating-btn:hover {
+    background: #66c05e;
+  }
+  .next-event-highlight {
+  background-color: #e9f7ff !important;
+  border-left: 5px solid #007bff !important;
+}
+
+.swal2-popup.blinking-alert {
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0% { box-shadow: 0 0 5px red; }
+  50% { box-shadow: 0 0 15px orange; }
+  100% { box-shadow: 0 0 5px red; }
+}
+
+#upcomingEventsBox h6 {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #49755c;
+}
+
+#upcomingEventsBox .list-group-item {
+  font-size: 0.9rem;
+  border: none;
+  padding: 6px 8px;
+}
+
+.btn-outline-success {
+  border-color: #66c05e;
+  color: #49755c;
+}
+.btn-outline-success:hover {
+  background-color: #66c05e;
+  color: white;
+}
+  </style>

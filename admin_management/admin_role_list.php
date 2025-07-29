@@ -85,7 +85,7 @@ if (isset($_GET['delete_driver_id'])) {
       <!-- Add Staff Modal -->
         <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-lg">
-            <form method="POST" action="add_staff.php" id="addStaffForm">
+            <form method="POST" action="../backend/admin_add_staff.php" id="addStaffForm">
               <div class="modal-content">
                 <div class="modal-header">
                   <h5 class="modal-title">Add New Staff</h5>
