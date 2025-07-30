@@ -69,43 +69,36 @@ include '../includes/header.php';
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
 
+    <!-- Map Styles -->
     <style>
-        .map-box { overflow: hidden; position: relative; }
+        .map-box {
+            overflow: hidden;
+            position: relative;
+        }
         .map-box::after {
-            content: ''; position: absolute; right: 0; bottom: 0; width: 5px; height: 5px;
-            background: #000; cursor: nwse-resize; z-index: 999;
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 5px;
+            height: 5px;
+            background: #000;
+            cursor: nwse-resize;
+            z-index: 999;
         }
     </style>
 
-    <script src="map_script.js"></script>
-</body>
-</html>
-<style>
-.map-box {
-    overflow: hidden;
-    position: relative;
-}
-
-.map-box::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 5px;
-    height: 5px;
-    background: #000;
-    cursor: nwse-resize;
-    z-index: 999;
-}
-</style>
+<!-- Main Map and UI Scripts -->
 <script>
-    // Global variables
-    var map;
-    var allBarangays = [];
-    var barangayPolygons = {};
-    var geojsonLoaded = false;
+// Global variables
+var map;
+var allBarangays = [];
+var barangayPolygons = {};
+var geojsonLoaded = false;
+var gpsMarker;
 
-    window.onload = function () {
+// Initialize map and load data
+window.onload = function () {
     // Define bounding box around Bago City
     var bagoBounds = L.latLngBounds(
         L.latLng(10.4300, 122.7800), // Southwest corner
@@ -117,9 +110,9 @@ include '../includes/header.php';
         center: [10.5379, 122.8333],
         zoom: 13,
         maxBounds: bagoBounds,
-        maxBoundsViscosity: 1.0, // Prevents panning outside bounds
-        minZoom: 12,               // Prevent zooming out too far
-        maxZoom: 18                // Optional zoom limit
+        maxBoundsViscosity: 1.0,
+        minZoom: 12,
+        maxZoom: 18
     });
 
     // Add OpenStreetMap tile layer
@@ -165,96 +158,213 @@ include '../includes/header.php';
             });
             geojsonLoaded = true;
         });
-    };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const buttons = document.querySelectorAll('.view-route');
+    // Load initial GPS marker and repeat every second
+    updateGpsMarker();
+    setInterval(updateGpsMarker, 1000);
+};
 
-        buttons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-
-                const barangayName = button.getAttribute('data-barangay');
-                const barangay = allBarangays.find(b => b.barangay === barangayName);
-
-                // Remove any existing polygons
-                Object.values(barangayPolygons).forEach(poly => {
-                    if (map.hasLayer(poly)) map.removeLayer(poly);
-                });
-
-                // Show geo-fence polygon for Sum ag or Sum ag2
-                if (barangayPolygons[barangayName]) {
-                    barangayPolygons[barangayName].addTo(map);
-                    map.fitBounds(barangayPolygons[barangayName].getBounds());
+// View route button handler
+document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('.view-route');
+    buttons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const barangayName = button.getAttribute('data-barangay');
+            const barangay = allBarangays.find(b => b.barangay === barangayName);
+            // Remove any existing polygons
+            Object.values(barangayPolygons).forEach(poly => {
+                if (map.hasLayer(poly)) map.removeLayer(poly);
+            });
+            // Show geo-fence polygon
+            if (barangayPolygons[barangayName]) {
+                barangayPolygons[barangayName].addTo(map);
+                map.fitBounds(barangayPolygons[barangayName].getBounds());
+            }
+            if (!barangay || !barangay.latitude || !barangay.longitude) {
+                alert(`Coordinates not found for ${barangayName}`);
+                return;
+            }
+            const startPoint = [10.538274, 122.835230]; // Bago City Hall
+            const endPoint = [parseFloat(barangay.latitude), parseFloat(barangay.longitude)];
+            // Remove existing route controls
+            map.eachLayer(layer => {
+                if (layer instanceof L.Routing.Control) {
+                    map.removeControl(layer);
                 }
-
-                if (!barangay || !barangay.latitude || !barangay.longitude) {
-                    alert(`Coordinates not found for ${barangayName}`);
-                    return;
+            });
+            // Add routing control
+            const routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(startPoint[0], startPoint[1]),
+                    L.latLng(endPoint[0], endPoint[1])
+                ],
+                routeWhileDragging: false,
+                lineOptions: { styles: [{ color: 'green', weight: 4 }] },
+                createMarker: function () { return null; },
+                show: false,
+                addWaypoints: false,
+                draggableWaypoints: false
+            }).addTo(map);
+            // Fit bounds when route is found
+            routingControl.on('routesfound', function (e) {
+                const routes = e.routes;
+                if (routes.length > 0) {
+                    map.fitBounds(routes[0].coordinates);
                 }
-
-                const startPoint = [10.538274, 122.835230]; // Bago City Hall
-                const endPoint = [parseFloat(barangay.latitude), parseFloat(barangay.longitude)];
-
-                // Remove existing route controls
-                map.eachLayer(layer => {
-                    if (layer instanceof L.Routing.Control) {
-                        map.removeControl(layer);
-                    }
-                });
-
-                // Add routing control
-                const routingControl = L.Routing.control({
-                    waypoints: [
-                        L.latLng(startPoint[0], startPoint[1]),
-                        L.latLng(endPoint[0], endPoint[1])
-                    ],
-                    routeWhileDragging: false,
-                    lineOptions: { styles: [{ color: 'green', weight: 4 }] },
-                    createMarker: function () { return null; },
-                    show: false,
-                    addWaypoints: false,
-                    draggableWaypoints: false
-                }).addTo(map);
-
-                // Fit bounds when route is found
-                routingControl.on('routesfound', function (e) {
-                    const routes = e.routes;
-                    if (routes.length > 0) {
-                        map.fitBounds(routes[0].coordinates);
-                    }
-                });
             });
         });
     });
+});
 
-    document.addEventListener('DOMContentLoaded', () => {
+// Edit route button handler
+document.addEventListener('DOMContentLoaded', () => {
     const editButtons = document.querySelectorAll('.edit-route-btn');
-
     editButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const routeId = btn.getAttribute('data-route-id');
             const currentEnd = btn.getAttribute('data-end-point');
             const currentStart = btn.getAttribute('data-start-point');
-
             document.getElementById('editRouteId').value = routeId;
             document.getElementById('currentStartPoint').value = currentStart;
             document.getElementById('currentEndPoint').value = currentEnd;
             document.getElementById('editEndPoint').value = currentEnd;
-
             const modal = new bootstrap.Modal(document.getElementById('editRouteModal'));
             modal.show();
         });
     });
 });
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
 
-        var win = navigator.platform.indexOf('Win') > -1;
-        if (win && document.querySelector('#sidenav-scrollbar')) {
-            var options = { damping: '0.5' }
-            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-        }
-    </script>
+// Tooltip initialization
+document.addEventListener('DOMContentLoaded', () => {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+        var options = { damping: '0.5' }
+        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+});
+
+// GPS marker update function
+// Show up to 5 recent GPS points as markers
+function updateGpsMarker() {
+    fetch('get_latest_gps.php')
+        .then(res => res.json())
+        .then(data => {
+            // Remove previous GPS marker
+            if (window.gpsMarker && map.hasLayer(window.gpsMarker)) {
+                map.removeLayer(window.gpsMarker);
+            }
+            window.gpsMarker = null;
+            if (!data.gps_points || !Array.isArray(data.gps_points) || data.gps_points.length === 0) return;
+            var point = data.gps_points[0]; // Only the latest
+            if (!point.latitude || !point.longitude) return;
+            const latLng = [point.latitude, point.longitude];
+            // Always update marker
+            let icon = L.icon({
+                iconUrl: '../assets/img/gps_icon.png',
+                iconSize: [30, 30],
+                iconAnchor: [20, 40],
+                popupAnchor: [0, -40]
+            });
+            window.gpsMarker = L.marker(latLng, { icon: icon })
+                .addTo(map)
+                .bindPopup(`📍 GPS Current Location`);
+            // Do NOT auto-open the popup, so user can freely zoom/pan
+
+            // Only run entry/exit logic if GPS position changed
+            if (window.lastGpsLat === latLng[0] && window.lastGpsLng === latLng[1]) {
+                // GPS did not move, skip popups
+                return;
+            }
+            window.lastGpsLat = latLng[0];
+            window.lastGpsLng = latLng[1];
+
+            // Only show one Swal/alert popup for any barangay fence, never both at once
+            let insideAny = false;
+            let currentBrgy = null;
+            Object.keys(barangayPolygons).forEach(function(barangayName) {
+                var polygon = barangayPolygons[barangayName];
+                if (polygon && geojsonLoaded) {
+                    var inside = false;
+                    polygon.eachLayer(function(layer) {
+                        if (layer instanceof L.Polygon) {
+                            // Accurate point-in-polygon check
+                            if (layer.contains && layer.contains(latLng)) {
+                                inside = true;
+                            } else {
+                                // Fallback for older Leaflet: manual point-in-polygon
+                                var polyLatLngs = layer.getLatLngs()[0];
+                                var x = latLng[1], y = latLng[0]; // x: lng, y: lat
+                                var insidePoly = false;
+                                for (var i = 0, j = polyLatLngs.length - 1; i < polyLatLngs.length; j = i++) {
+                                    var xi = polyLatLngs[i].lng, yi = polyLatLngs[i].lat;
+                                    var xj = polyLatLngs[j].lng, yj = polyLatLngs[j].lat;
+                                    var intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi + 0.0000001) + xi);
+                                    if (intersect) insidePoly = !insidePoly;
+                                }
+                                if (insidePoly) inside = true;
+                            }
+                        }
+                    });
+                    if (inside) {
+                        insideAny = true;
+                        currentBrgy = barangayName;
+                        if (!polygon._vehiclePrompted) {
+                            // Only show popup for the first fence entered
+            // Only show entry popup if not already inside
+            if (!polygon._vehiclePrompted) {
+                // Clear _vehiclePrompted for all except current
+                Object.keys(barangayPolygons).forEach(function(name) {
+                    if (barangayPolygons[name] && name !== barangayName) barangayPolygons[name]._vehiclePrompted = false;
+                });
+                polygon._vehiclePrompted = true;
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Vehicle 1 Entered',
+                        text: `The Vehicle 1 has entered in ${barangayName}.`,
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    alert(`The Vehicle 1 has entered in ${barangayName}.`);
+                }
+            }
+                        }
+                    } else {
+                        polygon._vehiclePrompted = false;
+                    }
+                }
+            });
+            // If GPS is not inside any fence, show exit popup for last exited barangay
+            if (!insideAny) {
+                if (window.lastBrgy && barangayPolygons[window.lastBrgy]) {
+                    if (barangayPolygons[window.lastBrgy]._vehiclePrompted) {
+                        barangayPolygons[window.lastBrgy]._vehiclePrompted = false;
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Vehicle 1 Exited',
+                                text: `The Vehicle 1 has exited from ${window.lastBrgy}.`,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            alert(`The Vehicle 1 has exited from ${window.lastBrgy}.`);
+                        }
+                    }
+                }
+                window.lastBrgy = null;
+            } else {
+                window.lastBrgy = currentBrgy;
+            }
+        });
+}
+
+</script>
+</body>
+</html>
