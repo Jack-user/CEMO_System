@@ -1,10 +1,11 @@
 <?php
-// Database connection file
+// Database connection file for online
 // $host = 'localhost'; 
 // $dbname = 'u520834156_DBWasteTracker'; 
 // $username = 'u520834156_userWT2025'; 
 // $password = '^Lx|Aii1'; 
 
+// Database connection file for local
 $host = 'localhost'; 
 $dbname = 'cemo_db'; 
 $username = 'root'; 

@@ -1,5 +1,5 @@
 <?php
-// ✅ Secure connection credentials
+// local
 $host = 'localhost'; 
 $database = 'cemo_db'; 
 $user = 'root'; 

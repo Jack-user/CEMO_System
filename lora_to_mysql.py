@@ -8,9 +8,9 @@ ser = serial.Serial('COM8', 9600)
 # Pattern to extract lat/lng like 10.607216,122.921310
 gps_pattern = re.compile(r'(-?\d+\.\d+),\s*(-?\d+\.\d+)')
 
-# Your correct HTTPS URL
-POST_URL = "http://localhost/phpmyadmin/CEMO_System/final/api/save_gps.php"
-# POST_URL = "https://bagowastetracker.bccbsis.com/api/save_gps.php" 
+# Your correct HTTPS URL local/online
+# POST_URL = "http://localhost/phpmyadmin/CEMO_System/final/api/save_gps.php" #local
+POST_URL = "https://bagowastetracker.bccbsis.com/api/save_gps.php" #online
 while True:
     if ser.in_waiting:
         # Use more robust decoding to skip invalid characters

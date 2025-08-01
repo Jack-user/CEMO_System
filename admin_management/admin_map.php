@@ -32,8 +32,22 @@ include '../includes/header.php';
 
         <div class="container mt-3">
             <h2 class="text-center">Bago City Map</h2>
-            <div class="map-box" style="width: 100%; height: 500px; resize: both;">
+            
+            <div class="map-box" style="width: 100%; height: 500px; resize: both; position: relative;">
                 <div id="map" style="width: 100%; height: 100%; border-radius: 8px; border: 1px solid #ccc;"></div>
+                
+                <!-- Floating Trail Controls -->
+                <div class="floating-trail-controls">
+                    <button type="button" class="btn btn-primary btn-floating" id="viewTrail" title="View Trail">
+                        <i class="fas fa-route"></i>
+                    </button>
+                    <button type="button" class="btn btn-info btn-floating" id="viewHistory" title="View History" onclick="window.open('view_trail_history.php', '_blank')">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button type="button" class="btn btn-warning btn-floating" id="clearTrail" title="Clear Trail">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="mt-4">
@@ -68,6 +82,7 @@ include '../includes/header.php';
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
 
     <!-- Map Styles -->
     <style>
@@ -86,6 +101,75 @@ include '../includes/header.php';
             cursor: nwse-resize;
             z-index: 999;
         }
+        
+        /* Floating Trail Controls */
+        .floating-trail-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn-floating {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .btn-floating:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+        
+        .btn-floating:active {
+            transform: translateY(0);
+        }
+        
+        .btn-floating.btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+        
+        .btn-floating.btn-warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: white;
+        }
+        
+        .btn-floating.btn-success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+        
+        .btn-floating.btn-info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+        
+        .btn-floating.btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        /* Ensure Font Awesome icons are visible */
+        .btn-floating i {
+            font-size: 18px;
+            line-height: 1;
+        }
+        
+        .btn-floating .fas,
+        .btn-floating .fa {
+            display: inline-block !important;
+        }
     </style>
 
 <!-- Main Map and UI Scripts -->
@@ -96,6 +180,8 @@ var allBarangays = [];
 var barangayPolygons = {};
 var geojsonLoaded = false;
 var gpsMarker;
+var gpsTrail = [];
+var trailPolyline = null;
 
 // Initialize map and load data
 window.onload = function () {
@@ -162,7 +248,218 @@ window.onload = function () {
     // Load initial GPS marker and repeat every second
     updateGpsMarker();
     setInterval(updateGpsMarker, 1000);
+    
+    // Add global function to reset technical warning for testing
+    window.resetTechnicalWarning = function() {
+        window.technicalWarningShown = false;
+        console.log('Technical warning flag reset');
+    };
+    
+    // Initialize trail controls
+    initializeTrailControls();
 };
+
+// Trail management functions
+function updateTrailLine() {
+    // Remove existing trail polyline
+    if (window.trailPolyline) {
+        map.removeLayer(window.trailPolyline);
+    }
+    
+            if (gpsTrail.length > 0) {
+            // Add connecting line
+            if (gpsTrail.length > 1) {
+                window.trailPolyline = L.polyline(gpsTrail, {
+                    color: '#ff6b35',
+                    weight: 3,
+                    opacity: 0.8
+                }).addTo(map);
+            }
+        }
+    
+    // Save trail to localStorage
+    saveTrailToStorage();
+}
+
+function clearTrail() {
+    // Save trail to history before clearing
+    if (gpsTrail.length > 0) {
+        saveTrailToHistory();
+    }
+    
+    gpsTrail = [];
+    
+    // Remove trail polyline
+    
+    if (window.trailPolyline) {
+        map.removeLayer(window.trailPolyline);
+        window.trailPolyline = null;
+    }
+    
+    // Clear from localStorage
+    localStorage.removeItem('gpsTrail');
+    localStorage.removeItem('trailVisible');
+    
+    console.log('GPS trail cleared');
+}
+
+function saveTrailToHistory() {
+    const trailName = 'Trail_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const formData = new FormData();
+    formData.append('action', 'save_history');
+    formData.append('trail_data', JSON.stringify(gpsTrail));
+    formData.append('trail_name', trailName);
+
+    fetch('trail_history.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Trail saved to history:', data.message);
+        } else {
+            console.error('Error saving trail to history:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving trail to history:', error);
+    });
+}
+
+function saveTrailToStorage() {
+    try {
+        localStorage.setItem('gpsTrail', JSON.stringify(gpsTrail));
+        localStorage.setItem('trailVisible', JSON.stringify(window.trailVisible));
+    } catch (error) {
+        console.log('Error saving trail to localStorage:', error);
+    }
+}
+
+function loadTrailFromStorage() {
+    try {
+        const savedTrail = localStorage.getItem('gpsTrail');
+        const savedVisibility = localStorage.getItem('trailVisible');
+        
+        if (savedTrail) {
+            gpsTrail = JSON.parse(savedTrail);
+            console.log('Loaded trail from storage:', gpsTrail.length, 'points');
+        }
+        
+        if (savedVisibility) {
+            window.trailVisible = JSON.parse(savedVisibility);
+            console.log('Trail visibility restored:', window.trailVisible);
+        }
+    } catch (error) {
+        console.log('Error loading trail from localStorage:', error);
+        gpsTrail = [];
+        window.trailVisible = false;
+    }
+}
+
+function initializeTrailControls() {
+    // Load trail from localStorage
+    loadTrailFromStorage();
+    
+    // Update button state based on loaded visibility
+    const viewTrailBtn = document.getElementById('viewTrail');
+    if (window.trailVisible) {
+        viewTrailBtn.classList.remove('btn-primary');
+        viewTrailBtn.classList.add('btn-success');
+        viewTrailBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        viewTrailBtn.title = 'Hide Trail';
+        
+        // Show trail if it was visible before
+        if (gpsTrail.length > 0) {
+            updateTrailLine();
+        }
+    }
+    
+    // View trail button
+    document.getElementById('viewTrail').addEventListener('click', function() {
+        if (!window.trailVisible) {
+            // Show trail
+            window.trailVisible = true;
+            this.classList.remove('btn-primary');
+            this.classList.add('btn-success');
+            this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            this.title = 'Hide Trail';
+            
+            // Update trail line if we have points
+            if (gpsTrail.length > 0) {
+                updateTrailLine();
+            }
+            
+            // Show success message
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Trail Visible',
+                    text: 'GPS trail is now visible on the map.',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            }
+        } else {
+            // Hide trail
+            window.trailVisible = false;
+            this.classList.remove('btn-success');
+            this.classList.add('btn-primary');
+            this.innerHTML = '<i class="fas fa-route"></i>';
+            this.title = 'View Trail';
+            
+            // Remove trail polyline
+            if (window.trailPolyline) {
+                map.removeLayer(window.trailPolyline);
+                window.trailPolyline = null;
+            }
+            
+            // Show success message
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Trail Hidden',
+                    text: 'GPS trail is now hidden from the map.',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+    });
+    
+    // Clear trail button
+    document.getElementById('clearTrail').addEventListener('click', function() {
+        // Show confirmation dialog
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Clear Trail',
+                text: 'Are you sure you want to clear the GPS trail? This action cannot be undone.',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, clear it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    clearTrail();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Trail Cleared',
+                        text: 'GPS trail has been cleared from the map.',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        } else {
+            if (confirm('Are you sure you want to clear the GPS trail? This action cannot be undone.')) {
+                clearTrail();
+                alert('GPS trail has been cleared from the map.');
+            }
+        }
+    });
+}
 
 // View route button handler
 document.addEventListener('DOMContentLoaded', () => {
@@ -254,6 +551,57 @@ function updateGpsMarker() {
     fetch('get_latest_gps.php')
         .then(res => res.json())
         .then(data => {
+            // Debug: Log the data to console
+            console.log('GPS Data:', data);
+            console.log('Technical warning:', data.technical_warning);
+            console.log('Latest coords:', data.latest_coords);
+            console.log('Coords count:', data.coords_count);
+            
+            // Check if coordinates haven't changed for 10 seconds (frontend time tracking)
+            if (data.latest_coords) {
+                const currentCoords = data.latest_coords.latitude + ',' + data.latest_coords.longitude;
+                
+                if (!window.lastCoords) {
+                    window.lastCoords = currentCoords;
+                    window.coordsStartTime = Date.now();
+                } else if (window.lastCoords === currentCoords) {
+                    // Same coordinates, check if it's been 1 day (86400 seconds)
+                    const timeDiff = (Date.now() - window.coordsStartTime) / 1000;
+                    console.log('Same coordinates for', timeDiff, 'seconds');
+                    
+                    if (timeDiff > 10 && !window.technicalWarningShown) {
+                        console.log('Technical warning triggered! Same coords for', timeDiff, 'seconds');
+                        window.technicalWarningShown = true;
+                        
+                        // Try to show SweetAlert, fallback to regular alert
+                        try {
+                            if (typeof Swal !== 'undefined' && Swal.fire) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Technical Problem Detected',
+                                    text: 'A possible unpredictable technical problem on Vehicle 1 is determined.',
+                                    confirmButtonColor: '#ff9800',
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                throw new Error('SweetAlert not available');
+                            }
+                        } catch (error) {
+                            console.log('Falling back to regular alert:', error);
+                            alert('A possible unpredictable technical problem on Vehicle 1 is determined.');
+                        }
+                    }
+                } else {
+                    // Coordinates changed, reset tracking
+                    window.lastCoords = currentCoords;
+                    window.coordsStartTime = Date.now();
+                    window.technicalWarningShown = false;
+                    console.log('Coordinates changed, resetting tracking');
+                }
+            }
+            
+            // Backend warning is disabled, only using frontend time-based tracking
+
             // Remove previous GPS marker
             if (window.gpsMarker && map.hasLayer(window.gpsMarker)) {
                 map.removeLayer(window.gpsMarker);
@@ -274,6 +622,19 @@ function updateGpsMarker() {
                 .addTo(map)
                 .bindPopup(`📍 GPS Current Location`);
             // Do NOT auto-open the popup, so user can freely zoom/pan
+            
+            // Add point to GPS trail (always track, visibility controlled by button)
+            gpsTrail.push(latLng);
+            
+            // Keep only last 100 points to prevent memory issues
+            if (gpsTrail.length > 100) {
+                gpsTrail.shift();
+            }
+            
+            // Update trail line on map if trail is visible
+            if (window.trailVisible) {
+                updateTrailLine();
+            }
 
             // Only run entry/exit logic if GPS position changed
             if (window.lastGpsLat === latLng[0] && window.lastGpsLng === latLng[1]) {
@@ -283,9 +644,11 @@ function updateGpsMarker() {
             window.lastGpsLat = latLng[0];
             window.lastGpsLng = latLng[1];
 
-            // Only show one Swal/alert popup for any barangay fence, never both at once
+            // Track current barangay and previous barangay
             let insideAny = false;
             let currentBrgy = null;
+            
+            // Check which barangay the GPS is currently inside
             Object.keys(barangayPolygons).forEach(function(barangayName) {
                 var polygon = barangayPolygons[barangayName];
                 if (polygon && geojsonLoaded) {
@@ -313,38 +676,17 @@ function updateGpsMarker() {
                     if (inside) {
                         insideAny = true;
                         currentBrgy = barangayName;
-                        if (!polygon._vehiclePrompted) {
-                            // Only show popup for the first fence entered
-            // Only show entry popup if not already inside
-            if (!polygon._vehiclePrompted) {
-                // Clear _vehiclePrompted for all except current
-                Object.keys(barangayPolygons).forEach(function(name) {
-                    if (barangayPolygons[name] && name !== barangayName) barangayPolygons[name]._vehiclePrompted = false;
-                });
-                polygon._vehiclePrompted = true;
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Vehicle 1 Entered',
-                        text: `The Vehicle 1 has entered in ${barangayName}.`,
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'OK'
-                    });
-                } else {
-                    alert(`The Vehicle 1 has entered in ${barangayName}.`);
-                }
-            }
-                        }
-                    } else {
-                        polygon._vehiclePrompted = false;
                     }
                 }
             });
-            // If GPS is not inside any fence, show exit popup for last exited barangay
-            if (!insideAny) {
-                if (window.lastBrgy && barangayPolygons[window.lastBrgy]) {
-                    if (barangayPolygons[window.lastBrgy]._vehiclePrompted) {
-                        barangayPolygons[window.lastBrgy]._vehiclePrompted = false;
+
+            // Handle entry/exit logic
+            if (insideAny) {
+                // GPS is inside a barangay
+                if (window.lastBrgy !== currentBrgy) {
+                    // Vehicle moved to a different barangay
+                    if (window.lastBrgy && barangayPolygons[window.lastBrgy]) {
+                        // Show exit popup for previous barangay first
                         if (typeof Swal !== 'undefined') {
                             Swal.fire({
                                 icon: 'info',
@@ -352,15 +694,58 @@ function updateGpsMarker() {
                                 text: `The Vehicle 1 has exited from ${window.lastBrgy}.`,
                                 confirmButtonColor: '#3085d6',
                                 confirmButtonText: 'OK'
+                            }).then(() => {
+                                // Show entry popup for new barangay after exit popup is closed
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'info',
+                                        title: 'Vehicle 1 Entered',
+                                        text: `The Vehicle 1 has entered in ${currentBrgy}.`,
+                                        confirmButtonColor: '#3085d6',
+                                        confirmButtonText: 'OK'
+                                    });
+                                } else {
+                                    alert(`The Vehicle 1 has entered in ${currentBrgy}.`);
+                                }
                             });
                         } else {
                             alert(`The Vehicle 1 has exited from ${window.lastBrgy}.`);
+                            alert(`The Vehicle 1 has entered in ${currentBrgy}.`);
+                        }
+                    } else {
+                        // First time entering any barangay
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Vehicle 1 Entered',
+                                text: `The Vehicle 1 has entered in ${currentBrgy}.`,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            alert(`The Vehicle 1 has entered in ${currentBrgy}.`);
                         }
                     }
+                    window.lastBrgy = currentBrgy;
                 }
-                window.lastBrgy = null;
+                // If GPS is still in the same barangay, do nothing (no repeated prompts)
             } else {
-                window.lastBrgy = currentBrgy;
+                // GPS is not inside any barangay
+                if (window.lastBrgy) {
+                    // Show exit popup when leaving a barangay
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Vehicle 1 Exited',
+                            text: `The Vehicle 1 has exited from ${window.lastBrgy}.`,
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        alert(`The Vehicle 1 has exited from ${window.lastBrgy}.`);
+                    }
+                    window.lastBrgy = null;
+                }
             }
         });
 }
