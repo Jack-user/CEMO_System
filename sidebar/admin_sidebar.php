@@ -57,6 +57,14 @@
                     <span class="nav-link-text ms-1">Client List</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo ($current_page == '../admin_management/admin_requests.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../admin_management/admin_requests.php">
+                <i class="material-symbols-rounded opacity-5">request_page</i>
+                <span class="nav-link-text ms-1">Client Requests</span>
+                </a>
+            </li>
+
+
             <!-- User Role Management -->
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">User Role Management</h6>

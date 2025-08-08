@@ -32,21 +32,60 @@ include '../includes/header.php';
 
         <div class="container mt-3">
             <h2 class="text-center">Bago City Map</h2>
-            
-            <div class="map-box" style="width: 100%; height: 500px; resize: both; position: relative;">
-                <div id="map" style="width: 100%; height: 100%; border-radius: 8px; border: 1px solid #ccc;"></div>
-                
-                <!-- Floating Trail Controls -->
-                <div class="floating-trail-controls">
-                    <button type="button" class="btn btn-primary btn-floating" id="viewTrail" title="View Trail">
-                        <i class="fas fa-route"></i>
-                    </button>
-                    <button type="button" class="btn btn-info btn-floating" id="viewHistory" title="View History" onclick="window.open('view_trail_history.php', '_blank')">
-                        <i class="fas fa-history"></i>
-                    </button>
-                    <button type="button" class="btn btn-warning btn-floating" id="clearTrail" title="Clear Trail">
-                        <i class="fas fa-eraser"></i>
-                    </button>
+
+            <div class="d-flex flex-wrap gap-3 align-items-stretch">
+                <div class="map-box" style="flex: 1 1 60%; height: 500px; resize: both; position: relative; min-width: 320px;">
+                    <div id="map" style="width: 100%; height: 100%; border-radius: 8px; border: 1px solid #ccc;"></div>
+                    <!-- Floating Trail Controls -->
+                    <div class="floating-trail-controls">
+                        <button type="button" class="btn btn-primary btn-floating" id="viewTrail" title="View Trail">
+                            <i class="fas fa-route"></i>
+                        </button>
+                        <button type="button" class="btn btn-info btn-floating" id="viewHistory" title="View History" onclick="window.open('view_trail_history.php', '_blank')">
+                            <i class="fas fa-history"></i>
+                        </button>
+                        <button type="button" class="btn btn-warning btn-floating" id="clearTrail" title="Clear Trail">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vehicle Info Panel -->
+                <div class="card vehicle-panel" style="flex: 1 1 38%; min-width: 300px;">
+                    <div class="card-header pb-0">
+                        <h6 class="mb-0">Vehicle Status</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <div class="text-sm text-secondary">Vehicle</div>
+                                <div id="vehicleName" class="text-dark fw-bold">—</div>
+                                <div class="text-xs text-secondary">Driver: <span id="driverName">—</span></div>
+                            </div>
+                            <span id="vehicleStatus" class="badge bg-secondary">—</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="text-sm text-secondary mb-1">Current Location</div>
+                            <div id="vehicleLocation" class="text-dark">—</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="text-sm text-secondary mb-1">Route</div>
+                            <div id="vehicleRoute" class="text-dark">—</div>
+                        </div>
+
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="text-sm text-secondary">Capacity</div>
+                                <div class="text-sm"><span id="vehicleCapacityPercent">0</span>%</div>
+                            </div>
+                            <div class="vehicle-figure position-relative">
+                                <div class="water-fill" id="waterFill"></div>
+                                <div class="vehicle-icon"><i class="fas fa-truck" aria-hidden="true"></i></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -169,6 +208,34 @@ include '../includes/header.php';
         .btn-floating .fas,
         .btn-floating .fa {
             display: inline-block !important;
+        }
+    </style>
+    <style>
+        /* Vehicle panel water fill */
+        .vehicle-panel .vehicle-figure {
+            height: 160px;
+            border-radius: 12px;
+            background: #f8fafc;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .vehicle-panel .water-fill {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 0%;
+            background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 100%);
+            transition: height 0.6s ease;
+        }
+        .vehicle-panel .vehicle-icon {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0d47a1;
+            font-size: 64px;
+            opacity: 0.9;
+            pointer-events: none;
         }
     </style>
 
@@ -461,6 +528,48 @@ function initializeTrailControls() {
     });
 }
 
+// Vehicle info panel
+function initVehiclePanel() {
+    if (window.vehicleInfoInterval) return;
+    loadVehicleInfo();
+    window.vehicleInfoInterval = setInterval(loadVehicleInfo, 5000);
+}
+
+function loadVehicleInfo() {
+    fetch('../api/get_vehicle_info.php')
+        .then(r => r.json())
+        .then(d => {
+            if (!d || !d.success) return;
+            const nameEl = document.getElementById('vehicleName');
+            const driverEl = document.getElementById('driverName');
+            const statusEl = document.getElementById('vehicleStatus');
+            const locEl = document.getElementById('vehicleLocation');
+            const routeEl = document.getElementById('vehicleRoute');
+            const capEl = document.getElementById('vehicleCapacityPercent');
+            const waterEl = document.getElementById('waterFill');
+
+            if (nameEl) nameEl.textContent = d.vehicle_name || 'Vehicle';
+            if (driverEl) driverEl.textContent = d.driver_name || 'N/A';
+            if (locEl) locEl.textContent = d.current_location || 'Unknown';
+            if (routeEl) routeEl.textContent = (d.start_point ? d.start_point : '—') + (d.end_point ? ' → ' + d.end_point : '');
+            if (capEl) capEl.textContent = parseInt(d.capacity_percent || 0, 10);
+            if (waterEl) waterEl.style.height = (d.capacity_percent || 0) + '%';
+
+            if (statusEl) {
+                statusEl.textContent = d.status || 'On going';
+                statusEl.classList.remove('bg-secondary', 'bg-warning', 'bg-success');
+                const s = (d.status || '').toLowerCase();
+                if (s === 'collecting') statusEl.classList.add('bg-warning');
+                else if (s === 'collected') statusEl.classList.add('bg-success');
+                else statusEl.classList.add('bg-secondary');
+            }
+        })
+        .catch(() => {});
+}
+
+document.addEventListener('DOMContentLoaded', initVehiclePanel);
+window.addEventListener('load', initVehiclePanel);
+
 // View route button handler
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('.view-route');
@@ -569,7 +678,7 @@ function updateGpsMarker() {
                     const timeDiff = (Date.now() - window.coordsStartTime) / 1000;
                     console.log('Same coordinates for', timeDiff, 'seconds');
                     
-                    if (timeDiff > 10 && !window.technicalWarningShown) {
+                    if (timeDiff > 86400 && !window.technicalWarningShown) {
                         console.log('Technical warning triggered! Same coords for', timeDiff, 'seconds');
                         window.technicalWarningShown = true;
                         

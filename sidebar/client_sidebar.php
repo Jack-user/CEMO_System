@@ -27,9 +27,15 @@
                 <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Event pages</h6>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == 'client_event_view.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../client_management/client_event_view.php">
+                <a class="nav-link <?php echo ($current_page == 'client_request.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../client_management/client_request.php">
                     <i class="material-symbols-rounded opacity-5">event</i>
-                    <span class="nav-link-text ms-1">Event</span>
+                    <span class="nav-link-text ms-1">Request Event</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo ($current_page == 'client_notifications.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../client_management/client_notifications.php">
+                    <i class="material-symbols-rounded opacity-5">notifications</i>
+                    <span class="nav-link-text ms-1">Notifications</span>
                 </a>
             </li>
 
@@ -49,7 +55,7 @@
                     <i class="material-symbols-rounded opacity-5">login</i>
                     <span class="nav-link-text ms-1">Sign In</span>
                 </a>
-            </li> -->
+            </li> -->   
             <li class="nav-item">
               <a class="nav-link text-light" href="javascript:void(0);" onclick="showLogoutToast();">
                 <i class="material-symbols-rounded opacity-5">logout</i>

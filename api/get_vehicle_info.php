@@ -1,0 +1,130 @@
+<?php
+header('Content-Type: application/json');
+
+require_once __DIR__ . '/../includes/conn.php';
+
+function haversineDistanceKm(float $lat1, float $lon1, float $lat2, float $lon2): float {
+    $earthRadius = 6371; // km
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lon2 - $lon1);
+    $a = sin($dLat / 2) * sin($dLat / 2) +
+         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+         sin($dLon / 2) * sin($dLon / 2);
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+    return $earthRadius * $c;
+}
+
+try {
+    // 1) Get the active vehicle, route and driver (assume first configured for now)
+    $sql = "SELECT w.waste_service_id, w.vehicle_name, w.vehicle_capacity, w.plate_no,
+                    d.first_name, d.last_name,
+                    r.start_point, r.end_point
+            FROM waste_service_table w
+            LEFT JOIN driver_table d ON d.driver_id = w.driver_id
+            LEFT JOIN route_table r ON r.route_id = w.route_id
+            ORDER BY w.waste_service_id ASC
+            LIMIT 1";
+    $stmt = $pdo->query($sql);
+    $vehicle = $stmt->fetch();
+
+    if (!$vehicle) {
+        echo json_encode(['success' => false, 'error' => 'No vehicle configured']);
+        exit;
+    }
+
+    $vehicleName = $vehicle['vehicle_name'] ?? 'Vehicle';
+    $driverName = trim(($vehicle['first_name'] ?? '') . ' ' . ($vehicle['last_name'] ?? ''));
+    $startPointName = $vehicle['start_point'] ?? 'Bago City Hall';
+    $endPointName = $vehicle['end_point'] ?? '';
+
+    // 2) Latest GPS
+    $gpsStmt = $pdo->query("SELECT latitude, longitude FROM gps_location ORDER BY timestamp DESC, location_id DESC LIMIT 1");
+    $gps = $gpsStmt->fetch();
+    $currentLat = isset($gps['latitude']) ? (float)$gps['latitude'] : null;
+    $currentLng = isset($gps['longitude']) ? (float)$gps['longitude'] : null;
+
+    // Default current location text
+    $currentLocation = 'Unknown';
+
+    // 3) Resolve coordinates for start and end
+    // Bago City Hall default
+    $startLat = 10.538274; $startLng = 122.835230;
+
+    if (strtolower($startPointName) !== 'bago city hall') {
+        $sp = $pdo->prepare("SELECT latitude, longitude FROM barangays_table WHERE barangay = ? LIMIT 1");
+        $sp->execute([$startPointName]);
+        if ($row = $sp->fetch()) {
+            $startLat = (float)$row['latitude'];
+            $startLng = (float)$row['longitude'];
+        }
+    }
+
+    $endLat = null; $endLng = null;
+    if (!empty($endPointName)) {
+        $ep = $pdo->prepare("SELECT latitude, longitude FROM barangays_table WHERE barangay = ? LIMIT 1");
+        $ep->execute([$endPointName]);
+        if ($row = $ep->fetch()) {
+            $endLat = (float)$row['latitude'];
+            $endLng = (float)$row['longitude'];
+        }
+    }
+
+    // 4) Determine nearest barangay to current GPS as the human-readable location
+    $status = 'On going';
+    $nearestBarangay = null;
+    if ($currentLat !== null && $currentLng !== null) {
+        $bStmt = $pdo->query("SELECT barangay, latitude, longitude FROM barangays_table WHERE city = 'Bago City'");
+        $minDist = PHP_FLOAT_MAX;
+        while ($b = $bStmt->fetch()) {
+            $bLat = (float)$b['latitude'];
+            $bLng = (float)$b['longitude'];
+            $dist = haversineDistanceKm($currentLat, $currentLng, $bLat, $bLng);
+            if ($dist < $minDist) {
+                $minDist = $dist;
+                $nearestBarangay = $b['barangay'];
+            }
+        }
+        if ($nearestBarangay) {
+            $currentLocation = $nearestBarangay;
+        } else {
+            $currentLocation = number_format($currentLat, 5) . ", " . number_format($currentLng, 5);
+        }
+    }
+
+    // 5) Derive status
+    if (!empty($endPointName) && $nearestBarangay === $endPointName) {
+        $status = 'Collected';
+    } elseif ($nearestBarangay) {
+        $status = 'Collecting';
+    } else {
+        $status = 'On going';
+    }
+
+    // 6) Compute a progress-based capacity percentage proxy (distance from start toward end)
+    $capacityPercent = 0;
+    if ($currentLat !== null && $currentLng !== null && $endLat !== null && $endLng !== null) {
+        $total = haversineDistanceKm($startLat, $startLng, $endLat, $endLng);
+        $covered = haversineDistanceKm($startLat, $startLng, $currentLat, $currentLng);
+        if ($total > 0) {
+            $capacityPercent = (int) round(min(100, max(0, ($covered / $total) * 100)));
+        }
+    }
+
+    echo json_encode([
+        'success' => true,
+        'vehicle_name' => $vehicleName,
+        'driver_name' => $driverName,
+        'status' => $status,
+        'current_location' => $currentLocation,
+        'capacity_percent' => $capacityPercent,
+        'start_point' => $startPointName,
+        'end_point' => $endPointName,
+        'gps' => [ 'latitude' => $currentLat, 'longitude' => $currentLng ]
+    ]);
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+}
+?>
+
+
