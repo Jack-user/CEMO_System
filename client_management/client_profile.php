@@ -210,14 +210,11 @@ document.getElementById('editProfileForm').addEventListener('submit', function(e
   });
 });
 </script>
-<<<<<<< HEAD
 </body>
 
 </html>
 </html>
-=======
  <?php include '../includes/footer.php'; ?>
 </main>
 </body>
 </html>
->>>>>>> a3f89c4fae7a2e130b8c906ac26a9b7aca7beb42

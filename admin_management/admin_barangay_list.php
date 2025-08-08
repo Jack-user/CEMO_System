@@ -111,7 +111,6 @@ include '../backend/admin_fetch_brgy.php';
         </div>
       </div>
     </div>
-<<<<<<< HEAD
           <!-- Leaflet Map Modal-->
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -126,8 +125,6 @@ include '../backend/admin_fetch_brgy.php';
             </div>
           </div>
         </div>
-=======
->>>>>>> a3f89c4fae7a2e130b8c906ac26a9b7aca7beb42
 
     <?php include '../modals/admin_brgy_map_modal.php'; ?>
     <?php include '../includes/footer.php'; ?>
@@ -136,7 +133,6 @@ include '../backend/admin_fetch_brgy.php';
 
   <script src="../assets/js/core/popper.min.js"></script>
   <script src="../assets/js/core/bootstrap.min.js"></script>
-<<<<<<< HEAD
       <!-- Leaflet Map JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -144,13 +140,11 @@ include '../backend/admin_fetch_brgy.php';
     <!-- Leaflet Routing Machine CSS & JS --> 
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-=======
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
   <script src="../assets/js/map-handler.js"></script>
 </body>
 </html>
->>>>>>> a3f89c4fae7a2e130b8c906ac26a9b7aca7beb42
 
     
   <script>

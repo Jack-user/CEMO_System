@@ -1,47 +1,20 @@
 <?php
 session_start();
-include '../includes/conn.php';
 // Check if the user is logged in as an admin
 if (!isset($_SESSION['admin_id'])) { // Change to your session variable
     header("Location: ../login_page/sign-in.php");
     exit();
 }
-
 $page_title = "Dashboard";
 include '../includes/header.php'; // Includes the head section and styles
-
-// Query to count users in admin_table
-$query = "SELECT COUNT(*) AS total_admins FROM admin_table";
-$result = mysqli_query($conn, $query);
-
-$totalAdmins = 0;
-if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
-    $totalAdmins = $row['total_admins'];
-}
-// Query to count users in client_table
-
-$queryClient = "SELECT COUNT(*) AS total_clients FROM client_table";
-$resultClient = mysqli_query($conn, $queryClient);
-
-$totalClients = 0;
-if ($resultClient && mysqli_num_rows($resultClient) > 0) {
-    $rowClient = mysqli_fetch_assoc($resultClient);
-    $totalClients = $rowClient['total_clients'];
-}
 ?>
 <body>
     <!-- Include the Sidebar -->
-    <?php 
-    if (isset($_SESSION['admin_id'])) {
-    include '../sidebar/admin_sidebar.php';
-} elseif (isset($_SESSION['client_id'])) {
-    include '../sidebar/client_sidebar.php';
-}
- ?>
+    <?php include '../sidebar/admin_sidebar.php'; ?>
+
+    <!-- Main Content -->
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
         <!-- Main Content -->
-    <!-- Main Content -->
     <div class="main-content">
         <?php include '../includes/navbar.php'; ?>
         <div class="container-fluid">
@@ -133,7 +106,7 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
                 <div class="col-lg-4 col-md-6 mt-4 mb-4">
                     <div class="card">
                         <div class="card-body">
-                            <h6 class="mb-0">Brgy Waste Volume</h6>
+                            <h6 class="mb-0">Brgy Waste Volume</h6> 
                             <p class="text-sm">Monthly Waste Volume Prediction for Each Barangay</p>
                             <div class="pe-2">
                                 <div class="chart">
@@ -166,56 +139,15 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
                         </div>
                     </div>
                 </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Admin/Staff Users</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $totalAdmins; ?></div>
-                                <div class="mt-1 text-sm">
-                                    <span class="text-success font-weight-bold">+3%</span> than last month
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="material-symbols-rounded opacity-10">person</i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Client Users</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $totalClients; ?></div>
-                                <div class="mt-1 text-sm">
-                                    <span class="text-success font-weight-bold">+5%</span> than last month
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="material-symbols-rounded opacity-10">person</i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
-</div>
- 
+
     <!-- Include the Footer -->
-<?php include '../includes/footer.php'; ?>
+    <?php include '../includes/footer.php'; ?>
 </main>
 <!-- Chart Scripts -->
 <script src="../assets/js/plugins/chartjs.min.js"></script>
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
-  
 <script>
     // Chart 1 (Bar Chart - Waste Collections)
     var ctx = document.getElementById("chart-bars").getContext("2d");

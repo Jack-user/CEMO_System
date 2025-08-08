@@ -13,7 +13,13 @@ include '../includes/header.php'; // Includes the head section and styles
 ?>
 <body class="g-sidenav-show bg-gray-200">
     <!-- Sidebar -->
-    <?php include '../sidebar/client_sidebar.php'; ?>
+    <?php 
+    if (isset($_SESSION['client_id'])) {
+    include '../sidebar/client_sidebar.php';
+} elseif (isset($_SESSION['admin_id'])) {
+    include '../sidebar/admin_sidebar.php';
+}
+ ?>
 
     <!-- Main Content Wrapper -->
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
@@ -56,7 +62,9 @@ include '../includes/header.php'; // Includes the head section and styles
             <!-- Add spacing between map and table -->
             <div class="mt-4">
                 <h4 class="text-center mb-3">Vehicle Routes</h4>
-                <table class="table align-items-center table-flush">
+                <div style="overflow-x: auto; width: 100%;">
+                    <table class="table align-items-center table-flush" style="min-width: 800px;">
+
                     <thead class="thead-light">
                         <tr>
                             <th class="text-center text-uppercase text-xs font-weight-bolder">Vehicle List</th>
@@ -157,6 +165,7 @@ else:
 </tbody>
 
                 </table>
+               </div>
             </div>
         </div>
 

@@ -28,6 +28,7 @@ $page_title = isset($page_title) ? $page_title : "Material Dashboard 3 by Creati
 
     <!-- CSS Files -->
     <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
 
     <!-- Leaflet Map JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />

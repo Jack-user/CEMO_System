@@ -138,7 +138,7 @@
  <section class="features">
   <h3>Features</h3>
   <div class="feature-cards">
-    <div class="card">Feature 1</div>
+    <div class="card">Feature 4</div>
     <div class="card">Feature 2</div>
     <div class="card">Feature 3</div>
   </div>
