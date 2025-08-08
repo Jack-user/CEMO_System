@@ -100,14 +100,28 @@ try {
         $status = 'On going';
     }
 
-    // 6) Compute a progress-based capacity percentage proxy (distance from start toward end)
-    $capacityPercent = 0;
-    if ($currentLat !== null && $currentLng !== null && $endLat !== null && $endLng !== null) {
-        $total = haversineDistanceKm($startLat, $startLng, $endLat, $endLng);
-        $covered = haversineDistanceKm($startLat, $startLng, $currentLat, $currentLng);
-        if ($total > 0) {
-            $capacityPercent = (int) round(min(100, max(0, ($covered / $total) * 100)));
-        }
+    // 6) Get sensor data for capacity calculation
+    $maxCapacity = 100; // Set maximum capacity for testing
+    $currentCount = 0;
+    $capacityPercent = 0; // Default to 0 if no sensor data
+    
+    // Get the latest sensor count
+    $sensorStmt = $pdo->query("SELECT count FROM sensor ORDER BY timestamp DESC, sensor_id DESC LIMIT 1");
+    $sensorData = $sensorStmt->fetch();
+    
+    if ($sensorData) {
+        $currentCount = (int)$sensorData['count'];
+        // Calculate capacity percentage based on sensor count
+        $capacityPercent = (int) round(min(100, max(0, ($currentCount / $maxCapacity) * 100)));
+    }
+    // If no sensor data, capacity remains 0%
+
+    // Determine capacity status
+    $capacityStatus = 'normal';
+    if ($capacityPercent >= 100) {
+        $capacityStatus = 'full';
+    } elseif ($capacityPercent >= 80) {
+        $capacityStatus = 'warning';
     }
 
     echo json_encode([
@@ -117,6 +131,9 @@ try {
         'status' => $status,
         'current_location' => $currentLocation,
         'capacity_percent' => $capacityPercent,
+        'capacity_count' => $currentCount,
+        'capacity_max' => $maxCapacity,
+        'capacity_status' => $capacityStatus,
         'start_point' => $startPointName,
         'end_point' => $endPointName,
         'gps' => [ 'latitude' => $currentLat, 'longitude' => $currentLng ]

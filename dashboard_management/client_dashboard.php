@@ -322,6 +322,15 @@ include '../includes/conn.php';
         background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 100%);
         transition: height 0.6s ease;
     }
+    .vehicle-panel .water-fill-full {
+        background: linear-gradient(180deg, #28a745 0%, #1e7e34 100%); /* Green */
+    }
+    .vehicle-panel .water-fill-warning {
+        background: linear-gradient(180deg, #ffc107 0%, #e0a800 100%); /* Yellow */
+    }
+    .vehicle-panel .water-fill-normal {
+        background: linear-gradient(180deg, #007bff 0%, #0056b3 100%); /* Blue */
+    }
     .vehicle-panel .vehicle-icon {
         position: absolute;
         inset: 0;
@@ -544,7 +553,19 @@ include '../includes/conn.php';
                     if (locEl) locEl.textContent = d.current_location || 'Unknown';
                     if (routeEl) routeEl.textContent = (d.start_point ? d.start_point : '—') + (d.end_point ? ' → ' + d.end_point : '');
                     if (capEl) capEl.textContent = parseInt(d.capacity_percent || 0, 10);
-                    if (waterEl) waterEl.style.height = (d.capacity_percent || 0) + '%';
+                    if (waterEl) {
+                        waterEl.style.height = (d.capacity_percent || 0) + '%';
+                        
+                        // Update water fill color based on capacity status
+                        waterEl.className = 'water-fill';
+                        if (d.capacity_status === 'full') {
+                            waterEl.classList.add('water-fill-full');
+                        } else if (d.capacity_status === 'warning') {
+                            waterEl.classList.add('water-fill-warning');
+                        } else {
+                            waterEl.classList.add('water-fill-normal');
+                        }
+                    }
 
                     if (statusEl) {
                         statusEl.textContent = d.status || 'On going';

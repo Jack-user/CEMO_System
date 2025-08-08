@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 05, 2025 at 11:35 PM
+-- Generation Time: Aug 08, 2025 at 06:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -29,6 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `admin_notifications` (
   `id` int(11) NOT NULL,
+  `title` varchar(225) NOT NULL,
   `notification_type` varchar(50) NOT NULL,
   `message` text NOT NULL,
   `client_id` int(11) DEFAULT NULL,
@@ -41,13 +42,38 @@ CREATE TABLE `admin_notifications` (
 -- Dumping data for table `admin_notifications`
 --
 
-INSERT INTO `admin_notifications` (`id`, `notification_type`, `message`, `client_id`, `request_id`, `is_read`, `created_at`) VALUES
-(1, 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-07', 9, 'REQ202508056621', 1, '2025-08-05 19:48:53'),
-(2, 'new_request', 'New service request from test test for Garbage Collection on 2025-08-15', 9, 'REQ202508057147', 1, '2025-08-05 20:14:57'),
-(3, 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-09', 9, 'REQ202508051880', 1, '2025-08-05 20:32:21'),
-(4, 'new_request', 'New service request from test test for Street Cleaning on 2025-08-06', 9, 'REQ202508055999', 1, '2025-08-05 20:46:47'),
-(5, 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-06', 9, 'REQ202508054123', 1, '2025-08-05 20:51:23'),
-(6, 'new_request', 'New service request from test test for Garbage Collection on 2025-08-07 at 08:00', 9, 'REQ202508052062', 0, '2025-08-05 21:26:40');
+INSERT INTO `admin_notifications` (`id`, `title`, `notification_type`, `message`, `client_id`, `request_id`, `is_read`, `created_at`) VALUES
+(1, '', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-07', 9, 'REQ202508056621', 1, '2025-08-05 19:48:53'),
+(2, '', 'new_request', 'New service request from test test for Garbage Collection on 2025-08-15', 9, 'REQ202508057147', 1, '2025-08-05 20:14:57'),
+(3, '', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-09', 9, 'REQ202508051880', 1, '2025-08-05 20:32:21'),
+(4, '', 'new_request', 'New service request from test test for Street Cleaning on 2025-08-06', 9, 'REQ202508055999', 1, '2025-08-05 20:46:47'),
+(5, '', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-06', 9, 'REQ202508054123', 1, '2025-08-05 20:51:23'),
+(6, '', 'new_request', 'New service request from test test for Garbage Collection on 2025-08-07 at 08:00', 9, 'REQ202508052062', 0, '2025-08-05 21:26:40'),
+(7, 'New Service Request', 'new_request', 'New service request from test test for Pruning of Trees on 2025-08-07', NULL, NULL, 0, '2025-08-06 11:52:10'),
+(8, 'New Service Request', 'new_request', 'New service request from test test for Drainage Maintenance on 2025-08-22', NULL, NULL, 0, '2025-08-06 11:56:54'),
+(9, 'New Service Request', 'new_request', 'New service request from test test for 1231312 on 2025-08-20', NULL, NULL, 0, '2025-08-06 11:59:20'),
+(10, 'New Service Request', 'new_request', 'New service request from test test for Cutting of Trees on 2025-08-07', NULL, NULL, 0, '2025-08-06 12:07:43'),
+(11, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-08', NULL, NULL, 0, '2025-08-06 12:12:36'),
+(12, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-20', NULL, NULL, 0, '2025-08-06 12:16:41'),
+(13, 'New Service Request', 'new_request', 'New service request from test test for 1231313 on 2025-08-08', NULL, NULL, 0, '2025-08-06 12:37:45'),
+(14, 'New Service Request', 'new_request', 'New service request from test test for Drainage Maintenance on 2025-08-29', NULL, NULL, 0, '2025-08-06 13:02:20'),
+(15, 'New Service Request', 'new_request', 'New service request from test test for Pruning of Trees on 2025-08-20', NULL, NULL, 0, '2025-08-06 15:22:26'),
+(16, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-06', NULL, NULL, 0, '2025-08-06 15:25:19'),
+(17, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-08', NULL, NULL, 0, '2025-08-06 15:27:14'),
+(18, 'New Service Request', 'new_request', 'New service request from test test for Street Cleaning on 2025-08-21', NULL, NULL, 0, '2025-08-06 16:07:10'),
+(19, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-07', NULL, NULL, 0, '2025-08-06 16:08:42'),
+(20, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-07', NULL, NULL, 0, '2025-08-06 16:12:04'),
+(21, 'New Service Request', 'new_request', 'New service request from test test for Cutting of Trees on 2025-08-08', NULL, NULL, 0, '2025-08-06 16:13:35'),
+(22, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-08', NULL, NULL, 0, '2025-08-06 16:15:36'),
+(23, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-22', NULL, NULL, 0, '2025-08-06 16:20:11'),
+(24, 'New Service Request', 'new_request', 'New service request from test test for Street Cleaning on 2025-08-14', NULL, NULL, 0, '2025-08-06 16:25:31'),
+(25, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-08', NULL, NULL, 0, '2025-08-06 16:26:19'),
+(26, 'New Service Request', 'new_request', 'New service request from test test for Garbage Collection on 2025-08-08', NULL, NULL, 0, '2025-08-07 00:39:11'),
+(27, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-20', NULL, NULL, 0, '2025-08-07 00:41:30'),
+(28, 'New Service Request', 'new_request', 'New service request from test test for Drainage Maintenance on 2025-08-20', NULL, NULL, 0, '2025-08-07 00:47:56'),
+(29, 'New Service Request', 'new_request', 'New service request from test test for Garbage Collection on 2025-08-08', NULL, NULL, 0, '2025-08-07 00:53:45'),
+(30, 'New Service Request', 'new_request', 'New service request from test test for Grass-Cutting on 2025-08-18', NULL, NULL, 0, '2025-08-07 01:15:00'),
+(31, 'New Service Request', 'new_request', 'New service request from Gina Aliguin for Pruning of Trees on 2025-08-11', NULL, NULL, 0, '2025-08-08 01:15:02');
 
 -- --------------------------------------------------------
 
@@ -150,9 +176,10 @@ CREATE TABLE `client_notifications` (
 --
 
 INSERT INTO `client_notifications` (`id`, `client_id`, `title`, `notification_type`, `message`, `request_id`, `is_read`, `created_at`) VALUES
-(1, 9, '', 'approved', 'Your request for Grass-Cutting on 2025-08-07 has been approved. Admin notes: done', 'REQ202508056621', 1, '2025-08-06 01:49:38'),
-(2, 9, '', 'approved', 'Your request for Street Cleaning on 2025-08-06 has been approved. Admin notes: 12312', 'REQ202508055999', 1, '2025-08-06 02:57:38'),
-(3, 9, '', 'approved', 'Your request for Grass-Cutting on 2025-08-06 has been approved. Admin notes: test\r\n', 'REQ202508054123', 0, '2025-08-06 02:58:58');
+(1, 9, '', 'Request Approved', 'Your request for Garbage Collection has been approved and scheduled for 2025-08-08.', 'REQ20250806185345', 1, '2025-08-07 00:55:17'),
+(2, 9, '', 'Request Rejected', 'Your request for Grass-Cutting has been rejected. Reason: ', 'REQ20250806191500', 1, '2025-08-07 01:15:12'),
+(3, 11, '', 'Request Approved', 'Your request for Pruning of Trees has been approved and scheduled for 2025-08-11.', 'REQ20250807191502', 1, '2025-08-08 01:15:35'),
+(4, 9, '', 'Request Rejected', 'Your request for Drainage Maintenance has been rejected. Reason: ', 'REQ20250806184756', 0, '2025-08-08 15:54:39');
 
 -- --------------------------------------------------------
 
@@ -187,13 +214,12 @@ CREATE TABLE `client_requests` (
 --
 
 INSERT INTO `client_requests` (`id`, `request_id`, `client_id`, `client_name`, `client_email`, `client_contact`, `client_barangay`, `request_date`, `request_time`, `request_details`, `request_description`, `title`, `status`, `admin_notes`, `submitted_at`, `updated_at`, `request_type`, `preferred_date`, `created_at`) VALUES
-(1, 'REQ202508056621', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-07', '08:00:00', 'Grass-Cutting', 'grass cutter', '', 'approved', 'done', '2025-08-05 19:48:53', '2025-08-06 01:49:38', '', NULL, '2025-08-06 05:33:50'),
-(2, 'REQ202508057147', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-15', '09:00:00', 'Garbage Collection', 'Bday', '', 'rejected', 'asaa', '2025-08-05 20:14:57', '2025-08-06 05:22:14', '', NULL, '2025-08-06 05:33:50'),
-(3, 'REQ202508051880', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-09', '08:00:00', 'Grass-Cutting', 'grass cutter', '', 'rejected', 'fck that', '2025-08-05 20:32:21', '2025-08-06 05:20:44', '', NULL, '2025-08-06 05:33:50'),
-(4, 'REQ202508055999', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-06', '08:00:00', 'Street Cleaning', '', '', 'approved', '12312', '2025-08-05 20:46:47', '2025-08-06 02:57:38', '', NULL, '2025-08-06 05:33:50'),
-(5, 'REQ202508054123', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-06', '09:00:00', 'Grass-Cutting', '', '', 'approved', 'test\r\n', '2025-08-05 20:51:23', '2025-08-06 02:58:58', '', NULL, '2025-08-06 05:33:50'),
-(6, 'REQ202508052062', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-07', '08:00:00', 'Garbage Collection', '', '', 'approved', 'tanginamo', '2025-08-05 21:26:40', '2025-08-06 05:18:42', '', NULL, '2025-08-06 05:33:50'),
-(7, '', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '0000-00-00', '00:00:00', 'Garbage Collection', 'wqwqwq', '', 'pending', NULL, '2025-08-06 05:34:00', '2025-08-06 05:34:00', 'Garbage Collection', '2025-08-13', '2025-08-06 05:34:00');
+(1, 'REQ20250806183911', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-08', '00:00:00', 'Garbage Collection', '2222', '', 'pending', NULL, '2025-08-07 00:39:11', '2025-08-07 00:39:11', 'Garbage Collection', NULL, '2025-08-07 00:39:11'),
+(2, 'REQ20250806184130', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-20', '00:00:00', 'Grass-Cutting', '123133', '', 'pending', NULL, '2025-08-07 00:41:30', '2025-08-07 00:41:30', 'Grass-Cutting', NULL, '2025-08-07 00:41:30'),
+(3, 'REQ20250806184756', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-20', '00:00:00', 'Drainage Maintenance', '11111', '', 'rejected', '', '2025-08-07 00:47:56', '2025-08-08 15:54:39', 'Drainage Maintenance', NULL, '2025-08-07 00:47:56'),
+(4, 'REQ20250806185345', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-08', '00:00:00', 'Garbage Collection', '33333', '', 'approved', '', '2025-08-07 00:53:45', '2025-08-07 00:55:17', 'Garbage Collection', NULL, '2025-08-07 00:53:45'),
+(5, 'REQ20250806191500', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-18', '00:00:00', 'Grass-Cutting', '', '', 'rejected', '', '2025-08-07 01:15:00', '2025-08-07 01:15:12', 'Grass-Cutting', NULL, '2025-08-07 01:15:00'),
+(6, 'REQ20250807191502', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-11', '00:00:00', 'Pruning of Trees', 'balabal', '', 'approved', 'oki', '2025-08-08 01:15:02', '2025-08-08 01:15:35', 'Pruning of Trees', NULL, '2025-08-08 01:15:02');
 
 -- --------------------------------------------------------
 
@@ -217,7 +243,9 @@ CREATE TABLE `client_table` (
 
 INSERT INTO `client_table` (`client_id`, `first_name`, `last_name`, `contact`, `email`, `barangay`, `password`) VALUES
 (2, 'Joshua', 'Elgario', '09123123123', 'jack@gmail.com', 'Alianza', '$2y$10$9ytvFSOUOOLQRrrKBcXs3Occ3FWW.0XBy9mxYhHh8jfYakLeldLfS'),
-(9, 'test', 'test', '09123456784', 'test@gmail.com', 'Pacol', '$2y$10$.g86SZ1A4pYzSIn2bXFH2e45Q1Lnrsxvv95GeBrr51Xb78jHMSYq6');
+(9, 'test', 'test', '09123456784', 'test@gmail.com', 'cb5', '$2y$10$.g86SZ1A4pYzSIn2bXFH2e45Q1Lnrsxvv95GeBrr51Xb78jHMSYq6'),
+(10, 'asda', 'asdasd', '01239913912', 'asdasd@asdasdsa', 'Malingin', '$2y$10$joJ1Ar4Vbp1Dq3.ALfM4rebAB.zk3fJB/C6iJnGCKMK5lAVM3VjxO'),
+(11, 'Gina', 'Aliguin', '09090909090', 'gina@gmail.com', 'cb2/office', '$2y$10$q7Khii9W9ftymY5/dbhVPu3YN7/Pklx7sBwnsNdsDKQ5Y9tdHfcC2');
 
 -- --------------------------------------------------------
 
@@ -274,122 +302,7 @@ CREATE TABLE `gps_location` (
 --
 
 INSERT INTO `gps_location` (`location_id`, `latitude`, `longitude`, `timestamp`) VALUES
-(1, 10.530723, 122.84263, '0000-00-00 00:00:00'),
-(2, 10.530723, 122.84263, '0000-00-00 00:00:00'),
-(3, 10.530713, 122.84261, '0000-00-00 00:00:00'),
-(4, 10.530713, 122.84261, '0000-00-00 00:00:00'),
-(5, 10.530709, 122.84263, '0000-00-00 00:00:00'),
-(6, 10.530709, 122.84263, '0000-00-00 00:00:00'),
-(7, 10.530654, 122.84266, '0000-00-00 00:00:00'),
-(8, 10.530654, 122.84266, '0000-00-00 00:00:00'),
-(9, 10.530627, 122.84268, '0000-00-00 00:00:00'),
-(10, 10.530627, 122.84268, '0000-00-00 00:00:00'),
-(11, 10.530626, 122.8427, '0000-00-00 00:00:00'),
-(12, 10.530626, 122.8427, '0000-00-00 00:00:00'),
-(13, 10.530677, 122.84276, '0000-00-00 00:00:00'),
-(14, 10.530677, 122.84276, '0000-00-00 00:00:00'),
-(15, 10.530662, 122.84277, '0000-00-00 00:00:00'),
-(16, 10.530662, 122.84277, '0000-00-00 00:00:00'),
-(17, 10.530665, 122.8428, '0000-00-00 00:00:00'),
-(18, 10.530665, 122.8428, '0000-00-00 00:00:00'),
-(19, 10.530683, 122.8428, '0000-00-00 00:00:00'),
-(20, 10.530683, 122.8428, '0000-00-00 00:00:00'),
-(21, 10.530688, 122.84281, '0000-00-00 00:00:00'),
-(22, 10.530688, 122.84281, '0000-00-00 00:00:00'),
-(23, 10.530696, 122.84283, '0000-00-00 00:00:00'),
-(24, 10.530696, 122.84283, '0000-00-00 00:00:00'),
-(25, 10.530698, 122.84284, '0000-00-00 00:00:00'),
-(26, 10.530698, 122.84284, '0000-00-00 00:00:00'),
-(27, 10.530657, 122.8428, '0000-00-00 00:00:00'),
-(28, 10.530657, 122.8428, '0000-00-00 00:00:00'),
-(29, 10.530653, 122.84276, '0000-00-00 00:00:00'),
-(30, 10.530653, 122.84276, '0000-00-00 00:00:00'),
-(31, 10.530636, 122.84276, '0000-00-00 00:00:00'),
-(32, 10.530636, 122.84276, '0000-00-00 00:00:00'),
-(33, 10.530622, 122.84274, '0000-00-00 00:00:00'),
-(34, 10.530622, 122.84274, '0000-00-00 00:00:00'),
-(35, 10.530626, 122.84273, '0000-00-00 00:00:00'),
-(36, 10.530626, 122.84273, '0000-00-00 00:00:00'),
-(37, 10.530649, 122.84274, '0000-00-00 00:00:00'),
-(38, 10.530649, 122.84274, '0000-00-00 00:00:00'),
-(39, 10.530629, 122.8427, '0000-00-00 00:00:00'),
-(40, 10.530629, 122.8427, '0000-00-00 00:00:00'),
-(41, 10.530635, 122.84272, '0000-00-00 00:00:00'),
-(42, 10.530635, 122.84272, '0000-00-00 00:00:00'),
-(43, 10.530679, 122.8428, '0000-00-00 00:00:00'),
-(44, 10.530679, 122.8428, '0000-00-00 00:00:00'),
-(45, 10.530664, 122.8428, '0000-00-00 00:00:00'),
-(46, 10.530664, 122.8428, '0000-00-00 00:00:00'),
-(47, 10.530672, 122.84274, '0000-00-00 00:00:00'),
-(48, 10.530672, 122.84274, '0000-00-00 00:00:00'),
-(49, 10.530716, 122.84277, '0000-00-00 00:00:00'),
-(50, 10.530716, 122.84277, '0000-00-00 00:00:00'),
-(51, 10.530764, 122.84278, '0000-00-00 00:00:00'),
-(52, 10.530764, 122.84278, '0000-00-00 00:00:00'),
-(53, 10.530775, 122.84277, '0000-00-00 00:00:00'),
-(54, 10.530775, 122.84277, '0000-00-00 00:00:00'),
-(55, 10.530734, 122.84272, '0000-00-00 00:00:00'),
-(56, 10.530734, 122.84272, '0000-00-00 00:00:00'),
-(57, 10.530702, 122.8427, '0000-00-00 00:00:00'),
-(58, 10.530702, 122.8427, '0000-00-00 00:00:00'),
-(59, 10.530671, 122.84269, '0000-00-00 00:00:00'),
-(60, 10.530671, 122.84269, '0000-00-00 00:00:00'),
-(61, 10.530627, 122.84268, '0000-00-00 00:00:00'),
-(62, 10.530627, 122.84268, '0000-00-00 00:00:00'),
-(63, 10.53062, 122.84267, '0000-00-00 00:00:00'),
-(64, 10.53062, 122.84267, '0000-00-00 00:00:00'),
-(65, 10.530563, 122.84259, '0000-00-00 00:00:00'),
-(66, 10.530563, 122.84259, '0000-00-00 00:00:00'),
-(67, 10.530518, 122.84255, '0000-00-00 00:00:00'),
-(68, 10.530518, 122.84255, '0000-00-00 00:00:00'),
-(69, 10.530563, 122.84261, '0000-00-00 00:00:00'),
-(70, 10.530563, 122.84261, '0000-00-00 00:00:00'),
-(71, 10.53058, 122.84265, '0000-00-00 00:00:00'),
-(72, 10.53058, 122.84265, '0000-00-00 00:00:00'),
-(73, 10.530577, 122.84288, '0000-00-00 00:00:00'),
-(74, 10.530577, 122.84288, '0000-00-00 00:00:00'),
-(75, 10.530595, 122.84299, '0000-00-00 00:00:00'),
-(76, 10.530595, 122.84299, '0000-00-00 00:00:00'),
-(77, 10.530566, 122.8432, '0000-00-00 00:00:00'),
-(78, 10.530566, 122.8432, '0000-00-00 00:00:00'),
-(79, 10.530548, 122.84337, '0000-00-00 00:00:00'),
-(80, 10.530548, 122.84337, '0000-00-00 00:00:00'),
-(81, 10.53054, 122.84341, '0000-00-00 00:00:00'),
-(82, 10.53054, 122.84341, '0000-00-00 00:00:00'),
-(83, 10.530472, 122.84335, '0000-00-00 00:00:00'),
-(84, 10.530472, 122.84335, '0000-00-00 00:00:00'),
-(85, 10.530509, 122.84331, '0000-00-00 00:00:00'),
-(86, 10.530509, 122.84331, '0000-00-00 00:00:00'),
-(87, 10.530584, 122.84325, '0000-00-00 00:00:00'),
-(88, 10.530584, 122.84325, '0000-00-00 00:00:00'),
-(89, 10.530634, 122.84315, '0000-00-00 00:00:00'),
-(90, 10.530634, 122.84315, '0000-00-00 00:00:00'),
-(91, 10.530614, 122.84302, '0000-00-00 00:00:00'),
-(92, 10.530614, 122.84302, '0000-00-00 00:00:00'),
-(93, 10.530636, 122.8429, '0000-00-00 00:00:00'),
-(94, 10.530636, 122.8429, '0000-00-00 00:00:00'),
-(95, 10.530663, 122.84292, '0000-00-00 00:00:00'),
-(96, 10.530663, 122.84292, '0000-00-00 00:00:00'),
-(97, 10.530719, 122.84286, '0000-00-00 00:00:00'),
-(98, 10.530719, 122.84286, '0000-00-00 00:00:00'),
-(99, 10.530739, 122.84279, '0000-00-00 00:00:00'),
-(100, 10.530739, 122.84279, '0000-00-00 00:00:00'),
-(101, 10.53075, 122.84277, '0000-00-00 00:00:00'),
-(102, 10.53075, 122.84277, '0000-00-00 00:00:00'),
-(103, 10.530749, 122.84276, '0000-00-00 00:00:00'),
-(104, 10.530749, 122.84276, '0000-00-00 00:00:00'),
-(105, 10.530751, 122.84277, '0000-00-00 00:00:00'),
-(106, 10.530751, 122.84277, '0000-00-00 00:00:00'),
-(107, 10.530743, 122.8428, '0000-00-00 00:00:00'),
-(108, 10.530743, 122.8428, '0000-00-00 00:00:00'),
-(109, 10.530742, 122.84282, '0000-00-00 00:00:00'),
-(110, 10.530742, 122.84282, '0000-00-00 00:00:00'),
-(111, 10.530735, 122.84283, '0000-00-00 00:00:00'),
-(112, 10.530735, 122.84283, '0000-00-00 00:00:00'),
-(113, 10.530734, 122.84281, '0000-00-00 00:00:00'),
-(114, 10.530734, 122.84281, '0000-00-00 00:00:00'),
-(115, 10.530734, 122.84276, '0000-00-00 00:00:00'),
-(116, 10.530734, 122.84276, '0000-00-00 00:00:00');
+(1, 10.530531, 122.842456, '2025-08-06 20:57:15');
 
 -- --------------------------------------------------------
 
@@ -465,8 +378,9 @@ INSERT INTO `schedule_table` (`schedule_id`, `event_name`, `day`, `time`, `statu
 
 CREATE TABLE `sensor` (
   `sensor_id` int(11) NOT NULL,
+  `count` int(225) NOT NULL,
   `location_id` int(11) NOT NULL,
-  `timestamp` datetime NOT NULL
+  `timestamp` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -730,7 +644,7 @@ ALTER TABLE `waste_service_table`
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `admin_table`
@@ -748,19 +662,19 @@ ALTER TABLE `barangays_table`
 -- AUTO_INCREMENT for table `client_notifications`
 --
 ALTER TABLE `client_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `client_requests`
 --
 ALTER TABLE `client_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `client_table`
 --
 ALTER TABLE `client_table`
-  MODIFY `client_id` int(225) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `client_id` int(225) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `driver_table`
@@ -778,7 +692,7 @@ ALTER TABLE `dumpsite_table`
 -- AUTO_INCREMENT for table `gps_location`
 --
 ALTER TABLE `gps_location`
-  MODIFY `location_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
+  MODIFY `location_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `maintenance_table`
