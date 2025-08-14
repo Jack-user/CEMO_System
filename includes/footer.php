@@ -5,8 +5,8 @@
                 <div class="copyright text-center text-sm text-muted text-lg-start">
                     © <?php echo date('Y'); ?>,
                     made with <i class="fa fa-heart"></i> by
-                    <a href="https://www.facebook.com/bagocitycollegeofficial" class="font-weight-bold" target="_blank">BCC Student</a>
-                    for capstone project.
+                    <a href="https://www.google.com/" class="font-weight-bold" target="_blank">BSIS</a>
+                    for a better web.
                 </div>
             </div>
             <div class="col-lg-6">

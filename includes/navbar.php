@@ -146,4 +146,3 @@ function logoutUser() {
     window.location.href = "../login_page/logout.php";
 }
 </script>
-

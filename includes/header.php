@@ -28,19 +28,6 @@ $page_title = isset($page_title) ? $page_title : "Material Dashboard 3 by Creati
 
     <!-- CSS Files -->
     <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-
-    <!-- Leaflet Map JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <!-- Leaflet Routing Machine CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-
-    <!-- Material Dashboard JS -->
-    <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
-    
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 </head>
+
 <body class="g-sidenav-show bg-gray-100">
