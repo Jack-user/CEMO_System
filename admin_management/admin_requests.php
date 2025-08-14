@@ -13,35 +13,58 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
     $request_id = $_POST['request_id'];
     $action = $_POST['action'];
     $admin_notes = $_POST['admin_notes'] ?? '';
-    
+
     try {
-        if ($action === 'approve') {
-            $status = 'approved';
-            $message = "Request approved successfully!";
-        } else {
-            $status = 'rejected';
-            $message = "Request rejected.";
-        }
-        
-        // Update request status
-        $stmt = $pdo->prepare("
-            UPDATE client_requests 
-            SET status = ?, admin_notes = ?, updated_at = NOW() 
-            WHERE request_id = ?
-        ");
-        $stmt->execute([$status, $admin_notes, $request_id]);
-        
-        // Get request details for notification
+        // Fetch the request details first (needed for insert and notification)
         $stmt = $pdo->prepare("SELECT * FROM client_requests WHERE request_id = ?");
         $stmt->execute([$request_id]);
         $request = $stmt->fetch();
-        
+
+        if (!$request) {
+            throw new Exception("Request not found.");
+        }
+
+        if ($action === 'approve') {
+            $status = 'approved';
+            $message = "Request approved successfully!";
+
+            // Update request status
+            $stmt = $pdo->prepare("
+                UPDATE client_requests 
+                SET status = ?, admin_notes = ?, updated_at = NOW() 
+                WHERE request_id = ?
+            ");
+            $stmt->execute([$status, $admin_notes, $request_id]);
+
+            // Insert into schedule_table as an Event with Scheduled status
+            $insertEvent = $pdo->prepare("
+                INSERT INTO schedule_table (event_name, day, time, status)
+                VALUES (?, ?, ?, 'Scheduled')
+            ");
+            $insertEvent->execute([
+                $request['request_details'],   // event_name
+                $request['request_date'],      // day (YYYY-MM-DD)
+                $request['request_time']       // time (HH:MM[:SS])
+            ]);
+        } else {
+            // Reject logic
+            $status = 'rejected';
+            $message = "Request rejected.";
+
+            $stmt = $pdo->prepare("
+                UPDATE client_requests 
+                SET status = ?, admin_notes = ?, updated_at = NOW() 
+                WHERE request_id = ?
+            ");
+            $stmt->execute([$status, $admin_notes, $request_id]);
+        }
+
         // Create notification for client
         $notification_message = $action === 'approve' 
             ? "Your request for {$request['request_details']} has been approved and scheduled for {$request['request_date']}."
             : "Your request for {$request['request_details']} has been rejected. Reason: {$admin_notes}";
-        
-            $stmt = $pdo->prepare("
+
+        $stmt = $pdo->prepare("
             INSERT INTO client_notifications (
                 client_id,
                 notification_type,
@@ -51,15 +74,14 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
                 created_at
             ) VALUES (?, ?, ?, ?, 0, NOW())
         ");
-        
+
         $stmt->execute([
             $request['client_id'],
             $action === 'approve' ? "Request Approved" : "Request Rejected",
             $notification_message,
             $request_id
         ]);
-        
-        
+
         // Mark admin notification as read
         $stmt = $pdo->prepare("
             UPDATE admin_notifications 
@@ -67,13 +89,13 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
             WHERE request_id = ? AND notification_type = 'request_update'
         ");
         $stmt->execute([$request_id]);
-        
+
         $_SESSION['success_msg'] = $message;
-        
-    } catch (PDOException $e) {
+
+    } catch (Exception $e) {
         $_SESSION['error_msg'] = "Error updating request: " . $e->getMessage();
     }
-    
+
     header("Location: admin_requests.php");
     exit();
 }
@@ -220,7 +242,7 @@ $approved_requests_json = json_encode(array_values($approved_requests));
                                                 <tr>
                                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Client</th>
                                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Request</th>
-                                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Date</th>
+                                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Date & Time</th>
                                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Status</th>
                                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 text-center">Actions</th>
                                                 </tr>
@@ -247,7 +269,7 @@ $approved_requests_json = json_encode(array_values($approved_requests));
                                                     <td>
                                                         <p class="text-xs font-weight-bold mb-0">
                                                             <?= date('M d, Y', strtotime($request['request_date'])) ?> 
-                                                            <span class="text-sm"> @ <?= date('h:i A', strtotime($request['request_time'])) ?></span>
+                                                            <span class="text-sm"> - <?= date('h:i A', strtotime($request['request_time'])) ?></span>
                                                         </p>
                                                         <p class="text-xs text-secondary mb-0"><?= date('M d, Y H:i', strtotime($request['submitted_at'])) ?></p>
                                                     </td>

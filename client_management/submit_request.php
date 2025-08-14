@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $other_request = isset($_POST['other_request']) ? $_POST['other_request'] : '';
         $request_description = $_POST['request_description'];
         $request_date = $_POST['request_date'];
+        $request_time = $_POST['request_time'];
         
         // Determine the actual request details
         $request_details = ($request_type === 'Other') ? $other_request : $request_type;
@@ -39,9 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             request_details, 
             request_description, 
             request_date, 
+            request_time, 
             status, 
             created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
     ");
 
     $stmt->execute([
@@ -54,7 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $request_type,
         $request_details,
         $request_description,
-        $request_date
+        $request_date,
+        $request_time
     ]);
 
         
@@ -62,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $request_id;
         
         // Create notification for admin
-        $notification_message = "New service request from {$client_name} for {$request_details} on {$request_date}";
+        $notification_message = "New service request from {$client_name} for {$request_details} on {$request_date} at {$request_time}";
         
         $stmt = $pdo->prepare("INSERT INTO admin_notifications (
                 title,

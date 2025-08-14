@@ -11,13 +11,41 @@ if (!isset($_SESSION['admin_id'])) {
 // Fetch events from DB
 $calendarEvents = [];
 
+// Add approved client requests with their request_date and request_time, including extendedProps
+$sqlRequests = "SELECT request_id, request_details, request_date, request_time, status 
+                FROM client_requests 
+                WHERE status = 'approved' 
+                ORDER BY request_date, request_time";
+
+$resultRequests = $conn->query($sqlRequests);
+
+if ($resultRequests && $resultRequests->num_rows > 0) {
+    while ($row = $resultRequests->fetch_assoc()) {
+        if (empty($row['request_date']) || empty($row['request_time'])) continue;
+
+        // Normalize time to HH:MM:SS if needed
+        $time = strlen($row['request_time']) === 5 ? $row['request_time'] . ':00' : $row['request_time'];
+        $startDateTime = $row['request_date'] . 'T' . $time;
+
+        $calendarEvents[] = [
+            'id' => 'request_' . $row['request_id'],
+            'title' => '✅ ' . $row['request_details'] . ' - Approved',
+            'start' => $startDateTime,
+            'color' => '#28a745',
+            'extendedProps' => [
+                'request_time' => $row['request_time'] // Pass raw HH:MM for JS
+            ]
+        ];
+    }
+}
+
 // 1. Fetch Events from schedule_table
 $sqlEvent = "SELECT schedule_id, event_name, day, time, status FROM schedule_table ORDER BY day, time";
 $resultEvent = $conn->query($sqlEvent);
 
 if ($resultEvent && $resultEvent->num_rows > 0) {
   while ($row = $resultEvent->fetch_assoc()) {
-    if ($row['status'] === 'Completed') continue; // ✅ Skip completed
+    if ($row['status'] === 'Completed') continue; // Skip completed
     $icon = ($row['status'] === 'Scheduled') ? '🟢' : '✅';
     $time = strlen($row['time']) === 5 ? $row['time'] . ':00' : $row['time'];
     $startDateTime = $row['day'] . 'T' . $time;
@@ -37,21 +65,21 @@ $resultMaint = $conn->query($sqlMaint);
 
 if ($resultMaint && $resultMaint->num_rows > 0) {
   while ($row = $resultMaint->fetch_assoc()) {
-    if ($row['status'] === 'Completed') continue; // ✅ Skip completed
+    if ($row['status'] === 'Completed') continue; // Skip completed
     $icon = ($row['status'] === 'Scheduled') ? '🚛' : '✅';
     $time = strlen($row['m_time']) === 5 ? $row['m_time'] . ':00' : $row['m_time'];
     $startDateTime = $row['m_date'] . 'T' . $time;
 
     $calendarEvents[] = [
-      'id'    => 'maint_' . $row['maintenance_id'],
+      'id' => 'maint_' . $row['maintenance_id'],
       'title' => $icon . ' ' . $row['m_name'] . ' - ' . $row['status'],
       'start' => $startDateTime,
-      'color' => ($row['status'] === 'Scheduled') ? '#b8860b' : '#6c757d',
+      'color' => ($row['status'] === 'Scheduled') ? '#007bff' : '#6c757d', // example colors
     ];
   }
 }
-
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -221,7 +249,6 @@ if ($resultMaint && $resultMaint->num_rows > 0) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script>
-
 document.addEventListener('DOMContentLoaded', function () {
   const calendarEl = document.getElementById('calendar');
   let allEvents = <?php echo json_encode($calendarEvents); ?>;
@@ -272,9 +299,16 @@ document.addEventListener('DOMContentLoaded', function () {
       const event = info.event;
       document.getElementById('edit_schedule_id').value = event.id;
       document.getElementById('edit_event_name').value = event.title.split(' - ')[0].replace(/^🟢|✅/, '').trim();
+
       const iso = event.start.toISOString();
       document.getElementById('edit_day').value = iso.split("T")[0];
-      document.getElementById('edit_time').value = iso.split("T")[1].substring(0, 5);
+
+      // *** UPDATED: Use request_time for client requests ***
+      const timeValue = event.id.startsWith('request_') && event.extendedProps.request_time
+        ? event.extendedProps.request_time.substring(0,5)  // HH:MM only
+        : iso.split("T")[1].substring(0, 5);
+
+      document.getElementById('edit_time').value = timeValue;
       document.getElementById('edit_status').value = event.title.split(' - ')[1];
       var editModal = new bootstrap.Modal(document.getElementById('editScheduleModal'));
       editModal.show();
@@ -304,8 +338,6 @@ document.addEventListener('DOMContentLoaded', function () {
     </li>`;
   }).join('')}
 </ul>`;
-
-
 
   toggleBtn.addEventListener('click', () => {
     const box = document.getElementById('upcomingEventsBox');
@@ -423,6 +455,7 @@ document.getElementById('deleteScheduleBtn').addEventListener('click', function(
     }
   });
 });
+
 // Toggle between Event and Maintenance form
 document.getElementById('schedule_type').addEventListener('change', function () {
   const type = this.value;
@@ -474,7 +507,11 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('edit_event_name').value = event.title.split(' - ')[0].replace(/^🟢|✅/, '').trim();
       const iso = event.start.toISOString();
       document.getElementById('edit_day').value = iso.split("T")[0];
-      document.getElementById('edit_time').value = iso.split("T")[1].substring(0, 5);
+      // *** UPDATED here too ***
+      const timeValue = event.id.startsWith('request_') && event.extendedProps.request_time
+        ? event.extendedProps.request_time.substring(0,5)
+        : iso.split("T")[1].substring(0, 5);
+      document.getElementById('edit_time').value = timeValue;
       document.getElementById('edit_status').value = event.title.split(' - ')[1];
       var editModal = new bootstrap.Modal(document.getElementById('editScheduleModal'));
       editModal.show();
@@ -483,7 +520,12 @@ document.addEventListener('DOMContentLoaded', function () {
       const event = info.event;
       const eventName = event.title.split(' - ')[0].replace(/^🟢|✅/, '').trim();
       const eventDate = event.start.toLocaleDateString();
-      const eventTime = event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // *** UPDATED: show request_time for client requests on hover ***
+      const eventTime = (event.id.startsWith('request_') && event.extendedProps.request_time)
+        ? event.extendedProps.request_time.substring(0, 5)
+        : event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
       const eventStatus = event.title.split(' - ')[1];
       const popover = document.createElement('div');
       popover.className = 'popover bs-popover-top show';
@@ -513,6 +555,7 @@ document.addEventListener('DOMContentLoaded', function () {
   calendar.render();
 });
 </script>
+
 </body>
 </html>
 

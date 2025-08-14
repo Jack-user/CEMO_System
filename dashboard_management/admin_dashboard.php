@@ -29,6 +29,17 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
     $rowClient = mysqli_fetch_assoc($resultClient);
     $totalClients = $rowClient['total_clients'];
 }
+
+// Fetch count from sensor table for sensor_id = 1
+$query = "SELECT count FROM sensor WHERE sensor_id = 1 LIMIT 1";
+$result = $mysqli->query($query);
+
+$tons = 0.0;
+if ($result && $row = $result->fetch_assoc()) {
+    $count = (int)$row['count'];
+    // Convert count to tons; replace 0.01 with your actual conversion factor
+    $tons = $count * 0.001;
+}
 ?>
 <body>
     <!-- Include the Sidebar -->
@@ -47,8 +58,10 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Predicted Waste Today</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">0.22 tons</div>
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Collected Waste Today</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <?php echo number_format($tons, 2); ?> tons
+                                    </div>
                                 </div>
                                 <div class="col-auto">
                                     <i class="material-symbols-rounded opacity-10">delete</i>
@@ -87,7 +100,7 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
+                <div class="col-xl-3 col-md-6 mb-4">
                     <div class="card border-left-danger shadow h-100 py-2">
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
@@ -106,24 +119,135 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
 
             <!-- Charts Section -->
             <div class="row">
-                <div class="col-lg-4 col-md-6 mt-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="mb-0">Waste Collections</h6>
-                            <p class="text-sm">Weekly Waste Collection Records</p>
-                            <div class="pe-2">
-                                <div class="chart">
-                                    <canvas id="chart-bars" class="chart-canvas" height="170"></canvas>
+                <div class="col-lg-10 col-md-12 mt-4 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-0 pb-0 d-flex justify-content-between align-items-center px-4">
+                            <div class="text-center flex-grow-1">
+                                <h5 class="mb-1 fw-semibold text-success">Waste Collected</h5>
+                                <p class="text-muted mb-0">Weekly Waste Collection Performance</p>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center" 
+                                        type="button" 
+                                        id="weekDropdown" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false">
+                                    <span>View Details</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="weekDropdown" style="width: 350px;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <button class="btn btn-sm btn-outline-secondary prev-month"><i class="material-symbols-rounded">chevron_left</i></button>
+                                        <h6 class="mb-0 fw-semibold month-year">October 2023</h6>
+                                        <button class="btn btn-sm btn-outline-secondary next-month"><i class="material-symbols-rounded">chevron_right</i></button>
+                                    </div>
+                                    <div class="week-grid">
+                                        <div class="row row-cols-2 g-2">
+                                            <div class="col">
+                                                <div class="week-card p-3 rounded border">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="mb-1 fw-semibold">Week 1</h6>
+                                                            <p class="text-muted small mb-2">Oct 1-7</p>
+                                                        </div>
+                                                        <span class="badge bg-success">2.4T</span>
+                                                    </div>
+                                                    <div class="progress mt-2" style="height: 6px;">
+                                                        <div class="progress-bar bg-success" style="width: 75%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="week-card p-3 rounded border">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="mb-1 fw-semibold">Week 2</h6>
+                                                            <p class="text-muted small mb-2">Oct 8-14</p>
+                                                        </div>
+                                                        <span class="badge bg-success">2.1T</span>
+                                                    </div>
+                                                    <div class="progress mt-2" style="height: 6px;">
+                                                        <div class="progress-bar bg-success" style="width: 65%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="week-card p-3 rounded border">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="mb-1 fw-semibold">Week 3</h6>
+                                                            <p class="text-muted small mb-2">Oct 15-21</p>
+                                                        </div>
+                                                        <span class="badge bg-success">2.6T</span>
+                                                    </div>
+                                                    <div class="progress mt-2" style="height: 6px;">
+                                                        <div class="progress-bar bg-success" style="width: 85%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="week-card p-3 rounded border active">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="mb-1 fw-semibold">Week 4</h6>
+                                                            <p class="text-muted small mb-2">Oct 22-28</p>
+                                                        </div>
+                                                        <span class="badge bg-white text-success">2.3T</span>
+                                                    </div>
+                                                    <div class="progress mt-2" style="height: 6px;">
+                                                        <div class="progress-bar bg-white" style="width: 72%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0 fw-semibold">Selected Week Details</h6>
+                                            <span class="text-success small">Oct 22-28</span>
+                                        </div>
+                                        <div class="day-stats">
+                                            <div class="row row-cols-7 g-1 text-start mb-2">
+                                                <div class="col"><small class="text-muted">Sun</small></div>
+                                                <div class="col"><small class="text-muted">Mon</small></div>
+                                                <div class="col"><small class="text-muted">Tue</small></div>
+                                                <div class="col"><small class="text-muted">Wed</small></div>
+                                                <div class="col"><small class="text-muted">Thu</small></div>
+                                                <div class="col"><small class="text-muted">Fri</small></div>
+                                                <div class="col"><small class="text-muted">Sat</small></div>
+                                            </div>
+                                            <div class="row row-cols-7 g-1 text-center">
+                                                <div class="col"><div class="py-1 rounded">22</div></div>
+                                                <div class="col"><div class="py-1 rounded bg-light">23 <small class="d-block text-success">0.4T</small></div></div>
+                                                <div class="col"><div class="py-1 rounded bg-light">24 <small class="d-block text-success">0.5T</small></div></div>
+                                                <div class="col"><div class="py-1 rounded bg-light">25 <small class="d-block text-success">0.6T</small></div></div>
+                                                <div class="col"><div class="py-1 rounded bg-light">26 <small class="d-block text-success">0.4T</small></div></div>
+                                                <div class="col"><div class="py-1 rounded bg-light">27 <small class="d-block text-success">0.4T</small></div></div>
+                                                <div class="col"><div class="py-1 rounded">28</div></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <hr class="dark horizontal">
-                            <div class="d-flex">
-                                <i class="material-symbols-rounded text-sm my-auto me-1">schedule</i>
-                                <p class="mb-0 text-sm">Campaign sent 2 days ago</p>
+                        </div>
+                        <div class="card-body pt-3 pb-1">
+                            <div class="chart-container mx-auto" style="position: relative; height:300px; width:100%">
+                                <canvas id="chart-bars" class="chart-canvas"></canvas>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-4">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <i class="material-symbols-rounded text-muted me-1 fs-6">schedule</i>
+                                    <span class="text-muted small">Updated Loading....</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+
+
+            <div class="row">
                 <div class="col-lg-4 col-md-6 mt-4 mb-4">
                     <div class="card">
                         <div class="card-body">
@@ -142,6 +266,7 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
                         </div>
                     </div>
                 </div>
+                <div class="row"> 
                 <div class="col-lg-4 mt-4 mb-3">
                     <div class="card">
                         <div class="card-body">
@@ -160,7 +285,7 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
                         </div>
                     </div>
                 </div>
-            <div class="col-xl-3 col-md-6 mb-4">
+            <!-- <div class="col-xl-3 col-md-6 mb-4">
                 <div class="card border-left-info shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -195,7 +320,7 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>
@@ -209,6 +334,13 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
   <script src="../assets/js/core/bootstrap.min.js"></script>
   <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
   
 <script>
     // Chart 1 (Bar Chart - Waste Collections)
@@ -380,6 +512,90 @@ if ($resultClient && mysqli_num_rows($resultClient) > 0) {
             },
         },
     });
+    document.addEventListener('DOMContentLoaded', function() {
+    // Month navigation functionality
+    const monthYearEl = document.querySelector('.month-year');
+    const prevMonthBtn = document.querySelector('.prev-month');
+    const nextMonthBtn = document.querySelector('.next-month');
+    let currentDate = new Date();
+    
+    function updateMonthDisplay() {
+        monthYearEl.textContent = new Intl.DateTimeFormat('en-US', { 
+            month: 'long', 
+            year: 'numeric' 
+        }).format(currentDate);
+        
+        // Here you would update the weeks for the new month
+        // This is just a placeholder - you'd need to calculate actual weeks
+        const weeks = document.querySelectorAll('.week-item');
+        weeks.forEach((week, index) => {
+            week.textContent = `Week ${index+1} (${getWeekDates(currentDate, index+1)})`;
+        });
+    }
+    
+    function getWeekDates(date, weekNum) {
+        // Simplified example - implement proper week calculation
+        const month = date.getMonth();
+        const year = date.getFullYear();
+        const startDate = 1 + (weekNum-1)*7;
+        let endDate = startDate + 6;
+        
+        // Adjust for month boundaries
+        const daysInMonth = new Date(year, month+1, 0).getDate();
+        if (endDate > daysInMonth) endDate = daysInMonth;
+        
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        
+        return `${monthNames[month]} ${startDate}-${endDate}`;
+    }
+    
+    prevMonthBtn.addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        updateMonthDisplay();
+    });
+    
+    nextMonthBtn.addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        updateMonthDisplay();
+    });
+    
+    // Week selection
+    document.querySelectorAll('.week-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.week-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            // Here you would update the chart for the selected week
+            const weekNum = this.textContent.match(/Week (\d+)/)[1];
+            console.log(`Selected Week ${weekNum}`);
+        });
+    });
+    
+    updateMonthDisplay();
+});
+
 </script>
+<style>
+    .week-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+        background: white;
+    }
+    .week-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .week-card.active {
+        background: #198754;
+        color: white;
+    }
+    .week-card.active .text-muted {
+        color: rgba(255,255,255,0.7) !important;
+    }
+    .day-stats .bg-light {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+    }
+</style>
 </html>
 </body>

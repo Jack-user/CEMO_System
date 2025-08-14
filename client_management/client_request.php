@@ -286,10 +286,10 @@ exit();
 
                                         <!-- Preferred Time Selection -->
                                         <div class="mb-4">
-                                            <label for="preferred_time" class="form-label fw-bold">
+                                            <label for="request_time" class="form-label fw-bold">
                                                 <i class="fas fa-clock me-2"></i>Preferred Time
                                             </label>
-                                            <select class="form-control" id="preferred_time" name="preferred_time" required>
+                                            <select class="form-control" id="request_time" name="request_time" required>
                                                 <option value="" disabled selected>Select a preferred time</option>
                                                 <option value="08:00">8:00 AM</option>
                                                 <option value="09:00">9:00 AM</option>
@@ -523,6 +523,7 @@ exit();
         document.getElementById('requestForm').addEventListener('submit', function(e) {
             const requestType = document.getElementById('request_type').value;
             const preferredDate = document.getElementById('request_date').value;
+            const preferredTime = document.getElementById('request_time').value;
             const otherRequest = document.getElementById('other_request').value;
             
             if (!requestType) {
@@ -542,7 +543,13 @@ exit();
                 alert('Please select a preferred date.');
                 return false;
             }
-            
+
+            if (!preferredTime) {
+                e.preventDefault();
+                alert('Please select a preferred time.');
+                return false;
+            }
+
             if (!availableDates.includes(preferredDate)) {
                 e.preventDefault();
                 alert('Please select an available date.');
