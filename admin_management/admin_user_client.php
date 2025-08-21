@@ -4,7 +4,7 @@ include '../includes/conn.php';
 include '../includes/header.php';
 
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../login_page/sign-in.php");
+    header("Location: ../index.php");
     exit();
 }
 
@@ -34,23 +34,9 @@ if (isset($_GET['delete_id'])) {
     </script>';
     exit();
 }
+$page_title = "Client List Management"; // Set the page title dynamically
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-  <title>Client User List</title>
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
-  <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
-  <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
-  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-  <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
+
 <body class="g-sidenav-show bg-gray-200">
 <?php include '../sidebar/admin_sidebar.php'; ?>
 <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
@@ -134,15 +120,6 @@ while ($row = mysqli_fetch_assoc($result)):
 </main>
 </body>
 </html>
-
-  <!-- Core JS Files -->
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
-  <!-- SweetAlert2 CDN -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     document.querySelectorAll('input[name="email"], input[name="contact"]').forEach(input => {
       input.addEventListener('blur', function () {
@@ -239,17 +216,83 @@ while ($row = mysqli_fetch_assoc($result)):
       });
     });
   </script>
-  <!-- Github Buttons -->
-  <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <!-- Material Dashboard JS -->
-  <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
-
 </body>
 </html>
 
 <!-- Add this style at the end of your file -->
 <style>
-#loader-overlay {
-  backdrop-filter: blur(2px);
-}
+        #loader-overlay {
+          backdrop-filter: blur(2px);
+        }
+        /* Ensure navbar z-index is proper */
+        .navbar-main {
+            z-index: 1030;
+            backdrop-filter: saturate(200%) blur(30px);
+            background-color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        /* Fix dropdown positioning */
+        .dropdown-menu {
+            z-index: 1040;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            margin: 0 0.5rem;
+            transform: translateX(5px);
+        }
+        
+        /* Toast positioning */
+        .toast {
+            min-width: 350px;
+        }
+        
+        /* Mobile sidebar toggle styling */
+        .sidenav-toggler-inner {
+            cursor: pointer;
+        }
+        
+        /* Ensure Font Awesome icons are visible */
+        .fa-solid, .fa-regular {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900;
+        }
+        
+        .fa-regular {
+            font-weight: 400 !important;
+        }
+        
+        /* Fix badge positioning */
+        .nav-item .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            z-index: 1;
+        }
+        
+        /* Breadcrumb styling */
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: #adb5bd;
+        }
+        
+        /* User info styling */
+        .nav-link.dropdown-toggle::after {
+            display: none;
+        }
+        
+        /* Success indicator dot */
+        .bg-success {
+            background-color: #28a745 !important;
+        }
 </style>

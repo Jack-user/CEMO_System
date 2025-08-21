@@ -101,7 +101,7 @@ try {
     }
 
     // 6) Get sensor data for capacity calculation
-    $maxCapacity = 100; // Set maximum capacity for testing
+    $maxCapacity = 1000; // Set maximum capacity for testing
     $currentCount = 0;
     $capacityPercent = 0; // Default to 0 if no sensor data
     
@@ -112,13 +112,13 @@ try {
     if ($sensorData) {
         $currentCount = (int)$sensorData['count'];
         // Calculate capacity percentage based on sensor count
-        $capacityPercent = (int) round(min(100, max(0, ($currentCount / $maxCapacity) * 100)));
+        $capacityPercent = (int) round(min(1000, max(0, ($currentCount / $maxCapacity) * 100)));
     }
     // If no sensor data, capacity remains 0%
 
     // Determine capacity status
     $capacityStatus = 'normal';
-    if ($capacityPercent >= 100) {
+    if ($capacityPercent >= 1000) {
         $capacityStatus = 'full';
     } elseif ($capacityPercent >= 80) {
         $capacityStatus = 'warning';

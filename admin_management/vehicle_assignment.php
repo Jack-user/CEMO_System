@@ -4,7 +4,7 @@ include '../includes/header.php';
 include '../includes/conn.php';
 
 if (!isset($_SESSION['admin_id'])) {
-  header("Location: ../login_page/sign-in.php");
+    header("Location: ../index.php");
   exit();
 }
 
@@ -123,23 +123,9 @@ if (isset($_GET['delete'])) {
     header("Location: vehicle_assignment.php");
     exit();
 }
+ $page_title = "Vehicle List Management"; // Set the page title dynamically
 
 ?>
-
-
-<!DOCTYPE html> 
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Vehicle Assignment & Waste Schedule</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
-  <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
-  <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
-  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
-  <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-</head>
 <body>
 <?php include '../sidebar/admin_sidebar.php'; ?>
 <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
@@ -167,7 +153,7 @@ if (isset($_GET['delete'])) {
   <?php endif; ?>
 
 
-
+            <h1 class="h3 mb-4 text-gray-800"></h1>
   <div class="dropdown d-flex justify-content-end mt-0 mb-0" style="max-width: 120px;">
         <button class="btn btn-success fw-bold shadow-sm dropdown-toggle w-90" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
           📅 View
@@ -342,8 +328,5 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
-
-
-
 </body>
 </html>

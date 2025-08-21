@@ -4,7 +4,7 @@ include '../includes/conn.php';
 include '../includes/header.php';
 
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../login_page/sign-in.php");
+    header("Location: ../index.php");
     exit();
 }
 
@@ -113,60 +113,9 @@ $approved_requests = array_filter($requests, function($r) {
     return $r['status'] === 'approved'; 
 });
 $approved_requests_json = json_encode(array_values($approved_requests));
+
+$page_title = "Request Management"; // Set the page title dynamically
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Admin - Service Requests</title>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
-    <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
-    <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
-    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        .request-card {
-            transition: transform 0.2s;
-        }
-        .request-card:hover {
-            transform: translateY(-2px);
-        }
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-        }
-        .calendar-event {
-            background: #28a745;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            margin: 1px;
-        }
-        .calendar-toggle {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .calendar-toggle:hover {
-            background-color: #f8f9fa;
-        }
-        .calendar-container {
-            transition: all 0.3s ease;
-        }
-        .calendar-hidden {
-            display: none;
-        }
-        .table-container {
-            transition: all 0.3s ease;
-        }
-        .table-expanded {
-            width: 100%;
-        }
-    </style>
-</head>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
@@ -200,6 +149,7 @@ $approved_requests_json = json_encode(array_values($approved_requests));
         
         <div class="container-fluid py-4">
             <div class="row">
+            <h1 class="h3 mb-4 text-gray-800"></h1>
                 <div class="col-12">
                     <div class="card shadow-lg">
                         <div class="card-header p-0 position-relative mt-n4 mx-4 z-index-2">
@@ -383,8 +333,6 @@ $approved_requests_json = json_encode(array_values($approved_requests));
         </div>
     </div>
 </div>
-
-
     <!-- Approval Modal -->
     <!-- <div class="modal fade" id="approvalModal" tabindex="-1">
         <div class="modal-dialog">
@@ -411,10 +359,6 @@ $approved_requests_json = json_encode(array_values($approved_requests));
             </div>
         </div>
     </div> -->
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
     const viewModal = document.getElementById('viewRequestModal');
@@ -572,3 +516,115 @@ $approved_requests_json = json_encode(array_values($approved_requests));
     </script>
 </body>
 </html> 
+
+    <style>
+        .request-card {
+            transition: transform 0.2s;
+        }
+        .request-card:hover {
+            transform: translateY(-2px);
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .calendar-event {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin: 1px;
+        }
+        .calendar-toggle {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .calendar-toggle:hover {
+            background-color: #f8f9fa;
+        }
+        .calendar-container {
+            transition: all 0.3s ease;
+        }
+        .calendar-hidden {
+            display: none;
+        }
+        .table-container {
+            transition: all 0.3s ease;
+        }
+        .table-expanded {
+            width: 100%;
+        }
+        /* Ensure navbar z-index is proper */
+        .navbar-main {
+            z-index: 1030;
+            backdrop-filter: saturate(200%) blur(30px);
+            background-color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        /* Fix dropdown positioning */
+        .dropdown-menu {
+            z-index: 1040;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            margin: 0 0.5rem;
+            transform: translateX(5px);
+        }
+        
+        /* Toast positioning */
+        .toast {
+            min-width: 350px;
+        }
+        
+        /* Mobile sidebar toggle styling */
+        .sidenav-toggler-inner {
+            cursor: pointer;
+        }
+        
+        /* Ensure Font Awesome icons are visible */
+        .fa-solid, .fa-regular {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900;
+        }
+        
+        .fa-regular {
+            font-weight: 400 !important;
+        }
+        
+        /* Fix badge positioning */
+        .nav-item .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            z-index: 1;
+        }
+        
+        /* Breadcrumb styling */
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: #adb5bd;
+        }
+        
+        /* User info styling */
+        .nav-link.dropdown-toggle::after {
+            display: none;
+        }
+        
+        /* Success indicator dot */
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+
+    </style>

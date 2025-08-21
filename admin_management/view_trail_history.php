@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../login_page/sign-in.php");
+    header("Location: ../index.php");
     exit();
 }
 $page_title = "Trail History";
@@ -43,15 +43,6 @@ include '../includes/header.php';
 
         <?php include '../includes/footer.php'; ?>
     </main>
-
-    <!-- Scripts -->
-    <script src="../assets/js/core/popper.min.js"></script>
-    <script src="../assets/js/core/bootstrap.min.js"></script>
-    <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-    <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
-    <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
     <script>
         var historyMap;

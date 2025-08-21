@@ -5,7 +5,7 @@ include '../includes/conn.php';
 
 // Check if client is logged in
 if (!isset($_SESSION['client_id'])) {
-    header("Location: ../login_page/sign-in.php");
+    header("Location: ../index.php");
     exit();
 }
 
@@ -78,102 +78,8 @@ if (isset($_POST['action']) && isset($_POST['request_id'])) {
     header("Location: client_request.php"); // << Add this
 exit();
 }
-
-
-
-
-
-
+$page_title = "Client Request Form";
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Client Request Form</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .calendar-container {
-            background: #f8f9fa;
-            max-height: 400px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-        .calendar-day {
-            width: 40px;
-            height: 40px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin: 2px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .available-day {
-            background: #28a745;
-            color: white;
-        }
-        .unavailable-day {
-            background: #dc3545;
-            color: white;
-        }
-        .selected-day {
-            background: #007bff;
-            color: white;
-            border: 2px solid #0056b3;
-        }
-        .requirements-box {
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-        .form-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .form-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .form-body {
-            padding: 30px;
-        }
-        .client-info {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .client-info h6 {
-            color: #495057;
-            margin-bottom: 15px;
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .info-label {
-            font-weight: 600;
-            color: #6c757d;
-        }
-        .info-value {
-            color: #495057;
-        }
-    </style>
-</head>
-
 <body class="bg-light">
     <!-- Sidebar -->
     <?php include '../sidebar/client_sidebar.php'; ?>
@@ -593,3 +499,154 @@ exit();
 <?php endif; ?>
 </body>
 </html>
+    <style>
+        .calendar-container {
+            background: #f8f9fa;
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .calendar-day {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .available-day {
+            background: #28a745;
+            color: white;
+        }
+        .unavailable-day {
+            background: #dc3545;
+            color: white;
+        }
+        .selected-day {
+            background: #007bff;
+            color: white;
+            border: 2px solid #0056b3;
+        }
+        .requirements-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .form-header {
+            background: linear-gradient(135deg, #66c05eff, #49755cff 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .form-body {
+            padding: 30px;
+        }
+        .client-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .client-info h6 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+        }
+        .info-value {
+            color: #495057;
+        }
+        /* Ensure navbar z-index is proper */
+        .navbar-main {
+            z-index: 1030;
+            backdrop-filter: saturate(200%) blur(30px);
+            background-color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        /* Fix dropdown positioning */
+        .dropdown-menu {
+            z-index: 1040;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            margin: 0 0.5rem;
+            transform: translateX(5px);
+        }
+        
+        /* Toast positioning */
+        .toast {
+            min-width: 350px;
+        }
+        
+        /* Mobile sidebar toggle styling */
+        .sidenav-toggler-inner {
+            cursor: pointer;
+        }
+        
+        /* Ensure Font Awesome icons are visible */
+        .fa-solid, .fa-regular {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900;
+        }
+        
+        .fa-regular {
+            font-weight: 400 !important;
+        }
+        
+        /* Fix badge positioning */
+        .nav-item .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            z-index: 1;
+        }
+        
+        /* Breadcrumb styling */
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: #adb5bd;
+        }
+        
+        /* User info styling */
+        .nav-link.dropdown-toggle::after {
+            display: none;
+        }
+        
+        /* Success indicator dot */
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+
+    </style>

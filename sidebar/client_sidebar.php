@@ -56,12 +56,12 @@
                     <span class="nav-link-text ms-1">Sign In</span>
                 </a>
             </li> -->   
-            <li class="nav-item">
+            <!-- <li class="nav-item">
               <a class="nav-link text-light" href="javascript:void(0);" onclick="showLogoutToast();">
                 <i class="material-symbols-rounded opacity-5">logout</i>
                   <span class="nav-link-text ms-1">Logout</span>
               </a>
-            </li>
+            </li> -->
 
                 <!-- Toast Container (Centered at Top) -->
             <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;">

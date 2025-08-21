@@ -1,19 +1,12 @@
 <?php
 session_start();
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../login_page/sign-in.php");
+    header("Location: ../index.php");
     exit();
 }
 $page_title = "Bago City Map";
 include '../includes/header.php';
 ?>
-
-<body class="g-sidenav-show bg-gray-200">
-    <?php include '../sidebar/admin_sidebar.php'; ?>
-
-    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
-        <?php include '../includes/navbar.php'; ?>
-        <?php include '../includes/conn.php'; ?>
 
         <?php if (isset($_SESSION['msg'])): ?>
             <script>
@@ -30,9 +23,13 @@ include '../includes/header.php';
             <?php unset($_SESSION['msg']); ?>
         <?php endif; ?>
 
+<body class="g-sidenav-show bg-gray-100">
+    <?php include '../sidebar/admin_sidebar.php'; ?>
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+        <?php include '../includes/navbar.php'; ?>
+        <?php include '../includes/conn.php'; ?>
         <div class="container mt-3">
             <h2 class="text-center">Bago City Map</h2>
-
             <div class="d-flex flex-wrap gap-3 align-items-stretch">
                 <div class="map-box" style="flex: 1 1 60%; height: 500px; resize: both; position: relative; min-width: 320px;">
                     <div id="map" style="width: 100%; height: 100%; border-radius: 8px; border: 1px solid #ccc;"></div>
@@ -110,21 +107,80 @@ include '../includes/header.php';
         <?php include '../modals/admin_edit_route_modal.php'; ?>
         <?php include '../includes/footer.php'; ?>
     </main>
-
-    <!-- Scripts -->
-    <script src="../assets/js/core/popper.min.js"></script>
-    <script src="../assets/js/core/bootstrap.min.js"></script>
-    <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-    <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
-    <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
-
-    <!-- Map Styles -->
+    <!-- Navbar Functionality CSS -->
     <style>
+        /* Ensure navbar z-index is proper */
+        .navbar-main {
+            z-index: 1030;
+            backdrop-filter: saturate(200%) blur(30px);
+            background-color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        /* Fix dropdown positioning */
+        .dropdown-menu {
+            z-index: 1040;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            margin: 0 0.5rem;
+            transform: translateX(5px);
+        }
+        
+        /* Toast positioning */
+        .toast {
+            min-width: 350px;
+        }
+        
+        /* Mobile sidebar toggle styling */
+        .sidenav-toggler-inner {
+            cursor: pointer;
+        }
+        
+        /* Ensure Font Awesome icons are visible */
+        .fa-solid, .fa-regular {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900;
+        }
+        
+        .fa-regular {
+            font-weight: 400 !important;
+        }
+        
+        /* Fix badge positioning */
+        .nav-item .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            z-index: 1;
+        }
+        
+        /* Breadcrumb styling */
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: #adb5bd;
+        }
+        
+        /* User info styling */
+        .nav-link.dropdown-toggle::after {
+            display: none;
+        }
+        
+        /* Success indicator dot */
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+        /* <!-- Map and Vehicle Panel Styles --> */
         .map-box {
             overflow: hidden;
             position: relative;
@@ -209,8 +265,7 @@ include '../includes/header.php';
         .btn-floating .fa {
             display: inline-block !important;
         }
-    </style>
-    <style>
+        
         /* Vehicle panel water fill */
         .vehicle-panel .vehicle-figure {
             height: 160px;
@@ -247,8 +302,6 @@ include '../includes/header.php';
             pointer-events: none;
         }
     </style>
-
-<!-- Main Map and UI Scripts -->
 <script>
 // Global variables
 var map;
@@ -676,7 +729,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // GPS marker update function
-// Show up to 5 recent GPS points as markers
 function updateGpsMarker() {
     fetch('get_latest_gps.php')
         .then(res => res.json())
@@ -730,8 +782,6 @@ function updateGpsMarker() {
                 }
             }
             
-            // Backend warning is disabled, only using frontend time-based tracking
-
             // Remove previous GPS marker
             if (window.gpsMarker && map.hasLayer(window.gpsMarker)) {
                 map.removeLayer(window.gpsMarker);
@@ -751,7 +801,6 @@ function updateGpsMarker() {
             window.gpsMarker = L.marker(latLng, { icon: icon })
                 .addTo(map)
                 .bindPopup(`📍 GPS Current Location`);
-            // Do NOT auto-open the popup, so user can freely zoom/pan
             
             // Add point to GPS trail (always track, visibility controlled by button)
             gpsTrail.push(latLng);
@@ -877,9 +926,11 @@ function updateGpsMarker() {
                     window.lastBrgy = null;
                 }
             }
+        })
+        .catch(error => {
+            console.error('Error fetching GPS data:', error);
         });
 }
-
 </script>
 </body>
 </html>

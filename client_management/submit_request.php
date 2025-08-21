@@ -3,7 +3,7 @@ session_start();
 include '../includes/conn.php';
 
 if (!isset($_SESSION['client_id'])) {
-    header("Location: ../login_page/sign-in.php");
+    header("Location: ../index.php");
     exit();
 }
 

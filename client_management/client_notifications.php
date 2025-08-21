@@ -4,7 +4,7 @@ include '../includes/conn.php';
 include '../includes/header.php';
 
 if (!isset($_SESSION['client_id'])) {
-    header("Location: ../login_page/sign-in.php");
+    header("Location: ../index.php");
     exit();
 }
 
@@ -37,44 +37,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$client_id]);
 $requests = $stmt->fetchAll();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Client - Notifications & Requests</title>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
-    <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
-    <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
-    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        .notification-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid #dee2e6;
-        }
-        .notification-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .notification-card.unread {
-            border-left-color: #007bff;
-            background-color: #f8f9fa;
-        }
-        .notification-card.approved {
-            border-left-color: #28a745;
-        }
-        .notification-card.rejected {
-            border-left-color: #dc3545;
-        }
-        .request-status {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-        }
-    </style>
-</head>
 <body class="g-sidenav-show bg-gray-200">
     <?php include '../sidebar/client_sidebar.php'; ?>
     
@@ -82,11 +44,12 @@ $requests = $stmt->fetchAll();
         <?php include '../includes/navbar.php'; ?>
         
         <div class="container-fluid py-4">
+            <h1 class="h3 mb-4 text-gray-800"></h1>
             <div class="row">
                 <div class="col-12">
                     <div class="card shadow-lg">
                         <div class="card-header p-0 position-relative mt-n4 mx-4 z-index-2">
-                            <div style="background: linear-gradient(60deg, #667eea 0%, #764ba2 100%);" class="shadow-dark border-radius-lg pt-4 pb-3">
+                        <div style="background: linear-gradient(60deg, #66c05eff, #49755cff 100%);" class="shadow-dark border-radius-lg pt-4 pb-3">
                                 <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">
                                     <i class="fas fa-bell me-2"></i>Notifications & Requests
                                 </h5>
@@ -227,7 +190,8 @@ $requests = $stmt->fetchAll();
                 </div>
             </div>
         </div>
-    </main>
+    <?php include '../includes/footer.php'; ?>
+</main>
 
     <!-- Notification Modal -->
 <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
@@ -245,9 +209,6 @@ $requests = $stmt->fetchAll();
     </div>
   </div>
 </div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Auto-refresh notifications every 30 seconds
         setInterval(function() {
@@ -284,3 +245,99 @@ $requests = $stmt->fetchAll();
     </script>
 </body>
 </html>
+<style>
+        .notification-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #dee2e6;
+        }
+        .notification-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .notification-card.unread {
+            border-left-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .notification-card.approved {
+            border-left-color: #28a745;
+        }
+        .notification-card.rejected {
+            border-left-color: #dc3545;
+        }
+        .request-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        /* Ensure navbar z-index is proper */
+        .navbar-main {
+            z-index: 1030;
+            backdrop-filter: saturate(200%) blur(30px);
+            background-color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        /* Fix dropdown positioning */
+        .dropdown-menu {
+            z-index: 1040;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            margin: 0 0.5rem;
+            transform: translateX(5px);
+        }
+        
+        /* Toast positioning */
+        .toast {
+            min-width: 350px;
+        }
+        
+        /* Mobile sidebar toggle styling */
+        .sidenav-toggler-inner {
+            cursor: pointer;
+        }
+        
+        /* Ensure Font Awesome icons are visible */
+        .fa-solid, .fa-regular {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900;
+        }
+        
+        .fa-regular {
+            font-weight: 400 !important;
+        }
+        
+        /* Fix badge positioning */
+        .nav-item .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            z-index: 1;
+        }
+        
+        /* Breadcrumb styling */
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: #adb5bd;
+        }
+        
+        /* User info styling */
+        .nav-link.dropdown-toggle::after {
+            display: none;
+        }
+        
+        /* Success indicator dot */
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+
+    </style>

@@ -72,7 +72,7 @@
             <li class="nav-item">
                 <a class="nav-link <?php echo ($current_page == '../admin_management/admin_role_list.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="../admin_management/admin_role_list.php">
                     <i class="material-symbols-rounded opacity-5">article</i>
-                    <span class="nav-link-text ms-1">Role List</span>
+                    <span class="nav-link-text ms-1">Staff List</span>
                 </a>
             </li>
              <!-- Vehicle  Management -->
@@ -90,6 +90,12 @@
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Account pages</h6>
             </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo ($current_page == 'client_profile.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="..//client_management/client_profile.php">
+                    <i class="material-symbols-rounded opacity-5">person</i>
+                    <span class="nav-link-text ms-1">Profile</span>
+                </a>
+            </li>
             <!-- <li class="nav-item">
                 <a class="nav-link <?php echo ($current_page == 'profile.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="profile.php">
                     <i class="material-symbols-rounded opacity-5">person</i>
@@ -103,12 +109,12 @@
                     <span class="nav-link-text ms-1">Sign In</span>
                 </a>
             </li> -->
-            <li class="nav-item">
+            <!-- <li class="nav-item">
     <a class="nav-link text-light" href="javascript:void(0);" onclick="showLogoutToast();">
         <i class="material-symbols-rounded opacity-5">logout</i>
         <span class="nav-link-text ms-1">Logout</span>
     </a>
-</li>
+</li> -->
 
 <!-- Toast Container (Centered at Top) -->
 <div iv class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;">
