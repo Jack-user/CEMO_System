@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Find waste_service_id by vehicle name
   $getVehicle = $conn->prepare("SELECT waste_service_id FROM waste_service_table WHERE vehicle_name = ?");
   $getVehicle->bind_param("s", $vehicle);
-  $getVehicle->execute();
+  $getVehicle->execute();a
   $getVehicle->bind_result($vehicleId);
   $getVehicle->fetch();
   $getVehicle->close();
