@@ -4,7 +4,7 @@ include '../includes/header.php'; // Includes the head section and styles
 
 // Check if the user is logged in
 if (!isset($_SESSION['admin_id'])) {
-    // Redirect to the login page if not logged in
+    // Redirect to the login page if not logged ins
     header("Location: ../login_page/sign-in.php");
     exit();
 }
