@@ -227,41 +227,43 @@
             <div class="modal-body pb-0">
                 <p class="text-center mb-3">Please fill in the form below to create an account.</p>
                 <form action="sign-up-process.php" method="POST" id="signupForm" autocomplete="off">
-                    <!-- First Name -->
-                    <div class="input-group input-group-outline mb-3 position-relative">
-                        <label class="form-label" for="signup-firstname">First Name</label>
-                        <input type="text" class="form-control" id="signup-firstname" name="first_name" required>
+
+                    <!-- First Name (Floating Style) -->
+                    <div class="custom-input-group position-relative mb-3">
+                        <input type="text" class="custom-input" id="signup-firstname" name="first_name" required placeholder="Enter your first name" autocomplete="off">
+                        <label for="signup-firstname" class="custom-label">First Name</label>
                         <span class="input-group-text validation-icon position-absolute" id="firstname-icon" style="top: 50%; right: 10px; transform: translateY(-50%);"></span>
                     </div>
-                    <!-- Last Name -->
-                    <div class="input-group input-group-outline mb-3 position-relative">
-                        <label class="form-label" for="signup-lastname">Last Name</label>
-                        <input type="text" class="form-control" id="signup-lastname" name="last_name" required>
+                    <!-- Last Name (Floating Style) -->
+                    <div class="custom-input-group position-relative mb-3">
+                        <input type="text" class="custom-input" id="signup-lastname" name="last_name" required placeholder="Enter your last name" autocomplete="off">
+                        <label for="signup-lastname" class="custom-label">Last Name</label>
                         <span class="input-group-text validation-icon position-absolute" id="lastname-icon" style="top: 50%; right: 10px; transform: translateY(-50%);"></span>
                     </div>
-                    <!-- Email Address -->
-                    <div class="input-group input-group-outline mb-3 position-relative">
-                        <label class="form-label" for="signup-email">Email Address</label>
-                        <input type="email" class="form-control" id="signup-email" name="email" required>
-                        <span class="input-group-text validation-icon position-absolute" id="email-icon" style="top: 50%; right: 10px; transform: translateY(-50%);"></span>
-                    </div>
-                    <small id="email-error" class="text-danger d-block mt-1 mb-1"></small>
-                    <small id="email-format-hint" class="text-muted d-block mb-2" style="display: none;">Only @gmail.com emails allowed.</small>
 
-                    <!-- Phone Number -->
-                    <div class="input-group input-group-outline mb-3 position-relative">
-                        <label class="form-label" for="signup-contact">Contact Number</label>
-                        <input type="tel" class="form-control" id="signup-contact" name="contact"
-                               maxlength="11" minlength="11" pattern="^\d{11}$" required
-                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
-                        <span class="input-group-text validation-icon position-absolute" style="top: 50%; right: 10px; transform: translateY(-50%);"></span>
+                    <!-- Custom Email Input (Floating Style) -->
+                    <div class="custom-input-group position-relative mb-3">
+                        <input type="email" class="custom-input" id="signup-email" name="email" required placeholder="Enter your email" autocomplete="off">
+                        <label for="signup-email" class="custom-label">Email Address</label>
+                        <span class="input-group-text validation-icon position-absolute" id="email-icon" style="top: 35%; right: 10px; transform: translateY(-50%);"></span>
+                        <small id="email-error" class="text-danger d-block mt-1 mb-1"></small>
+                        <small id="email-format-hint" class="text-muted d-block mb-2" style="display: none;">Only @gmail.com emails allowed.</small>
                     </div>
-                    <small id="contact-error" class="text-danger d-block mt-1 mb-1"></small>
 
-                    <!-- Barangay Dropdown -->
-                    <div class="input-group input-group-outline mb-3">
-                        <label class="form-label" for="signup-barangay"></label>
-                        <select class="form-select form-control" id="signup-barangay" name="barangay" required>
+                    <!-- Phone Number (Floating Style) -->
+                    <div class="custom-input-group position-relative mb-3">
+                        <input type="tel" class="custom-input" id="signup-contact" name="contact"
+                                maxlength="11" minlength="11" pattern="^\d{11}$" required
+                                placeholder="Enter your contact number" autocomplete="off"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
+                        <label for="signup-contact" class="custom-label">Contact Number</label>
+                        <span class="input-group-text validation-icon position-absolute" style="top: 45%; right: 10px; transform: translateY(-50%);"></span>
+                        <small id="contact-error" class="text-danger d-block mt-1 mb-1"></small>
+                    </div>
+
+                    <!-- Barangay Dropdown (Floating Style) -->
+                    <div class="custom-input-group position-relative mb-3">
+                        <select class="custom-input" id="signup-barangay" name="barangay" required>
                             <option value="" disabled selected>Select your barangay</option>
                             <?php
                             require_once '../includes/conn.php';
@@ -275,15 +277,20 @@
                             }
                             ?>
                         </select>
+                        <label for="signup-barangay" class="custom-label">Barangay</label>
                     </div>
 
                     <small id="passwordHelp" class="text-muted mb-2 d-block">Must be at least 8 characters, include a number & symbol.</small>
-                    <!-- Password -->
-                    <div class="input-group input-group-outline mb-3 position-relative">
-                        <label for="signup-password" class="form-label">Password</label>
-                        <input type="password" class="form-control pe-5" id="signup-password" name="password" required>
-                        <span class="input-group-text validation-icon position-absolute" style="top: 50%; right: 45px; transform: translateY(-50%);"></span>
-                        <span class="input-group-text position-absolute toggle-password" style="top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">👁️</span>
+                    <!-- Custom Password Input (Floating Style) -->
+                    <div class="custom-input-group mb-3">
+                        <div class="position-relative">
+                            <input type="password" class="custom-input" id="signup-password" name="password" required placeholder="Enter your password" autocomplete="off" style="padding-right: 45px;">
+                            <label for="signup-password" class="custom-label">Password</label>
+                            <span class="input-group-text validation-icon position-absolute" style="top: 50%; right: 45px; transform: translateY(-50%);"></span>
+                            <button type="button" tabindex="-1" class="password-toggle toggle-password" style="top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer; position: absolute; background: none; border: none;">
+                                <span>👁️</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- ID Upload -->
@@ -324,18 +331,38 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Toggle password visibility
-    document.querySelectorAll(".toggle-password").forEach(toggle => {
-        toggle.addEventListener("click", function () {
-            let passwordInput = this.closest(".input-group").querySelector("input[type='password'], input[type='text']");
+    // Prevent interruption during ID scan
+    let isScanning = false;
+    // Helper to enable/disable all form fields and actions
+    function setFormDisabled(disabled) {
+        // Disable all inputs, selects, buttons except the retake button and file input
+        const elements = form.querySelectorAll('input, select, button, textarea');
+        elements.forEach(el => {
+            // Don't disable the retake button or file input during scan
+            if (el === idUpload || el === retakeBtn) return;
+            el.disabled = disabled;
+        });
+        // Always keep the retake button enabled during scan
+        if (retakeBtn) retakeBtn.disabled = false;
+        // Always keep the file input disabled during scan
+        if (idUpload) idUpload.disabled = disabled;
+    }
+    // Toggle password visibility (supports floating style)
+    document.addEventListener("click", function(e) {
+        if (e.target.closest('.toggle-password')) {
+            const toggleBtn = e.target.closest('.toggle-password');
+            // Find the input in the same .position-relative container
+            const container = toggleBtn.closest('.position-relative');
+            const passwordInput = container.querySelector('input[type="password"], input[type="text"]');
+            if (!passwordInput) return;
             if (passwordInput.type === "password") {
                 passwordInput.type = "text";
-                this.innerHTML = "👁️‍🗨️";
+                toggleBtn.innerHTML = '<span>👁️‍🗨️</span>';
             } else {
                 passwordInput.type = "password";
-                this.innerHTML = "👁️";
+                toggleBtn.innerHTML = '<span>👁️</span>';
             }
-        });
+        }
     });
 
     // Real-Time Form Validation
@@ -492,6 +519,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Retake ID
     retakeBtn.addEventListener('click', function () {
+        if (isScanning) return; // Prevent retake during scan
         idUpload.value = "";
         container.style.display = 'none';
         retakeBtn.style.display = 'none';
@@ -503,6 +531,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     idUpload.addEventListener('change', function () {
+        if (isScanning) return; // Prevent double scan or interruption
         const file = this.files[0];
         const fname = firstNameInput.value.trim().toLowerCase();
         const lname = lastNameInput.value.trim().toLowerCase();
@@ -517,6 +546,8 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+    isScanning = true;
+    setFormDisabled(true); // Disable all fields during scan
         const reader = new FileReader();
         reader.onload = function () {
             const img = new Image();
@@ -536,14 +567,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function runTesseractOCR(file, fname, lname) {
-        Swal.fire({
+    Swal.fire({
             title: 'Verifying ID...',
             html: 'Extracting text from the ID image.<br><b>Please wait.</b>',
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
 
-        Tesseract.recognize(file, 'eng', {
+    Tesseract.recognize(file, 'eng', {
             logger: info => {
                 if (info.status === "recognizing text") {
                     Swal.update({
@@ -551,7 +582,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 }
             }
-        }).then(({ data: { text } }) => {
+    }).then(({ data: { text } }) => {
             const normalize = str => str.toLowerCase().replace(/[^\w\s\-\/]/gi, '').replace(/\s+/g, ' ').trim();
             const cleanText = normalize(text);
 
@@ -636,8 +667,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
 
+            setFormDisabled(false); // Re-enable after scan
+            isScanning = false;
             updateSubmit();
-        }).catch(err => {
+    }).catch(err => {
             console.error('OCR Error:', err);
             Swal.fire({
                 icon: 'error',
@@ -645,6 +678,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 text: 'Could not read the ID. Please try again.',
                 confirmButtonColor: '#dc3545'
             });
+            setFormDisabled(false); // Re-enable after scan error
+            isScanning = false;
             submitButton.disabled = false; // Allow manual fallback
         });
     }

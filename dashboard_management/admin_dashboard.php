@@ -40,6 +40,36 @@ $stmt->execute();
 $result = $stmt->get_result();
 $row = $result->fetch_assoc();
 $tons = ($row['today_count'] ?? 0) * 0.001;
+
+// Monthly sum of sensor detections (waste count)
+$sql = "SELECT SUM(count) AS monthly_count
+        FROM sensor
+        WHERE MONTH(timestamp) = MONTH(CURDATE())
+          AND YEAR(timestamp) = YEAR(CURDATE())";
+
+$result = $conn->query($sql);
+$row = $result->fetch_assoc();
+
+$monthlyCount = $row['monthly_count'] ?? 0; // fallback if null
+
+// Convert count to tons (assuming 1 count = 0.05 tons)
+$conversionFactor =  0.001; 
+$monthlyTons = $monthlyCount * $conversionFactor;
+
+// Calculate progress towards target
+$target = 7000; // Example target in tons
+
+$sql = "SELECT SUM(count) AS collected
+        FROM sensor
+        WHERE MONTH(timestamp) = MONTH(CURDATE())
+          AND YEAR(timestamp) = YEAR(CURDATE())";
+
+$result = $conn->query($sql);
+$row = $result->fetch_assoc();
+
+$collected = $row['collected'] ?? 0;
+$progress = $target > 0 ? round(($collected / $target) * 100, 1) : 0;
+
 ?>
 <body class="g-sidenav-show bg-gray-100">
     <?php include '../sidebar/admin_sidebar.php'; ?>
@@ -64,8 +94,7 @@ $tons = ($row['today_count'] ?? 0) * 0.001;
                         </div>
                     </div>
                 </div>
-                
-                    <div class="col-xl-3 col-md-6 mb-4">
+                    <!-- <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-warning shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
@@ -79,14 +108,18 @@ $tons = ($row['today_count'] ?? 0) * 0.001;
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 <div class="col-xl-3 col-md-6 mb-4">
                     <div class="card border-left-danger shadow h-100 py-2">
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Waste Collection Progress</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">70%</div>
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Waste Collection Progress
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <?php echo $progress . "%"; ?>
+                                    </div>
                                 </div>
                                 <div class="col-auto">
                                     <i class="material-symbols-rounded opacity-10">bar_chart</i>
@@ -95,7 +128,27 @@ $tons = ($row['today_count'] ?? 0) * 0.001;
                         </div>
                     </div>
                 </div>
-            </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Monthly Collected Waste
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <?php echo number_format($monthlyTons, 2) . " tons"; ?>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="material-symbols-rounded opacity-10">calendar_month</i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
 
             <!-- Charts Section -->
             <div class="row">
@@ -149,37 +202,76 @@ $tons = ($row['today_count'] ?? 0) * 0.001;
                                 </div>
                             </div>
                         </div>
-                            <div class="row">
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card border-left-warning shadow h-100 py-2">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Weekly Performance</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="weeklyPerformance">--%</div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="material-symbols-rounded opacity-10">bar_chart</i>
-                                            </div>
+                         <!-- Statistics Cards Row -->
+                    <div class="row">
+                        <!-- Weekly Performance -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Weekly Performance</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="weeklyPerformance">85%</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="material-symbols-rounded opacity-10">bar_chart</i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Waste Collected This Week</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="wasteLastWeek">-- tons</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="material-symbols-rounded opacity-10">recycling</i>
+                        </div>
+                        
+                        <!-- Waste Collected This Week -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Waste Collected This Week</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="wasteLastWeek">12.4 tons</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="material-symbols-rounded opacity-10">recycling</i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                        
+                        <!-- Average Daily Collection -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Average Daily Collection</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="avgDailyCollection">1.8 tons</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="material-symbols-rounded opacity-10">trending_up</i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Collection Efficiency -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-danger shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Collection Efficiency</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="collectionEfficiency">92%</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="material-symbols-rounded opacity-10">speed</i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         </div>
                     </div>
                 </div>
@@ -195,7 +287,7 @@ $tons = ($row['today_count'] ?? 0) * 0.001;
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div class="flex-grow-1">
                                         <h5 class="card-title">Brgy Waste Volume</h5>
-                                        <p class="card-subtitle">Weekly Waste Volume for Barangay</p>
+                                        <p class="card-subtitle">Monthly Waste Volume for Barangay</p>
                                     </div>
                                     <div class="ms-3">
                                         <select id="brgySelect" class="form-select barangay-selector" style="min-width: 180px;"></select>
@@ -333,7 +425,7 @@ async function loadBrgyWasteVolume() {
     progressBar.style.width = `${data.progress}%`;
     progressText.textContent = `${data.progress}%`;
     // Info
-    document.getElementById('brgyWasteInfo').textContent = `Collected: ${data.tons} tons this week.`;
+    document.getElementById('brgyWasteInfo').textContent = `Collected: ${data.tons} tons this month.`;
     document.getElementById('brgyWasteUpdated').textContent = 'Updated just now';
         // Chart (single value for now)
         if (!brgyChart) {

@@ -16,16 +16,22 @@ include '../includes/conn.php'; // Ensure this file contains your database conne
 $query = "SELECT * FROM waste_service_table";
 $result = $conn->query($query);
 // Fetch Waste Collection Daily Schedule
+
 $wasteCollectionSchedules = [];
-$sql2 = "SELECT w.vehicle_name, s.day, s.status 
-          FROM schedule_table s 
-          LEFT JOIN waste_service_table w ON w.waste_service_id = s.waste_service_id 
+$sql2 = "SELECT w.vehicle_name, wc.day, wc.status, wc.time 
+          FROM waste_collection_table wc 
+          LEFT JOIN waste_service_table w ON w.waste_service_id = wc.waste_service_id 
           ORDER BY w.vehicle_name";
 
 $result2 = $conn->query($sql2);
 if ($result2 && $result2->num_rows > 0) {
   while ($row = $result2->fetch_assoc()) {
-    $wasteCollectionSchedules[$row['vehicle_name']][$row['day']] = $row['status'];
+    // Combine status and time for display, e.g., 'Morning (8:00 AM)'
+    $display = $row['status'];
+    if (!empty($row['time'])) {
+      $display .= ' (' . date('g:i A', strtotime($row['time'])) . ')';
+    }
+    $wasteCollectionSchedules[$row['vehicle_name']][$row['day']] = $display;
   }
 }
 // Fetch vehicle list with driver names
@@ -200,53 +206,67 @@ $page_title = "Vehicle List Management"; // Set the page title dynamically
 <div id="WasteListCollection" class="d-none py-3 px-2">
   <div class="row">
     <div class="col-12 mb-2">
-      <div class="card shadow-lg">
+      <div class="card shadow-lg border-0">
         <div class="card-header p-0 position-relative mt-n4 mx-4 z-index-2">
-          <div style="background: linear-gradient(60deg, #66c05eff, #49755cff);" class="shadow-dark border-radius-lg pt-4 pb-3"> 
-            <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">WASTE COLLECTION DAILY SCHEDULE</h5>
+          <div style="background: linear-gradient(60deg, #66c05eff, #49755cff);" 
+               class="shadow-dark border-radius-lg pt-4 pb-3"> 
+            <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">
+              Waste Collection Daily Schedule
+            </h5>
           </div>
         </div>
-        <div class="card-body px-0 pb-2">
-          <div class="table-responsive p-0">
-            <table class="table table-bordered align-items-center mb-0 text-center">
+        <div class="card-body px-3 pb-2">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped align-items-center mb-0 text-center">
               <thead class="bg-light">
                 <tr>
-                  <th>Vehicle</th>
-                  <th>Monday</th>
-                  <th>Tuesday</th>
-                  <th>Wednesday</th>
-                  <th>Thursday</th>
-                  <th>Friday</th>
-                  <th>Saturday</th>
-                  <th>Sunday</th>
-                  <th>Actions</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Vehicle</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Monday</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Tuesday</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Wednesday</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Thursday</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Friday</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Saturday</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Sunday</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <?php foreach ($wasteCollectionSchedules as $vehicle => $days): ?>
                   <tr>
-                    <td><strong><?= htmlspecialchars($vehicle) ?></strong></td>
-                    <?php
-                      $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                      foreach ($weekdays as $day) {
-                        echo '<td>' . (!empty($days[$day]) ? htmlspecialchars($days[$day]) : 'Vacant') . '</td>';
-                      }
-                    ?>
-                    <td class="align-middle text-center">
+                    <td class="fw-bold"><?= htmlspecialchars($vehicle) ?></td>
+                    <?php foreach (['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $day): ?>
+                      <td class="align-middle">
+                        <?php
+                          $status = isset($days[$day]) ? trim($days[$day]) : '';
+                          // Only show if status is not empty or not '-'
+                          $display = isset($days[$day]) ? trim($days[$day]) : '';
+                          // Only show if display is not empty or not '-'
+                          if ($display && $display !== '-') {
+                            echo htmlspecialchars($display);
+                          } else {
+                            echo '<span class="text-muted">-</span>';
+                          }
+                        ?>
+                      </td>
+                    <?php endforeach; ?>
+                    <td class="align-middle">
                       <a href="#" 
-                        class="btn btn-link text-info px-2 py-1 edit-btn" 
+                        class="btn btn-sm btn-outline-info m-0 edit-sched-btn" 
                         data-bs-toggle="modal" 
                         data-bs-target="#editScheduleModal"
-                        data-vehicle="<?= htmlspecialchars($vehicle) ?>" 
-                        data-day="Monday"
-                        data-status="<?= htmlspecialchars($days['Monday'] ?? '') ?>">
-                        <i class="material-symbols-rounded fs-5">edit</i>
+                        data-vehicle="<?= htmlspecialchars($vehicle) ?>"
+                        <?php foreach (['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $d): ?>
+                          data-<?= strtolower($d) ?>="<?= isset($days[$d]) ? htmlspecialchars($days[$d]) : '' ?>"
+                        <?php endforeach; ?>
+                      >
+                        <i class="material-symbols-rounded">edit</i>
                       </a>
-                      <a href="#" 
-                        class="btn btn-link text-danger px-2 py-1 delete-client" 
-                        data-id="<?= htmlspecialchars($vehicle) ?>" 
+                      <a href="delete_schedule.php?vehicle=<?= urlencode($vehicle) ?>" 
+                        class="btn btn-sm btn-outline-danger m-0 delete-sched" 
+                        data-vehicle="<?= htmlspecialchars($vehicle) ?>" 
                         title="Delete">
-                        <i class="material-symbols-rounded fs-5">delete</i>
+                        <i class="material-symbols-rounded">delete</i>
                       </a>
                     </td>
                   </tr>
@@ -312,15 +332,15 @@ $page_title = "Vehicle List Management"; // Set the page title dynamically
       ? '🗑️ Collection List' 
       : '🗑️ Collection List';
   }
-  document.querySelectorAll('.delete-client').forEach(btn => {
+  // Waste Collection Schedule Delete
+  document.querySelectorAll('.delete-sched').forEach(btn => {
     btn.addEventListener('click', function (e) {
       e.preventDefault();
-      const id = this.dataset.id;
+      const vehicle = this.dataset.vehicle;
       const url = this.getAttribute('href');
-
       Swal.fire({
-        title: 'Are you sure?',
-        text: 'This will delete the schedule permanently!',
+        title: `Delete all schedules for "${vehicle}"?`,
+        text: 'This will delete all schedules for this vehicle!',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, delete it!',
@@ -330,6 +350,18 @@ $page_title = "Vehicle List Management"; // Set the page title dynamically
           window.location.href = url;
         }
       });
+    });
+  });
+
+  // Waste Collection Schedule Edit
+  document.querySelectorAll('.edit-sched-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const vehicle = this.dataset.vehicle;
+      document.getElementById('edit_vehicle').value = vehicle;
+      // Optionally, you can prefill day/status if you want to edit a specific day
+      // For now, clear day/status fields
+      document.getElementById('edit_day').selectedIndex = 0;
+      document.getElementById('edit_status').value = '';
     });
   });
   

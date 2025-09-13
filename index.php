@@ -77,7 +77,7 @@
                         <span class="gradient-text">Predictive Analytics</span>
                     </h1>
                     <p class="hero-subtitle">
-                        Revolutionary waste management solutions that protect our planet while creating sustainable value for your business
+                        A next-generation IoT waste vehicle tracking and predictive analytics system designed to enhance efficiency, reduce costs, and promote sustainability
                     </p>
 
                 <div class="hero-buttons">

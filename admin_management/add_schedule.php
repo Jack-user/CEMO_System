@@ -63,22 +63,42 @@ if ($schedule_type === 'Event') {
         exit();
     }
 
-    // Insert into maintenance_table
-    $stmt = $conn->prepare("
-        INSERT INTO maintenance_table (m_name, m_date, m_time, status, waste_service_id) 
-        VALUES (?, ?, ?, ?, ?)
-    ");
-    if ($stmt) {
-        $stmt->bind_param("ssssi", $m_name, $m_date, $m_time, $status, $maintenance_id);
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'message' => 'Maintenance scheduled successfully']);
+    // Check if maintenance already exists for this vehicle
+    $checkStmt = $conn->prepare("SELECT maintenance_id FROM maintenance_table WHERE waste_service_id = ?");
+    $checkStmt->bind_param("i", $maintenance_id);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+
+    if ($checkResult->num_rows > 0) {
+        // Update existing maintenance
+        $row = $checkResult->fetch_assoc();
+        $updateStmt = $conn->prepare("UPDATE maintenance_table SET m_name = ?, m_date = ?, m_time = ?, status = ? WHERE maintenance_id = ?");
+        $updateStmt->bind_param("ssssi", $m_name, $m_date, $m_time, $status, $row['maintenance_id']);
+        if ($updateStmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Maintenance updated successfully']);
         } else {
-            echo json_encode(['success' => false, 'error' => 'DB error: ' . $stmt->error]);
+            echo json_encode(['success' => false, 'error' => 'DB error: ' . $updateStmt->error]);
         }
-        $stmt->close();
+        $updateStmt->close();
     } else {
-        echo json_encode(['success' => false, 'error' => 'Prepare failed: ' . $conn->error]);
+        // Insert new maintenance
+        $stmt = $conn->prepare("
+            INSERT INTO maintenance_table (m_name, m_date, m_time, status, waste_service_id) 
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        if ($stmt) {
+            $stmt->bind_param("ssssi", $m_name, $m_date, $m_time, $status, $maintenance_id);
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true, 'message' => 'Maintenance scheduled successfully']);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'DB error: ' . $stmt->error]);
+            }
+            $stmt->close();
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Prepare failed: ' . $conn->error]);
+        }
     }
+    $checkStmt->close();
 
 } else {
     echo json_encode(['success' => false, 'error' => 'Invalid schedule type']);

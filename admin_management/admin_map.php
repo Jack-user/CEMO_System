@@ -29,7 +29,7 @@ include '../includes/header.php';
         <?php include '../includes/navbar.php'; ?>
         <?php include '../includes/conn.php'; ?>
         <div class="container mt-3">
-            <h2 class="text-center">Bago City Map</h2>
+            <h2 class="text-center"> City Map</h2>
             <div class="d-flex flex-wrap gap-3 align-items-stretch">
                 <div class="map-box" style="flex: 1 1 60%; height: 500px; resize: both; position: relative; min-width: 320px;">
                     <div id="map" style="width: 100%; height: 100%; border-radius: 8px; border: 1px solid #ccc;"></div>

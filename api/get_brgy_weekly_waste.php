@@ -33,7 +33,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 $row = $result->fetch_assoc();
 $totalCount = (int)($row['total_count'] ?? 0);
-$barangayName = $row['barangay'] ?? '';
+$barangay = $row['barangay'] ?? '';
 
 // Calculate progress (simulate 90-99% if collected, else lower)
 $tons = round($totalCount * 0.001, 2);
@@ -48,7 +48,7 @@ if ($tons <= 0) {
 
 $response = [
     'success' => true,
-    'barangay' => $barangayName,
+    'barangay' => $barangay,
     'brgy_id' => $brgy_id,
     'week' => $week,
     'total_count' => $totalCount,
