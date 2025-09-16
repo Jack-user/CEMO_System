@@ -39,16 +39,6 @@
                 </a>
             </li>
 
-
-            <li class="nav-item mt-3">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs text-light font-weight-bolder opacity-5">Account pages</h6>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?php echo ($current_page == 'client_profile.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>" href="..//client_management/client_profile.php">
-                    <i class="material-symbols-rounded opacity-5">person</i>
-                    <span class="nav-link-text ms-1">Profile</span>
-                </a>
-            </li>
             <!-- <li class="nav-item">
                 <a class="nav-link <?php echo ($current_page == 'sign-in.php') ? 'active bg-gradient-dark text-white' : 'text-light'; ?>"
                 href="../login_page/sign-in.php">

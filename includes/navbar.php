@@ -212,7 +212,7 @@ $page_title = $page_title ?? 'Dashboard';
                                     <i class="fa-solid fa-user me-2"></i>Profile
                                 </a>
                             <?php else: ?>
-                                <a class="dropdown-item" href="../admin_management/admin_profile.php">
+                                <a class="dropdown-item" href="../profile_management/admin_profile.php">
                                     <i class="fa-solid fa-user-shield me-2"></i>Profile
                                 </a>
                             <?php endif; ?>
