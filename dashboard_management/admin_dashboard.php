@@ -408,14 +408,13 @@ async function loadBarangays() {
 async function loadBrgyWasteVolume() {
     const brgy_id = document.getElementById('brgySelect').value;
     if (!brgy_id) return;
-    // Use current week/month/year
+    // Use current month/year (API also returns full-year monthly aggregation)
     const params = new URLSearchParams({
         brgy_id,
         year: currentYear,
-        month: currentMonth,
-        week: selectedWeek || 1
+        month: currentMonth
     });
-    const res = await fetch('../api/get_brgy_weekly_waste.php?' + params.toString());
+    const res = await fetch('../api/get_brgy_monthly_waste.php?' + params.toString());
     const data = await res.json();
     if (data.success) {
         // Update progress bar
@@ -423,18 +422,23 @@ async function loadBrgyWasteVolume() {
     const progressBar = document.getElementById('brgyProgressBar');
     const progressText = progressBar.querySelector('.progress-text');
     progressBar.style.width = `${data.progress}%`;
-    progressText.textContent = `${data.progress}%`;
+    // Show total waste summed across all months (tons)
+    let totalYearTons = 0;
+    if (Array.isArray(data.monthlyTons) && data.monthlyTons.length === 12) {
+        totalYearTons = data.monthlyTons.reduce((sum, t) => sum + (t || 0), 0);
+    } else {
+        totalYearTons = (data.tons || 0);
+    }
+    progressText.textContent = `${totalYearTons.toFixed(2)} tons`;
     // Info
-    document.getElementById('brgyWasteInfo').textContent = `Collected: ${data.tons} tons this month.`;
+    document.getElementById('brgyWasteInfo').textContent = `Collected: ${data.tons} tons for ${new Date(currentYear, currentMonth - 1, 1).toLocaleString('default', { month: 'long', year: 'numeric' })}.`;
     document.getElementById('brgyWasteUpdated').textContent = 'Updated just now';
-        // Chart (single value for now)
+        // Chart: show full-year by month, highlight selected month
         if (!brgyChart) {
             const ctx = document.getElementById('chart-line').getContext('2d');
             // Month labels for the year
             const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            // Only show data for the selected month, but keep all months for x-axis
-            const monthData = Array(12).fill(null);
-            monthData[currentMonth - 1] = data.tons;
+            const monthData = (Array.isArray(data.monthlyTons) && data.monthlyTons.length === 12) ? data.monthlyTons : Array(12).fill(null).map((v, i) => (i === currentMonth - 1 ? data.tons : null));
             brgyChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -461,10 +465,9 @@ async function loadBrgyWasteVolume() {
                 }
             });
         } else {
-            // Update to show the correct month and data
+            // Update with full-year data
             const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const monthData = Array(12).fill(null);
-            monthData[currentMonth - 1] = data.tons;
+            const monthData = (Array.isArray(data.monthlyTons) && data.monthlyTons.length === 12) ? data.monthlyTons : Array(12).fill(null).map((v, i) => (i === currentMonth - 1 ? data.tons : null));
             brgyChart.data.labels = monthLabels;
             brgyChart.data.datasets[0].data = monthData;
             brgyChart.update();
@@ -520,12 +523,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentMonth < 1) { currentMonth = 12; currentYear--; }
         selectedWeek = 1;
         loadWeeklyWasteData();
+        loadBrgyWasteVolume();
     });
     document.querySelector('.next-month').addEventListener('click', () => {
         currentMonth++;
         if (currentMonth > 12) { currentMonth = 1; currentYear++; }
         selectedWeek = 1;
         loadWeeklyWasteData();
+        loadBrgyWasteVolume();
     });
 
     // Initial load
