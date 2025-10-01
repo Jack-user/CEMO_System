@@ -95,20 +95,20 @@ $progress = $target > 0 ? round(($collected / $target) * 100, 1) : 0;
                     </div>
                 </div>
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Forecasted Waste Volume (Next Week)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">1.65 tons</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="material-symbols-rounded opacity-10">schedule</i>
-                                    </div>
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Forecasted Waste Volume (Next Week)</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="forecastedWasteNextWeek">-- tons</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="material-symbols-rounded opacity-10">schedule</i>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
                 <div class="col-xl-3 col-md-6 mb-4">
                     <div class="card border-left-danger shadow h-100 py-2">
                         <div class="card-body">
@@ -255,6 +255,7 @@ $progress = $target > 0 ? round(($collected / $target) * 100, 1) : 0;
                             </div>
                         </div>
                         
+                        
                         <!-- Collection Efficiency -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-danger shadow h-100 py-2">
@@ -327,7 +328,7 @@ $progress = $target > 0 ? round(($collected / $target) * 100, 1) : 0;
                     <div class="card">
                         <div class="card-body">
                             <h6 class="mb-0">Dumpsite Area</h6>
-                            <p class="text-sm">Monthly Waste Forecast for Dumpsite Capacity</p>
+                            <p class="text-sm">Yearly Waste Forecast for Dumpsite Capacity</p>
                             <div class="pe-2">
                                 <div class="chart">
                                     <canvas id="chart-line-tasks" class="chart-canvas" height="170"></canvas>
@@ -484,6 +485,7 @@ function updateSelectedWeekDisplay(week, range) {
         }
     }
 }
+
 let currentMonth = new Date().getMonth() + 1;
 let currentYear = new Date().getFullYear();
 let selectedWeek = null;
@@ -536,7 +538,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial load
     loadDashboardSummary();
     loadWeeklyWasteData();
-    setInterval(() => { loadDashboardSummary(); loadWeeklyWasteData(); loadBrgyWasteVolume(); }, 30000);
+    setInterval(() => { 
+        loadDashboardSummary(); 
+        loadWeeklyWasteData(); 
+        loadBrgyWasteVolume(); 
+    }, 30000);
 
     // Brgy Waste Volume
     loadBarangays();
@@ -551,6 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 800);
 });
 
+// ✅ Merged function: Weekly chart + Average Daily Collection + Collection Efficiency
 function getWeeklyWasteUrl() {
     const params = new URLSearchParams({ year: currentYear, month: currentMonth });
     if (selectedWeek !== null) params.append('week', selectedWeek);
@@ -563,14 +570,29 @@ async function loadWeeklyWasteData() {
         const data = await res.json();
         if (!data.success) return;
 
-        // Update bar chart
+        // --- Update bar chart ---
         if (barChart && Array.isArray(data.dailyData)) {
             const dailyTons = data.dailyData.map(d => (d.daily_count || 0) * 0.001);
+            barChart.data.labels = data.dailyData.map(d => d.day_name);
             barChart.data.datasets[0].data = dailyTons;
             barChart.update();
+
+            // --- Average Daily Collection ---
+            const totalWeekTons = dailyTons.reduce((a, b) => a + b, 0);
+            const avgDaily = totalWeekTons / (dailyTons.length || 1);
+            document.getElementById('avgDailyCollection').textContent =
+                avgDaily.toFixed(2) + ' tons';
+
+            // --- Collection Efficiency ---
+            // Example: expected = 2 tons/day (adjust if you have a real target)
+            const expectedPerDay = 2;
+            const expectedTotal = expectedPerDay * (dailyTons.length || 1);
+            const efficiency = expectedTotal > 0 ? (totalWeekTons / expectedTotal) * 100 : 0;
+            document.getElementById('collectionEfficiency').textContent =
+                efficiency.toFixed(0) + '%';
         }
 
-        // Update week cards
+        // --- Update week cards ---
         const weekGrid = document.querySelector('.week-grid .row');
         if (weekGrid && Array.isArray(data.weeklyData)) {
             weekGrid.innerHTML = '';
@@ -582,6 +604,14 @@ async function loadWeeklyWasteData() {
                 const badgeClass = isActive ? 'bg-white text-success' : 'bg-success';
                 const cardClass = isActive ? 'active' : '';
                 const col = document.createElement('div');
+                 const sortedWeeks = [...data.weeklyData].sort((a, b) => a.week_of_month - b.week_of_month);
+                    const last3Weeks = sortedWeeks.slice(-3);
+                    console.log('Last 3 weeks:', last3Weeks);
+                        const totalTons = last3Weeks.reduce((sum, w) => sum + (w.total_count * 0.001), 0);
+                        // Calculate average
+                        const avgTons = last3Weeks.length > 0 ? totalTons / last3Weeks.length : 0;
+                        document.getElementById('forecastedWasteNextWeek').textContent = avgTons.toFixed(2) + ' tons';
+                
                 col.className = 'col';
                 col.innerHTML = `
                     <div class="week-card p-3 rounded border ${cardClass}" 
@@ -630,13 +660,13 @@ async function loadWeeklyWasteData() {
             });
         }
 
-        // Update month-year label
+        // --- Update month-year label ---
         const monthYearEl = document.querySelector('.month-year');
         if (monthYearEl) {
             monthYearEl.textContent = data.month;
         }
 
-        // Update daily stats labels and values
+        // --- Update daily stats labels and values ---
         const dayStatsLabels = document.getElementById('dayStatsLabels');
         const dayStatsValues = document.getElementById('dayStatsValues');
         if (dayStatsLabels && dayStatsValues && Array.isArray(data.dailyData)) {
@@ -661,13 +691,14 @@ async function loadWeeklyWasteData() {
             });
         }
 
-        // Set selectedWeek after first load
+        // --- Set selectedWeek after first load ---
         if (selectedWeek === null) {
             selectedWeek = data.selectedWeek;
         }
 
     } catch (e) {
-        // Optionally handle error
+        document.getElementById('avgDailyCollection').textContent = 'Err';
+        document.getElementById('collectionEfficiency').textContent = 'Err';
     }
 }
 
@@ -676,7 +707,7 @@ var ctx3 = document.getElementById("chart-line-tasks").getContext("2d");
 new Chart(ctx3, {
     type: "line",
     data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        labels: ["2025", "2026", "2027", "2028", "2029", "2030", "2031", "2032", "2033"],
         datasets: [{
             label: "Dumpsite Capacity",
             tension: 0,
