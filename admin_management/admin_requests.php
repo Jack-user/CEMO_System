@@ -628,3 +628,76 @@ $page_title = "Request Management"; // Set the page title dynamically
         }
 
     </style>
+
+    <!-- Notification Sound System -->
+    <script src="../assets/js/notification-sound.js"></script>
+    <script>
+        // Check for new notifications and play sound
+        async function checkForNewNotifications() {
+            try {
+                const response = await fetch('../api/check_new_notifications.php');
+                const data = await response.json();
+                
+                console.log('Admin requests notification check response:', data); // Debug log
+                
+                if (data.success && data.hasNewNotifications) {
+                    console.log('Admin requests new notifications found:', data.count); // Debug log
+                    
+                    // Play notification sound
+                    if (window.notificationSound) {
+                        window.notificationSound.playNotificationSound('request');
+                    }
+                    
+                    // Update notification count in navbar if exists
+                    updateNotificationCount(data.count);
+                    
+                    // Show visual notification
+                    showNotificationToast(data.count);
+                }
+            } catch (error) {
+                console.error('Error checking notifications:', error);
+            }
+        }
+
+        // Update notification count in navbar
+        function updateNotificationCount(count) {
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline' : 'none';
+            }
+        }
+
+        // Show notification toast
+        function showNotificationToast(count) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'New Notifications',
+                    text: `You have ${count} new notification${count > 1 ? 's' : ''}`,
+                    icon: 'info',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            }
+        }
+
+        // Initialize notification checking on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for new notifications immediately
+            checkForNewNotifications();
+            
+            // Set up sound toggle button
+            setupSoundToggle();
+            
+            // Check for new notifications every 30 seconds
+            setInterval(checkForNewNotifications, 30000);
+        });
+
+        // Setup sound toggle functionality
+        function setupSoundToggle() {
+            // Sound settings are now handled in the navbar
+            // This function is kept for compatibility but does nothing
+        }
+    </script>

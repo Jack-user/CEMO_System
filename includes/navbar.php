@@ -120,6 +120,11 @@ $page_title = $page_title ?? 'Dashboard';
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
                         <li>
+                            <a class="dropdown-item" href="#" onclick="showSoundSettingsModal()">
+                                <i class="fa-solid fa-volume-up me-2"></i>Sound Settings
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item" href="#">
                                 <i class="fa-solid fa-sliders me-2"></i>Preferences
                             </a>
@@ -252,6 +257,129 @@ $page_title = $page_title ?? 'Dashboard';
     </div>
 </div>
 
+<!-- Sound Settings Modal -->
+<div class="modal fade" id="soundSettingsModal" tabindex="-1" aria-labelledby="soundSettingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="soundSettingsModalLabel">
+          <i class="fas fa-volume-up me-2"></i>Notification Sound Settings
+        </h5>
+        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Sound Type</label>
+          <select class="form-select" id="soundTypeSelect">
+            <option value="default">Default (2-tone beep)</option>
+            <option value="success">Success (3-tone ascending)</option>
+            <option value="warning">Warning (2-tone descending)</option>
+            <option value="error">Error (low tones)</option>
+            <option value="request">Request (3-tone pattern)</option>
+            <option value="gentle">Gentle (soft chime)</option>
+            <option value="alert">Alert (urgent beep)</option>
+            <option value="chime">Chime (musical tone)</option>
+          </select>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold">Volume</label>
+          <input type="range" class="form-range" id="volumeSlider" min="0" max="100" value="50">
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">0%</small>
+            <small class="text-muted" id="volumeDisplay">50%</small>
+            <small class="text-muted">100%</small>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="enableSound" checked>
+            <label class="form-check-label" for="enableSound">
+              Enable notification sounds
+            </label>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="enableVisual">
+            <label class="form-check-label" for="enableVisual">
+              Show visual notifications
+            </label>
+          </div>
+        </div>
+        
+        <div class="d-grid gap-2">
+          <button type="button" class="btn btn-outline-primary" id="testSoundBtn">
+            <i class="fas fa-play me-2"></i>Test Sound
+          </button>
+          <button type="button" class="btn btn-success" id="saveSoundSettings">
+            <i class="fas fa-save me-2"></i>Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Details Modal -->
+<div class="modal fade" id="notificationDetailsModal" tabindex="-1" aria-labelledby="notificationDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="notificationDetailsModalLabel">
+          <i class="fas fa-bell me-2"></i>Notification Details
+        </h5>
+        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="notification-details-content">
+          <div class="notification-header mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="notification-icon-large">
+                <i class="fas fa-bell fa-2x text-primary"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h4 class="notification-title-large mb-1" id="modalNotificationTitle">Loading...</h4>
+                <small class="text-muted" id="modalNotificationTime">Loading...</small>
+              </div>
+              <div class="notification-status" id="modalNotificationStatus">
+                <span class="badge bg-primary">New</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="notification-body">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">Message</h6>
+                <p class="card-text" id="modalNotificationMessage">Loading...</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="notification-actions mt-3">
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-primary btn-sm" id="markAsReadBtn">
+                <i class="fas fa-check me-1"></i>Mark as Read
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm" id="deleteNotificationBtn">
+                <i class="fas fa-trash me-1"></i>Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /**
  * Navbar JavaScript Functionality
@@ -265,6 +393,7 @@ $page_title = $page_title ?? 'Dashboard';
         initializeDropdownHandlers();
         addHoverEffects();
         loadNotifications();
+        initializeSoundSettings();
     });
 
     /**
@@ -382,7 +511,7 @@ $page_title = $page_title ?? 'Dashboard';
                             // Add click handler
                             const content = notifItem.querySelector('.notification-content');
                             content.addEventListener('click', function() {
-                                markNotificationAsRead(notif.id, notifItem);
+                                showNotificationDetailsModal(notif);
                             });
                             
                             notificationsContainer.appendChild(notifItem);
@@ -434,6 +563,135 @@ $page_title = $page_title ?? 'Dashboard';
             return `${Math.floor(diffInDays)}d ago`;
         } else {
             return date.toLocaleDateString();
+        }
+    }
+
+    /**
+     * Show notification details modal
+     */
+    function showNotificationDetailsModal(notification) {
+        // Populate modal with notification data
+        document.getElementById('modalNotificationTitle').textContent = notification.title;
+        document.getElementById('modalNotificationMessage').textContent = notification.message;
+        document.getElementById('modalNotificationTime').textContent = formatNotificationTime(notification.created_at);
+        
+        // Update status badge
+        const statusBadge = document.getElementById('modalNotificationStatus');
+        if (notification.is_read) {
+            statusBadge.innerHTML = '<span class="badge bg-success">Read</span>';
+        } else {
+            statusBadge.innerHTML = '<span class="badge bg-primary">New</span>';
+        }
+        
+        // Store current notification ID for actions
+        window.currentNotificationId = notification.id;
+        window.currentNotificationElement = document.querySelector(`[data-notification-id="${notification.id}"]`);
+        
+        // Setup action buttons
+        setupNotificationModalActions();
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('notificationDetailsModal'));
+        modal.show();
+    }
+
+    /**
+     * Setup notification modal action buttons
+     */
+    function setupNotificationModalActions() {
+        const markAsReadBtn = document.getElementById('markAsReadBtn');
+        const deleteBtn = document.getElementById('deleteNotificationBtn');
+        
+        // Mark as read button
+        if (markAsReadBtn) {
+            markAsReadBtn.onclick = function() {
+                if (window.currentNotificationId) {
+                    markNotificationAsRead(window.currentNotificationId, window.currentNotificationElement);
+                    // Update modal status
+                    document.getElementById('modalNotificationStatus').innerHTML = '<span class="badge bg-success">Read</span>';
+                    // Hide mark as read button
+                    markAsReadBtn.style.display = 'none';
+                }
+            };
+        }
+        
+        // Delete button
+        if (deleteBtn) {
+            deleteBtn.onclick = function() {
+                if (window.currentNotificationId) {
+                    deleteNotification(window.currentNotificationId);
+                }
+            };
+        }
+    }
+
+    /**
+     * Delete notification
+     */
+    function deleteNotification(notificationId) {
+        // Determine the correct API endpoint based on user type
+        const isClient = document.body.classList.contains('client-page') || 
+                        window.location.pathname.includes('client_management');
+        const apiEndpoint = isClient ? '../client_management/delete_notification.php' : '../api/delete_admin_notification.php';
+        
+        fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ notification_id: notificationId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove notification from dropdown
+                const notificationElement = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (notificationElement) {
+                    notificationElement.closest('.notification-item').remove();
+                }
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('notificationDetailsModal'));
+                modal.hide();
+                
+                // Update notification count
+                updateNotificationBadgeCount();
+                
+                // Show success message
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Deleted',
+                        text: 'Notification has been deleted.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                }
+            } else {
+                console.error('Error deleting notification:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting notification:', error);
+        });
+    }
+
+    /**
+     * Update notification badge count
+     */
+    function updateNotificationBadgeCount() {
+        const badge = document.querySelector('#notifDropdown .badge');
+        if (badge) {
+            const currentCount = parseInt(badge.textContent);
+            if (currentCount > 0) {
+                const newCount = currentCount - 1;
+                badge.textContent = newCount;
+                if (newCount === 0) {
+                    badge.remove();
+                }
+            }
         }
     }
 
@@ -522,6 +780,160 @@ $page_title = $page_title ?? 'Dashboard';
         // Redirect to logout page
         window.location.href = "../login_page/logout.php";
     };
+
+    /**
+     * Initialize sound settings functionality
+     */
+    function initializeSoundSettings() {
+        // Load saved settings when modal is shown
+        const soundSettingsModal = document.getElementById('soundSettingsModal');
+        if (soundSettingsModal) {
+            soundSettingsModal.addEventListener('show.bs.modal', function() {
+                loadSoundSettings();
+            });
+        }
+
+        // Setup sound settings modal functionality
+        setupSoundSettingsModal();
+    }
+
+    /**
+     * Show sound settings modal
+     */
+    window.showSoundSettingsModal = function() {
+        const modal = new bootstrap.Modal(document.getElementById('soundSettingsModal'));
+        modal.show();
+    };
+
+    /**
+     * Setup sound settings modal functionality
+     */
+    function setupSoundSettingsModal() {
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeDisplay = document.getElementById('volumeDisplay');
+        const testSoundBtn = document.getElementById('testSoundBtn');
+        const saveSettingsBtn = document.getElementById('saveSoundSettings');
+        const soundTypeSelect = document.getElementById('soundTypeSelect');
+        const enableSoundCheckbox = document.getElementById('enableSound');
+        const enableVisualCheckbox = document.getElementById('enableVisual');
+
+        if (!volumeSlider || !volumeDisplay || !testSoundBtn || !saveSettingsBtn || 
+            !soundTypeSelect || !enableSoundCheckbox || !enableVisualCheckbox) {
+            return; // Elements not found, skip setup
+        }
+
+        // Volume slider update
+        volumeSlider.addEventListener('input', function() {
+            volumeDisplay.textContent = this.value + '%';
+        });
+
+        // Test sound button
+        testSoundBtn.addEventListener('click', function() {
+            const selectedSound = soundTypeSelect.value;
+            const volume = volumeSlider.value / 100;
+            
+            if (window.notificationSound) {
+                // Temporarily set volume
+                const originalVolume = window.notificationSound.volume || 0.5;
+                window.notificationSound.volume = volume;
+                window.notificationSound.playNotificationSound(selectedSound);
+                // Restore original volume
+                setTimeout(() => {
+                    window.notificationSound.volume = originalVolume;
+                }, 1000);
+            }
+        });
+
+        // Save settings button
+        saveSettingsBtn.addEventListener('click', function() {
+            const settings = {
+                soundType: soundTypeSelect.value,
+                volume: volumeSlider.value / 100,
+                enableSound: enableSoundCheckbox.checked,
+                enableVisual: enableVisualCheckbox.checked
+            };
+            
+            saveSoundSettings(settings);
+            
+            // Show success message
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Settings Saved',
+                    text: 'Your notification sound settings have been saved.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            } else {
+                // Fallback alert if SweetAlert is not available
+                alert('Settings saved successfully!');
+            }
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('soundSettingsModal'));
+            modal.hide();
+        });
+    }
+
+    /**
+     * Load saved sound settings
+     */
+    function loadSoundSettings() {
+        const settings = getSoundSettings();
+        
+        const soundTypeSelect = document.getElementById('soundTypeSelect');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeDisplay = document.getElementById('volumeDisplay');
+        const enableSoundCheckbox = document.getElementById('enableSound');
+        const enableVisualCheckbox = document.getElementById('enableVisual');
+
+        if (soundTypeSelect && settings.soundType) {
+            soundTypeSelect.value = settings.soundType;
+        }
+        if (volumeSlider && settings.volume !== undefined) {
+            volumeSlider.value = settings.volume * 100;
+        }
+        if (volumeDisplay && settings.volume !== undefined) {
+            volumeDisplay.textContent = Math.round(settings.volume * 100) + '%';
+        }
+        if (enableSoundCheckbox && settings.enableSound !== undefined) {
+            enableSoundCheckbox.checked = settings.enableSound;
+        }
+        if (enableVisualCheckbox && settings.enableVisual !== undefined) {
+            enableVisualCheckbox.checked = settings.enableVisual;
+        }
+    }
+
+    /**
+     * Save sound settings to localStorage
+     */
+    function saveSoundSettings(settings) {
+        localStorage.setItem('notificationSoundSettings', JSON.stringify(settings));
+        
+        // Update global notification sound settings
+        if (window.notificationSound) {
+            window.notificationSound.setSoundType(settings.soundType);
+            window.notificationSound.setVolume(settings.volume);
+            window.notificationSound.setSoundPreference(settings.enableSound);
+        }
+    }
+
+    /**
+     * Get sound settings from localStorage
+     */
+    function getSoundSettings() {
+        const defaultSettings = {
+            soundType: 'default',
+            volume: 0.5,
+            enableSound: true,
+            enableVisual: true
+        };
+        
+        const saved = localStorage.getItem('notificationSoundSettings');
+        return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+    }
 })();
 </script>
 
@@ -724,6 +1136,98 @@ $page_title = $page_title ?? 'Dashboard';
         min-width: 280px !important;
         max-width: 320px;
         margin-right: -20px;
+    }
+}
+
+/* Notification Details Modal Styles */
+.notification-details-content {
+    padding: 0;
+}
+
+.notification-header {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 1rem;
+}
+
+.notification-icon-large {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.notification-title-large {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.notification-status .badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.notification-body .card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.notification-body .card-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.notification-body .card-text {
+    color: #6c757d;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.notification-actions {
+    border-top: 1px solid #e9ecef;
+    padding-top: 1rem;
+}
+
+.notification-actions .btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.notification-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal responsiveness */
+@media (max-width: 768px) {
+    .notification-icon-large {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .notification-title-large {
+        font-size: 1.25rem;
+    }
+    
+    .notification-actions .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .notification-actions .btn {
+        width: 100%;
     }
 }
 </style>

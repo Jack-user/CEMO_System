@@ -90,14 +90,19 @@ $page_title = "Client Request Form";
         <?php include '../includes/navbar.php'; ?>
 
         <div class="container-fluid py-4">
-            <div class="row justify-content-center">
-                <div class="col-lg-10">
-                    <div class="form-container">
-                        <div class="form-header">
-                            <h3><i class="fas fa-clipboard-list me-2"></i>Service Request Form</h3>
-                            <p class="mb-0">Submit your service request and schedule</p>
+            <h1 class="h3 mb-4 text-gray-800"></h1>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-lg">
+                        <div class="card-header p-0 position-relative mt-n4 mx-4 z-index-2">
+                        <div style="background: linear-gradient(60deg, #66c05eff, #49755cff 100%);" class="shadow-dark border-radius-lg pt-4 pb-3">
+                                <h5 class="text-white text-center text-uppercase font-weight-bold mb-0">
+                                    <i class="fas fa-clipboard-list me-2"></i>Service Request Form
+                                </h5>
+                                <p class="text-white text-center mb-0">Submit your service request and schedule</p>
+                            </div>
                         </div>
-                        
+                            
                         <div class="form-body">
                             <?php if (isset($_SESSION['msg'])): ?>
                                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -218,18 +223,18 @@ $page_title = "Client Request Form";
 
                                     <!-- Calendar Section -->
                                     <div class="col-md-4">
-                                        <div class="calendar-container">
+                                        <div class="simple-calendar-container">
                                             <h6 class="text-center mb-3">
-                                                <i class="fas fa-calendar-alt me-2"></i>Available Dates
+                                                <i class="fas fa-calendar-alt me-2"></i>Service Calendar
                                             </h6>
                                             <div class="text-center mb-3">
                                                 <small class="text-muted">
-                                                    <span class="badge bg-success me-2">●</span>Available
-                                                    <span class="badge bg-secondary ms-2">●</span>Unavailable
+                                                    <span class="holiday-indicator me-2">●</span>Holiday
+                                                    <span class="available-indicator ms-2">●</span>Available
                                                 </small>
                                             </div>
-                                            <!-- Calendar Grid -->
-                                            <div id="calendar" class="text-center"></div>
+                                            <!-- Simple Calendar Grid -->
+                                            <div id="simpleCalendar" class="simple-calendar"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -287,54 +292,90 @@ $page_title = "Client Request Form";
             ]
         };
 
-        // Initialize calendar
-        function initializeCalendar() {
-            const calendar = document.getElementById('calendar');
+        // Holiday dates (you can modify this list)
+        const holidayDates = [
+            '2024-01-01', // New Year's Day
+            '2024-01-15', // Martin Luther King Jr. Day
+            '2024-02-19', // Presidents' Day
+            '2024-03-29', // Good Friday
+            '2024-05-27', // Memorial Day
+            '2024-06-19', // Juneteenth
+            '2024-07-04', // Independence Day
+            '2024-09-02', // Labor Day
+            '2024-10-14', // Columbus Day
+            '2024-11-11', // Veterans Day
+            '2024-11-28', // Thanksgiving
+            '2024-12-25', // Christmas Day
+            '2025-01-01', // New Year's Day 2025
+            '2025-01-20', // Martin Luther King Jr. Day 2025
+            '2025-02-17', // Presidents' Day 2025
+            '2025-04-18', // Good Friday 2025
+            '2025-05-26', // Memorial Day 2025
+            '2025-06-19', // Juneteenth 2025
+            '2025-07-04', // Independence Day 2025
+            '2025-09-01', // Labor Day 2025
+            '2025-10-13', // Columbus Day 2025
+            '2025-11-11', // Veterans Day 2025
+            '2025-11-27', // Thanksgiving 2025
+            '2025-12-25'  // Christmas Day 2025
+        ];
+
+        // Initialize simple calendar
+        function initializeSimpleCalendar() {
+            const calendar = document.getElementById('simpleCalendar');
             const currentDate = new Date();
             const currentMonth = currentDate.getMonth();
-            const currentYear = currentDate.getYear() + 1900;
+            const currentYear = currentDate.getFullYear();
             
             let calendarHTML = `
-                <div class="mb-2">
-                    <button class="btn btn-sm btn-outline-primary" onclick="previousMonth()">
+                <div class="calendar-header mb-3">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="previousMonth()">
                         <i class="fas fa-chevron-left"></i>
                     </button>
                     <span class="fw-bold mx-3">${getMonthName(currentMonth)} ${currentYear}</span>
-                    <button class="btn btn-sm btn-outline-primary" onclick="nextMonth()">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="nextMonth()">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
-                <div class="mb-2">
-                    <span class="calendar-day fw-bold text-muted">S</span>
-                    <span class="calendar-day fw-bold text-muted">M</span>
-                    <span class="calendar-day fw-bold text-muted">T</span>
-                    <span class="calendar-day fw-bold text-muted">W</span>
-                    <span class="calendar-day fw-bold text-muted">T</span>
-                    <span class="calendar-day fw-bold text-muted">F</span>
-                    <span class="calendar-day fw-bold text-muted">S</span>
+                <div class="calendar-weekdays mb-2">
+                    <span class="weekday">S</span>
+                    <span class="weekday">M</span>
+                    <span class="weekday">T</span>
+                    <span class="weekday">W</span>
+                    <span class="weekday">T</span>
+                    <span class="weekday">F</span>
+                    <span class="weekday">S</span>
                 </div>
             `;
             
             // Generate calendar days
             const firstDay = new Date(currentYear, currentMonth, 1);
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
             const startDate = new Date(firstDay);
             startDate.setDate(startDate.getDate() - firstDay.getDay());
             
             for (let week = 0; week < 6; week++) {
-                calendarHTML += '<div class="mb-1">';
+                calendarHTML += '<div class="calendar-week">';
                 for (let day = 0; day < 7; day++) {
                     const currentDay = new Date(startDate);
                     currentDay.setDate(startDate.getDate() + (week * 7) + day);
                     
                     const dateString = currentDay.toISOString().split('T')[0];
-                    const isAvailable = availableDates.includes(dateString);
                     const isCurrentMonth = currentDay.getMonth() === currentMonth;
+                    const isHoliday = holidayDates.includes(dateString);
                     const isToday = dateString === new Date().toISOString().split('T')[0];
+                    const isPast = new Date(dateString) < new Date().setHours(0,0,0,0);
+                    const isWeekend = currentDay.getDay() === 0 || currentDay.getDay() === 6;
+                    const isAvailable = availableDates.includes(dateString);
                     
-                    let dayClass = 'calendar-day';
+                    let dayClass = 'simple-day';
                     if (!isCurrentMonth) {
-                        dayClass += ' text-muted';
+                        dayClass += ' other-month';
+                    } else if (isHoliday) {
+                        dayClass += ' holiday-day';
+                    } else if (isPast) {
+                        dayClass += ' past-day';
+                    } else if (isWeekend) {
+                        dayClass += ' weekend-day';
                     } else if (isAvailable) {
                         dayClass += ' available-day';
                     } else {
@@ -342,10 +383,10 @@ $page_title = "Client Request Form";
                     }
                     
                     if (isToday) {
-                        dayClass += ' border border-primary';
+                        dayClass += ' today';
                     }
                     
-                    calendarHTML += `<span class="${dayClass}" onclick="selectDate('${dateString}')" title="${dateString}">${currentDay.getDate()}</span>`;
+                    calendarHTML += `<span class="${dayClass}" onclick="selectSimpleDate('${dateString}')" title="${dateString}">${currentDay.getDate()}</span>`;
                 }
                 calendarHTML += '</div>';
             }
@@ -359,14 +400,88 @@ $page_title = "Client Request Form";
             return months[month];
         }
 
-        function selectDate(dateString) {
-            if (availableDates.includes(dateString)) {
+        // Global variables for calendar navigation
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            initializeSimpleCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            initializeSimpleCalendar();
+        }
+
+        function selectSimpleDate(dateString) {
+            // Check if date is available (not a holiday, not in the past, and in available dates)
+            const isHoliday = holidayDates.includes(dateString);
+            const isPast = new Date(dateString) < new Date().setHours(0,0,0,0);
+            const isWeekend = new Date(dateString).getDay() === 0 || new Date(dateString).getDay() === 6;
+            const isAvailable = availableDates.includes(dateString);
+            
+            if (!isHoliday && !isPast && !isWeekend && isAvailable) {
+                // Set the date in the form
                 document.getElementById('request_date').value = dateString;
-                // Update calendar selection
-                document.querySelectorAll('.calendar-day').forEach(day => {
+                
+                // Update visual selection
+                document.querySelectorAll('.simple-day').forEach(day => {
                     day.classList.remove('selected-day');
                 });
                 event.target.classList.add('selected-day');
+                
+                // Show success feedback
+                showDateSelectionFeedback(dateString);
+            } else if (isHoliday) {
+                showDateSelectionFeedback(dateString, 'holiday');
+            } else if (isPast) {
+                showDateSelectionFeedback(dateString, 'past');
+            } else if (isWeekend) {
+                showDateSelectionFeedback(dateString, 'weekend');
+            } else if (!isAvailable) {
+                showDateSelectionFeedback(dateString, 'unavailable');
+            }
+        }
+
+        function showDateSelectionFeedback(dateString, type = 'success') {
+            const feedbackMessages = {
+                'success': `Selected: ${new Date(dateString).toLocaleDateString()}`,
+                'holiday': 'This date is a holiday - service not available',
+                'past': 'Cannot select past dates',
+                'weekend': 'Service not available on weekends',
+                'unavailable': 'This date is not available for service'
+            };
+            
+            // Create or update feedback element
+            let feedbackEl = document.getElementById('date-feedback');
+            if (!feedbackEl) {
+                feedbackEl = document.createElement('div');
+                feedbackEl.id = 'date-feedback';
+                feedbackEl.className = 'mt-2 text-center';
+                document.querySelector('.simple-calendar-container').appendChild(feedbackEl);
+            }
+            
+            feedbackEl.innerHTML = `
+                <small class="alert ${type === 'success' ? 'alert-success' : 'alert-warning'} alert-sm d-inline-block">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-1"></i>
+                    ${feedbackMessages[type]}
+                </small>
+            `;
+            
+            // Auto-hide after 3 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    if (feedbackEl) feedbackEl.innerHTML = '';
+                }, 3000);
             }
         }
 
@@ -405,13 +520,16 @@ $page_title = "Client Request Form";
             minDate: "today",
             disable: [
                 function(date) {
-                    // Disable weekends
-                    return (date.getDay() === 0 || date.getDay() === 6);
+                    const dateString = date.toISOString().split('T')[0];
+                    // Disable weekends, holidays, and unavailable dates
+                    return (date.getDay() === 0 || date.getDay() === 6) || 
+                           holidayDates.includes(dateString) || 
+                           !availableDates.includes(dateString);
                 }
             ],
             onChange: function(selectedDates, dateStr) {
                 // Update calendar selection
-                document.querySelectorAll('.calendar-day').forEach(day => {
+                document.querySelectorAll('.simple-day').forEach(day => {
                     day.classList.remove('selected-day');
                     if (day.getAttribute('title') === dateStr) {
                         day.classList.add('selected-day');
@@ -422,7 +540,7 @@ $page_title = "Client Request Form";
 
         // Initialize calendar on page load
         document.addEventListener('DOMContentLoaded', function() {
-            initializeCalendar();
+            initializeSimpleCalendar();
         });
 
         // Form validation
@@ -500,36 +618,146 @@ $page_title = "Client Request Form";
 </body>
 </html>
     <style>
-        .calendar-container {
-            background: #f8f9fa;
-            max-height: 400px;
-            overflow-y: auto;
-            scrollbar-width: thin;
+        .simple-calendar-container {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .calendar-day {
-            width: 40px;
-            height: 40px;
-            display: inline-flex;
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .weekday {
+            text-align: center;
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 12px;
+            padding: 5px;
+        }
+        
+        .calendar-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .simple-day {
+            width: 35px;
+            height: 35px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            margin: 2px;
-            border-radius: 50%;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
         }
+        
+        .simple-day:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .other-month {
+            color: #adb5bd;
+            background: #f8f9fa;
+        }
+        
         .available-day {
-            background: #28a745;
-            color: white;
+            background: #e8f5e8;
+            color: #2d5a2d;
+            border: 1px solid #c3e6c3;
         }
-        .unavailable-day {
+        
+        .available-day:hover {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .holiday-day {
             background: #dc3545;
             color: white;
+            font-weight: 600;
         }
+        
+        .holiday-day:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+        
+        .past-day {
+            background: #f8f9fa;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+        
+        .past-day:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .today {
+            border: 2px solid #007bff;
+            font-weight: 600;
+        }
+        
+        .holiday-indicator {
+            color: #dc3545;
+            font-size: 16px;
+        }
+        
+        .available-indicator {
+            color: #28a745;
+            font-size: 16px;
+        }
+        
+        .weekend-day {
+            background: #f8f9fa;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+        
+        .weekend-day:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .unavailable-day {
+            background: #f8f9fa;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+        
+        .unavailable-day:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
         .selected-day {
-            background: #007bff;
-            color: white;
-            border: 2px solid #0056b3;
+            background: #007bff !important;
+            color: white !important;
+            border: 2px solid #0056b3 !important;
+            font-weight: 600;
+        }
+        
+        .selected-day:hover {
+            background: #0056b3 !important;
         }
         .requirements-box {
             background: #e3f2fd;

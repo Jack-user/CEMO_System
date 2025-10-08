@@ -73,9 +73,9 @@
             <div class="container">
                 <div class="hero-box">
                     <h1 class="hero-title">
-                        IoT Waste Vehicle Management Tracking System with 
-                        <span class="gradient-text">Predictive Analytics</span>
-                    </h1>
+                        <span class="gradient-text">WasteVision AI</span>
+                        : Predictive Waste Intelligence for Resilient and Sustainable Urban Futures
+                    </h1>   
                     <p class="hero-subtitle">
                         A next-generation IoT waste vehicle tracking and predictive analytics system designed to enhance efficiency, reduce costs, and promote sustainability
                     </p>
