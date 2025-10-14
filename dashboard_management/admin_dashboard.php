@@ -200,6 +200,10 @@ $progress = $target > 0 ? round(($collected / $target) * 100, 1) : 0;
                                     <i class="material-symbols-rounded text-muted me-1 fs-6">schedule</i>
                                     <span class="text-muted small">Updated Loading....</span>
                                 </div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="showBrgyDetails()">
+                                    <i class="material-symbols-rounded me-1">visibility</i>
+                                    View Barangay Details
+                                </button>
                             </div>
                         </div>
                          <!-- Statistics Cards Row -->
@@ -346,11 +350,80 @@ $progress = $target > 0 ? round(($collected / $target) * 100, 1) : 0;
     </div>
 </div>
 
+     <!-- Barangay Details Modal -->
+    <div class="modal fade" id="brgyDetailsModal" tabindex="-1" aria-labelledby="brgyDetailsModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-xl modal-fullscreen-lg-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="brgyDetailsModalLabel">
+                        <i class="material-symbols-rounded me-2">location_on</i>
+                        Barangay Collection Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="material-symbols-rounded text-primary me-2">calendar_today</i>
+                                <span id="selectedDateInfo" class="fw-semibold">Select a day to view details</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="d-flex align-items-center justify-content-end">
+                                <i class="material-symbols-rounded text-success me-2">recycling</i>
+                                <span id="totalWasteInfo" class="text-muted">Total: -- tons</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <!-- Day Selection -->
+                    <div class="mb-4">
+                        <div class="row row-cols-7 g-2" id="daySelectionGrid">
+                            <!-- Days will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Barangay Data Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                                <thead class="table-white">
+                                    <tr>
+                                        <th class="text-center">#</th>
+                                        <th>Barangay</th>
+                                        <th class="text-center">Collection Count</th>
+                                        <th class="text-center">Tons</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                            <tbody id="brgyDetailsTable">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="material-symbols-rounded me-2">info</i>
+                                        Select a day to view barangay collection details
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="exportBrgyData()">
+                        <i class="material-symbols-rounded me-1">download</i>
+                        Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Include the Footer -->
 <?php include '../includes/footer.php'; ?>
 </main>
 <script>
-// --- Dynamic Dashboard Cards ---
+        // --- Dynamic Dashboard Cards ---
 async function loadDashboardSummary() {
     try {
         const res = await fetch('../api/get_dashboard_summary.php');
@@ -490,6 +563,8 @@ let currentMonth = new Date().getMonth() + 1;
 let currentYear = new Date().getFullYear();
 let selectedWeek = null;
 let barChart;
+let currentBrgyData = null;
+let selectedDay = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Chart.js bar chart setup
@@ -512,6 +587,12 @@ document.addEventListener('DOMContentLoaded', () => {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             interaction: { intersect: false, mode: 'index' },
+            onClick: (event, elements) => {
+                if (elements.length > 0) {
+                    const dayIndex = elements[0].index;
+                    showBrgyDetailsForDay(dayIndex);
+                }
+            },
             scales: {
                 y: { grid: { color: '#e5e5e5' }, ticks: { color: '#737373' } },
                 x: { grid: { drawBorder: false, display: false }, ticks: { color: '#737373' } }
@@ -555,6 +636,27 @@ document.addEventListener('DOMContentLoaded', () => {
             loadBrgyWasteVolume();
         }
     }, 800);
+
+    // Handle window resize for modal positioning
+    window.addEventListener('resize', () => {
+        const modal = document.getElementById('brgyDetailsModal');
+        if (modal && modal.classList.contains('show')) {
+            adjustModalPosition();
+        }
+    });
+
+    // Listen for sidebar toggle events
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            setTimeout(() => {
+                const modal = document.getElementById('brgyDetailsModal');
+                if (modal && modal.classList.contains('show')) {
+                    adjustModalPosition();
+                }
+            }, 300); // Wait for sidebar animation to complete
+        });
+    }
 });
 
 // ✅ Merged function: Weekly chart + Average Daily Collection + Collection Efficiency
@@ -700,6 +802,459 @@ async function loadWeeklyWasteData() {
         document.getElementById('avgDailyCollection').textContent = 'Err';
         document.getElementById('collectionEfficiency').textContent = 'Err';
     }
+}
+
+// --- Barangay Details Modal Functions ---
+let selectedDate = new Date();
+let currentWeekStart = new Date();
+
+async function showBrgyDetails() {
+    try {
+        const modal = new bootstrap.Modal(document.getElementById('brgyDetailsModal'));
+        
+        // Adjust modal positioning based on sidebar state
+        adjustModalPosition();
+        
+        modal.show();
+        
+        // Load weekly barangay data
+        await loadWeeklyBrgyData();
+    } catch (e) {
+        console.error('Error showing barangay details:', e);
+    }
+}
+
+function adjustModalPosition() {
+    const modalDialog = document.querySelector('#brgyDetailsModal .modal-dialog');
+    const sidebar = document.getElementById('sidenav-main');
+    
+    // Remove any existing positioning classes
+    modalDialog.classList.remove('sidebar-hidden');
+    
+    if (sidebar && window.innerWidth >= 1200) {
+        // Check if sidebar is visible on large screens
+        const sidebarRect = sidebar.getBoundingClientRect();
+        if (sidebarRect.width <= 0 || sidebarRect.left < 0) {
+            // Sidebar is hidden or collapsed
+            modalDialog.classList.add('sidebar-hidden');
+        }
+    } else if (window.innerWidth < 1200) {
+        // Medium screens and below - use default responsive behavior
+        modalDialog.classList.add('sidebar-hidden');
+    }
+}
+
+async function loadWeeklyBrgyData() {
+    try {
+        const params = new URLSearchParams({ 
+            year: currentYear, 
+            month: currentMonth,
+            week: selectedWeek || 1
+        });
+        
+        const res = await fetch(`../api/get_daily_brgy_waste_details.php?${params.toString()}`);
+        const data = await res.json();
+        
+        if (data.success) {
+            currentBrgyData = data.daily_data;
+            populateDaySelection();
+        }
+    } catch (e) {
+        console.error('Error loading weekly barangay data:', e);
+    }
+}
+
+function populateDaySelection() {
+    const dayGrid = document.getElementById('daySelectionGrid');
+    dayGrid.innerHTML = '';
+    
+    if (!currentBrgyData) return;
+    
+    currentBrgyData.forEach((day, index) => {
+        const dayCard = document.createElement('div');
+        dayCard.className = 'col';
+        dayCard.innerHTML = `
+            <div class="day-card p-3 rounded border text-center cursor-pointer ${selectedDay === index ? 'bg-primary text-white' : 'bg-light'}" 
+                 onclick="selectDay(${index})" 
+                 style="cursor: pointer; transition: all 0.2s;">
+                <div class="fw-semibold">${day.day_name}</div>
+                <div class="small">${day.day_number}</div>
+                <div class="mt-1">
+                    <span class="badge ${selectedDay === index ? 'bg-white text-primary' : 'bg-success'}">
+                        ${day.total_tons.toFixed(2)}T
+                    </span>
+                </div>
+            </div>
+        `;
+        dayGrid.appendChild(dayCard);
+    });
+}
+
+function selectDay(dayIndex) {
+    selectedDay = dayIndex;
+    populateDaySelection();
+    showDayBrgyDetails(dayIndex);
+}
+
+async function showDayBrgyDetails(dayIndex) {
+    if (!currentBrgyData || !currentBrgyData[dayIndex]) return;
+    
+    const dayData = currentBrgyData[dayIndex];
+    
+    // Update header info
+    document.getElementById('selectedDateInfo').textContent = 
+        `${dayData.day_name}, ${dayData.date} (${dayData.day_number})`;
+    document.getElementById('totalWasteInfo').textContent = 
+        `Total: ${dayData.total_tons.toFixed(2)} tons`;
+    
+    // Populate table
+    const tableBody = document.getElementById('brgyDetailsTable');
+    tableBody.innerHTML = '';
+    
+    if (dayData.barangay_data.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    <i class="material-symbols-rounded me-2">info</i>
+                    No collection data for this day
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Calculate total for percentage calculation
+    const totalCount = dayData.total_count;
+    
+    dayData.barangay_data.forEach((brgy, index) => {
+        const progressWidth = totalCount > 0 ? (brgy.daily_count / totalCount) * 100 : 0;
+        const percentage = totalCount > 0 ? (brgy.daily_count / totalCount) * 100 : 0;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-center">
+                <span class="badge ${index < 3 ? 'bg-warning text-dark' : 'bg-secondary'} fs-6">${index + 1}</span>
+            </td>
+            <td class="fw-semibold text-dark">${brgy.barangay}</td>
+            <td class="text-center fw-bold text-primary">${brgy.daily_count.toLocaleString()}</td>
+            <td class="text-center fw-bold text-success">${brgy.tons.toFixed(3)}</td>
+            <td class="text-center">
+                <span class="badge ${brgy.daily_count > 0 ? 'bg-success' : 'bg-secondary'}">
+                    ${brgy.daily_count > 0 ? 'Collected' : 'Done'}
+                </span>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function showBrgyDetailsForDay(dayIndex) {
+    showBrgyDetails();
+    setTimeout(() => {
+        selectDay(dayIndex);
+    }, 300);
+}
+
+function exportBrgyData() {
+    if (!currentBrgyData || selectedDay === null) {
+        alert('Please select a day to export data.');
+        return;
+    }
+    
+    const dayData = currentBrgyData[selectedDay];
+    const csvContent = [
+        ['Barangay', 'Count', 'Tons', 'Vehicle', 'Driver', 'Plate Number'],
+        ...dayData.barangay_data.map(brgy => [
+            brgy.barangay,
+            brgy.daily_count,
+            brgy.tons.toFixed(3),
+            brgy.vehicles,
+            brgy.drivers,
+            brgy.plate_numbers
+        ])
+    ].map(row => row.join(',')).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `barangay_collection_${dayData.date}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// --- Simple Date Selection ---
+async function loadDataForSelectedDate() {
+    const dateInput = document.getElementById('datePicker');
+    if (!dateInput.value) return;
+    
+    selectedDate = new Date(dateInput.value);
+    
+    try {
+        const year = selectedDate.getFullYear();
+        const month = selectedDate.getMonth() + 1;
+        const day = selectedDate.getDate();
+        
+        // Calculate which week of the month this date falls into
+        const firstDayOfMonth = new Date(year, month - 1, 1);
+        const firstMonday = new Date(firstDayOfMonth);
+        const dayOfWeek = firstMonday.getDay();
+        const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        firstMonday.setDate(firstMonday.getDate() - daysToMonday);
+        
+        const weekOfMonth = Math.ceil((day - firstMonday.getDate() + 1) / 7);
+        
+        const params = new URLSearchParams({ 
+            year, 
+            month,
+            week: weekOfMonth,
+            day: day
+        });
+        
+        const res = await fetch(`../api/get_daily_brgy_waste_details.php?${params.toString()}`);
+        const data = await res.json();
+        
+        if (data.success) {
+            // Update the display with the selected date's data
+            const dateStr = selectedDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            document.getElementById('selectedDateInfo').textContent = dateStr;
+            updateDateDisplay();
+            updateSelectedDateInfo();
+            
+            // Clear the day selection grid
+            const dayGrid = document.getElementById('daySelectionGrid');
+            dayGrid.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="material-symbols-rounded me-2">info</i>
+                        Showing data for ${data.date || 'selected date'}
+                    </div>
+                </div>
+            `;
+            
+            // Update total waste info
+            const totalTons = data.total_tons || 0;
+            document.getElementById('totalWasteInfo').textContent = `Total: ${totalTons.toFixed(2)} tons`;
+            
+            // Display the barangay data
+            showDayBrgyDetailsFromData(data);
+        }
+    } catch (e) {
+        console.error('Error loading data for selected date:', e);
+    }
+}
+
+function showDayBrgyDetailsFromData(data) {
+    const tableBody = document.getElementById('brgyDetailsTable');
+    tableBody.innerHTML = '';
+    
+    if (!data.barangay_data || data.barangay_data.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    <i class="material-symbols-rounded me-2">info</i>
+                    No collection data for this date
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    const totalCount = data.total_count || 0;
+    
+    data.barangay_data.forEach((brgy, index) => {
+        const progressWidth = totalCount > 0 ? (brgy.daily_count / totalCount) * 100 : 0;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-center">
+                <span class="badge ${index < 3 ? 'bg-warning text-dark' : 'bg-secondary'} fs-6">${index + 1}</span>
+            </td>
+            <td class="fw-semibold text-dark">${brgy.barangay}</td>
+            <td class="text-center fw-bold text-primary">${brgy.daily_count.toLocaleString()}</td>
+            <td class="text-center fw-bold text-success">${brgy.tons.toFixed(3)}</td>
+            <td class="text-center">
+                <span class="badge ${brgy.daily_count > 0 ? 'bg-success' : 'bg-secondary'}">
+                    ${brgy.daily_count > 0 ? 'Collected' : 'Done'}
+                </span>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// --- Weekly Calendar Functions ---
+function getWeekStart(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day;
+    const weekStart = new Date(d);
+    weekStart.setDate(diff);
+    return weekStart;
+}
+
+function initializeWeekCalendar() {
+    // Set up event listeners for navigation
+    document.querySelector('.prev-week').addEventListener('click', () => {
+        console.log('Previous week clicked');
+        navigateWeek(-1);
+    });
+    document.querySelector('.next-week').addEventListener('click', () => {
+        console.log('Next week clicked');
+        navigateWeek(1);
+    });
+    
+    // Load the current week
+    loadWeekCalendar();
+}
+
+function navigateWeek(direction) {
+    console.log('Navigating week:', direction, 'Current week start:', currentWeekStart.toDateString());
+    
+    // Create a new date to avoid mutating the original
+    const newWeekStart = new Date(currentWeekStart);
+    newWeekStart.setDate(newWeekStart.getDate() + (direction * 7));
+    currentWeekStart = newWeekStart;
+    
+    console.log('New week start:', currentWeekStart.toDateString());
+    
+    loadWeekCalendar();
+    
+    // Auto-select the first day of the new week if no date is selected
+    if (!selectedDate) {
+        selectedDate = new Date(currentWeekStart);
+        updateDateDisplay();
+        updateSelectedDateInfo();
+        loadDataForSelectedDate();
+    }
+}
+
+function loadWeekCalendar() {
+    const weekYear = document.querySelector('.week-year');
+    const weekGrid = document.getElementById('weekCalendarGrid');
+    
+    // Update week/year display
+    const weekEnd = new Date(currentWeekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    const startMonth = currentWeekStart.toLocaleDateString('en-US', { month: 'short' });
+    const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+    const year = currentWeekStart.getFullYear();
+    
+    if (startMonth === endMonth) {
+        weekYear.textContent = `${startMonth} ${year}`;
+    } else {
+        weekYear.textContent = `${startMonth} - ${endMonth} ${year}`;
+    }
+    
+    // Generate week days
+    weekGrid.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+        const dayDate = new Date(currentWeekStart);
+        dayDate.setDate(dayDate.getDate() + i);
+        
+        const dayElement = document.createElement('div');
+        dayElement.className = 'col';
+        
+        const isToday = isSameDay(dayDate, new Date());
+        const isSelected = selectedDate && isSameDay(dayDate, selectedDate);
+        
+        dayElement.innerHTML = `
+            <button class="btn btn-sm w-100 ${isSelected ? 'btn-primary' : isToday ? 'btn-outline-primary' : 'btn-outline-secondary'}" 
+                    onclick="selectDateFromCalendar('${dayDate.toISOString().split('T')[0]}')">
+                ${dayDate.getDate()}
+            </button>
+        `;
+        
+        weekGrid.appendChild(dayElement);
+    }
+    
+    console.log('Week loaded:', currentWeekStart.toDateString(), 'to', new Date(currentWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toDateString());
+}
+
+function isSameDay(date1, date2) {
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
+}
+
+function selectDateFromCalendar(dateString) {
+    selectedDate = new Date(dateString);
+    updateDateDisplay();
+    loadDataForSelectedDate();
+    loadWeekCalendar(); // Refresh to show selection
+    updateSelectedDateInfo();
+}
+
+// --- Date Display Functions ---
+function updateDateDisplay() {
+    const dateDisplay = document.getElementById('selectedDateDisplay');
+    if (selectedDate) {
+        const dateStr = selectedDate.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+        });
+        dateDisplay.textContent = dateStr;
+    } else {
+        dateDisplay.textContent = 'Choose Date';
+    }
+}
+
+function goToToday() {
+    selectedDate = new Date();
+    currentWeekStart = getWeekStart(selectedDate);
+    updateDateDisplay();
+    loadWeekCalendar();
+    loadDataForSelectedDate();
+}
+
+function updateSelectedDateInfo() {
+    const selectedDateInfo = document.getElementById('selectedDateInfo');
+    if (selectedDate) {
+        const dateStr = selectedDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        selectedDateInfo.innerHTML = `
+            <div class="col text-center">
+                <div class="fw-semibold text-primary">${dateStr}</div>
+                <div class="small text-muted">Click to view collection data</div>
+            </div>
+        `;
+    } else {
+        selectedDateInfo.innerHTML = `
+            <div class="col text-muted small">No date selected</div>
+        `;
+    }
+}
+
+function clearDateSelection() {
+    selectedDate = null;
+    document.getElementById('selectedDateDisplay').textContent = 'Choose Date';
+    updateSelectedDateInfo();
+    
+    // Clear the table
+    const tableBody = document.getElementById('brgyDetailsTable');
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+                <i class="material-symbols-rounded me-2">info</i>
+                Select a date to view collection details
+            </td>
+        </tr>
+    `;
+    
+    // Reset day selection grid
+    loadWeeklyBrgyData();
 }
 
 
@@ -892,6 +1447,263 @@ new Chart(ctx3, {
             border-radius: 8px;
             width: 100%;
             height: 170px;
+        }
+
+        /* Barangay Details Modal Styles */
+        .day-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .day-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #007bff;
+        }
+
+        .day-card.bg-primary {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .progress {
+            border-radius: 4px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+        }
+
+        .modal-xl {
+            max-width: 1200px;
+        }
+
+        /* Vehicle and Driver Info Styling */
+        .vehicle-driver-info {
+            font-size: 0.875rem;
+        }
+
+        .vehicle-info {
+            color: #007bff;
+            font-weight: 600;
+        }
+
+        .driver-info {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .plate-info {
+            color: #17a2b8;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .material-symbols-rounded {
+            vertical-align: middle;
+        }
+
+        /* Simple Date Picker Styles */
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+
+        /* Date Dropdown Styling */
+        .dropdown-menu {
+            border: 1px solid #dee2e6;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .btn-sm {
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+        }
+
+        /* Weekly Calendar Styling */
+        .week-grid .btn {
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .week-grid .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .week-grid .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .week-grid .btn-outline-primary {
+            color: #007bff;
+            border-color: #007bff;
+        }
+
+        .week-grid .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #dee2e6;
+        }
+
+        .selected-date-info {
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+        }
+
+        /* Clean Table Styling */
+        .table {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .table-dark th {
+            background-color: #343a40;
+            border-color: #454d55;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+        }
+
+        .progress {
+            border-radius: 0.375rem;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            border-radius: 0.375rem;
+            transition: width 0.3s ease;
+        }
+
+        /* Modal positioning to avoid sidebar overlap */
+        .modal {
+            z-index: 1055;
+        }
+
+        .modal-backdrop {
+            z-index: 1050;
+        }
+
+        /* Ensure modal content fits within viewport */
+        .modal-dialog {
+            margin: 1rem auto;
+            max-height: calc(100vh - 2rem);
+        }
+
+        .modal-content {
+            max-height: calc(100vh - 2rem);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            flex: 1;
+            max-height: calc(100vh - 200px);
+        }
+
+        /* Responsive modal sizing */
+        @media (max-width: 991.98px) {
+            .modal-dialog {
+                margin: 0.5rem;
+                max-height: calc(100vh - 1rem);
+            }
+            
+            .modal-content {
+                max-height: calc(100vh - 1rem);
+            }
+            
+            .modal-body {
+                max-height: calc(100vh - 150px);
+            }
+        }
+
+        /* Modal positioning - responsive and sidebar-aware */
+        .modal-dialog {
+            transition: all 0.3s ease;
+        }
+
+        /* Default positioning for large screens */
+        @media (min-width: 1200px) {
+            .modal-dialog {
+                margin-left: 280px;
+                margin-right: 1rem;
+                max-width: calc(100vw - 300px);
+            }
+        }
+
+        /* Medium screens - check if sidebar is collapsed */
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .modal-dialog {
+                margin-left: auto;
+                margin-right: auto;
+                max-width: calc(100vw - 2rem);
+            }
+        }
+
+        /* Small screens and mobile */
+        @media (max-width: 991.98px) {
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100vw - 1rem);
+            }
+        }
+
+        /* Override for when sidebar is hidden */
+        .modal-dialog.sidebar-hidden {
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: calc(100vw - 2rem) !important;
         }
     </style>
 </body>

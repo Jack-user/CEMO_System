@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 19, 2025 at 09:15 PM
+-- Generation Time: Oct 14, 2025 at 07:45 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -49,7 +49,9 @@ INSERT INTO `admin_notifications` (`id`, `title`, `notification_type`, `message`
 (36, 'New Service Request', 'new_request', 'New service request from test test for Street Cleaning on 2025-08-20 at 14:00', NULL, NULL, 1, '2025-08-11 12:58:27'),
 (37, 'New Service Request', 'new_request', 'New service request from Gina Aliguin for Drainage Maintenance on 2025-08-15 at 14:00', NULL, NULL, 1, '2025-08-11 12:59:45'),
 (38, 'New Service Request', 'new_request', 'New service request from test test for Drainage Maintenance on 2025-08-18 at 10:00', NULL, NULL, 1, '2025-08-18 06:52:04'),
-(39, 'New Service Request', 'new_request', 'New service request from test test for Pruning of Trees on 2025-08-29 at 14:00', NULL, NULL, 1, '2025-08-19 00:50:55');
+(39, 'New Service Request', 'new_request', 'New service request from test test for Pruning of Trees on 2025-08-29 at 14:00', NULL, NULL, 1, '2025-08-19 00:50:55'),
+(40, 'New Service Request', 'new_request', 'New service request from Gina Aliguin for Grass-Cutting on 2025-10-14 at 08:00', NULL, NULL, 1, '2025-10-01 11:41:42'),
+(41, 'New Service Request', 'new_request', 'New service request from Gina Aliguin for Cutting of Trees on 2025-10-03 at 11:00', NULL, NULL, 1, '2025-10-01 11:47:13');
 
 -- --------------------------------------------------------
 
@@ -76,7 +78,7 @@ CREATE TABLE `admin_table` (
 --
 
 INSERT INTO `admin_table` (`admin_id`, `user_role`, `first_name`, `last_name`, `email`, `gender`, `address`, `birth_date`, `contact`, `reset_token`, `password`) VALUES
-(1, 'Admin', 'Jack', 'Da Great', 'jack@gmail.com', 'Male', 'Pacol', '2003-09-27', '09123456789', '', '$2y$10$srxMYQBpVeF5BpuTRAjNyOD6B8MMeBLzLdVAP0icOpphxpMsN0zLK'),
+(1, 'Admin', 'Jack', 'Great', 'jack@gmail.com', 'Male', 'Pacol', '2003-09-27', '09123456789', '', '$2y$10$srxMYQBpVeF5BpuTRAjNyOD6B8MMeBLzLdVAP0icOpphxpMsN0zLK'),
 (3, 'Staff', 'Jack', 'Narvaez', 'jake@gmail.com', '', 'Napoles', '0000-00-00', '00000000000', '', '$2y$10$F5J.3u8WH8xgw/CweBzYQuRpAPK9s8Jv/D/brSEUBX5FxnQFKB5.q');
 
 -- --------------------------------------------------------
@@ -160,9 +162,8 @@ INSERT INTO `client_notifications` (`id`, `client_id`, `title`, `notification_ty
 (6, 11, '', 'Request Approved', 'Your request for pala utot has been approved and scheduled for 2025-08-20.', 'REQ20250808224957', 1, '2025-08-09 04:50:14'),
 (7, 11, '', 'Request Approved', 'Your request for Garbage Collection has been approved and scheduled for 2025-08-20.', 'REQ20250809190944', 1, '2025-08-10 01:10:09'),
 (8, 11, '', 'Request Approved', 'Your request for Grass-Cutting has been approved and scheduled for 2025-08-11.', 'REQ20250809185713', 1, '2025-08-10 14:50:32'),
-(9, 11, '', 'Request Approved', 'Your request for Drainage Maintenance has been approved and scheduled for 2025-08-11.', 'REQ20250810085346', 1, '2025-08-10 14:54:03'),
-(10, 11, '', 'Request Approved', 'Your request for Drainage Maintenance has been approved and scheduled for 2025-08-15.', 'REQ20250811065945', 1, '2025-08-11 12:59:55'),
-(11, 9, '', 'Request Approved', 'Your request for Pruning of Trees has been approved and scheduled for 2025-08-29.', 'REQ20250818185055', 0, '2025-08-19 00:51:54');
+(11, 9, '', 'Request Approved', 'Your request for Pruning of Trees has been approved and scheduled for 2025-08-29.', 'REQ20250818185055', 0, '2025-08-19 00:51:54'),
+(12, 11, '', 'Request Approved', 'Your request for Cutting of Trees has been approved and scheduled for 2025-10-03.', 'REQ20251001054713', 1, '2025-10-01 11:48:07');
 
 -- --------------------------------------------------------
 
@@ -203,14 +204,14 @@ INSERT INTO `client_requests` (`id`, `request_id`, `client_id`, `client_name`, `
 (4, 'REQ20250806185345', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-08', '00:00:00', 'Garbage Collection', '33333', '', 'completed', '', '2025-08-07 00:53:45', '2025-08-19 01:18:17', 'Garbage Collection', NULL, '2025-08-07 00:53:45'),
 (5, 'REQ20250806191500', 9, 'test test', 'test@gmail.com', '09123456784', 'Pacol', '2025-08-18', '00:00:00', 'Grass-Cutting', '', '', 'rejected', '', '2025-08-07 01:15:00', '2025-08-07 01:15:12', 'Grass-Cutting', NULL, '2025-08-07 01:15:00'),
 (6, 'REQ20250807191502', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-11', '00:00:00', 'Pruning of Trees', 'balabal', '', 'completed', 'oki', '2025-08-08 01:15:02', '2025-08-19 01:18:17', 'Pruning of Trees', NULL, '2025-08-08 01:15:02'),
-(7, 'REQ20250808224957', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-20', '00:00:00', 'pala utot', 'ka', '', 'approved', 'bago bule', '2025-08-09 04:49:57', '2025-08-09 04:50:14', 'Other', NULL, '2025-08-09 04:49:57'),
+(7, 'REQ20250808224957', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-20', '00:00:00', 'pala utot', 'ka', '', 'completed', 'bago bule', '2025-08-09 04:49:57', '2025-08-21 23:25:58', 'Other', NULL, '2025-08-09 04:49:57'),
 (8, 'REQ20250809185713', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-11', '00:00:00', 'Grass-Cutting', 'need daspan', '', 'completed', '', '2025-08-10 00:57:13', '2025-08-19 01:18:17', 'Grass-Cutting', NULL, '2025-08-10 00:57:13'),
-(9, 'REQ20250809190944', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-20', '10:00:00', 'Garbage Collection', '1312313', '', 'approved', 'OKI DOKI', '2025-08-10 01:09:44', '2025-08-10 01:10:09', 'Garbage Collection', NULL, '2025-08-10 01:09:44'),
+(9, 'REQ20250809190944', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-20', '10:00:00', 'Garbage Collection', '1312313', '', 'completed', 'OKI DOKI', '2025-08-10 01:09:44', '2025-08-21 23:25:58', 'Garbage Collection', NULL, '2025-08-10 01:09:44'),
 (10, 'REQ20250810085346', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-11', '13:00:00', 'Drainage Maintenance', '123123', '', 'completed', 'done', '2025-08-10 14:53:46', '2025-08-19 01:18:17', 'Drainage Maintenance', NULL, '2025-08-10 14:53:46'),
 (11, 'REQ20250811065827', 9, 'test test', 'test@gmail.com', '09123456784', 'cb5', '2025-08-20', '14:00:00', 'Street Cleaning', '123131', '', 'pending', NULL, '2025-08-11 12:58:27', '2025-08-11 12:58:27', 'Street Cleaning', NULL, '2025-08-11 12:58:27'),
-(12, 'REQ20250811065945', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-08-15', '14:00:00', 'Drainage Maintenance', '32131312', '', 'completed', '131231', '2025-08-11 12:59:45', '2025-08-19 01:18:17', 'Drainage Maintenance', NULL, '2025-08-11 12:59:45'),
 (13, 'REQ20250818005204', 9, 'test test', 'test@gmail.com', '09123456784', 'cb5', '2025-08-18', '10:00:00', 'Drainage Maintenance', '123123', '', 'pending', NULL, '2025-08-18 06:52:04', '2025-08-18 06:52:04', 'Drainage Maintenance', NULL, '2025-08-18 06:52:04'),
-(14, 'REQ20250818185055', 9, 'test test', 'test@gmail.com', '09123456784', 'cb5', '2025-08-29', '14:00:00', 'Pruning of Trees', 'praning kaba?', '', 'approved', 'no boyy', '2025-08-19 00:50:55', '2025-08-19 00:51:54', 'Pruning of Trees', NULL, '2025-08-19 00:50:55');
+(14, 'REQ20250818185055', 9, 'test test', 'test@gmail.com', '09123456784', 'cb5', '2025-08-29', '14:00:00', 'Pruning of Trees', 'praning kaba?', '', 'completed', 'no boyy', '2025-08-19 00:50:55', '2025-09-10 16:17:41', 'Pruning of Trees', NULL, '2025-08-19 00:50:55'),
+(15, 'REQ20251001054142', 11, 'Gina Aliguin', 'gina@gmail.com', '09090909090', 'cb2/office', '2025-10-14', '08:00:00', 'Grass-Cutting', '', '', 'approved', '', '2025-10-01 11:41:42', '2025-10-01 11:54:36', 'Grass-Cutting', NULL, '2025-10-01 11:41:42');
 
 -- --------------------------------------------------------
 
@@ -1327,7 +1328,20 @@ CREATE TABLE `maintenance_table` (
 --
 
 INSERT INTO `maintenance_table` (`maintenance_id`, `m_name`, `m_date`, `m_time`, `status`, `waste_service_id`) VALUES
-(14, '🚛 Vehicle 1', '2025-08-30', '08:00:00', 'Scheduled', 1);
+(14, 'Vehicle 1', '2025-09-25', '08:00:00', 'Completed', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `monthly_waste_table`
+--
+
+CREATE TABLE `monthly_waste_table` (
+  `id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `weight` decimal(8,2) NOT NULL,
+  `status` enum('collected','pending','missed') DEFAULT 'collected'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -1350,7 +1364,11 @@ CREATE TABLE `past_events_log` (
 --
 
 INSERT INTO `past_events_log` (`log_id`, `original_id`, `type`, `name`, `date`, `time`, `created_at`) VALUES
-(1, 'event_45', 'Event', 'Tanginaaa', '2025-08-15', '14:00:00', '2025-08-18 17:18:17');
+(1, 'event_45', 'Event', 'Tanginaaa', '2025-08-15', '14:00:00', '2025-08-18 17:18:17'),
+(2, 'maint_15', 'Maintenance', 'Vehicle 1', '2025-08-21', '09:00:00', '2025-08-21 15:26:23'),
+(3, 'event_47', 'Event', 'Camping', '2025-08-21', '10:00:00', '2025-08-21 15:26:39'),
+(4, 'maint_14', 'Maintenance', '🚛 Vehicle 1', '2025-08-30', '08:00:00', '2025-09-10 08:17:41'),
+(5, 'event_48', 'Event', 'Cutting of ', '2025-10-03', '11:00:00', '2025-10-05 12:47:51');
 
 -- --------------------------------------------------------
 
@@ -1394,14 +1412,9 @@ CREATE TABLE `schedule_table` (
 --
 
 INSERT INTO `schedule_table` (`schedule_id`, `event_name`, `day`, `time`, `status`, `waste_service_id`) VALUES
-(1, '', 'Monday', '08:00:00', 'Assigned', 1),
-(2, '', 'Tuesday ', '00:00:00', 'Vacant', 1),
-(3, '', 'Wednesday', '00:00:00', 'Pending', 1),
-(4, '', 'Thursday', '00:00:00', 'Waste Collected	', 1),
-(5, '', 'Friday', '00:00:00', 'Waste Collected	', 1),
-(6, '', 'Saturday', '00:00:00', 'Pending', 1),
-(7, '', 'Sunday', '00:00:00', 'Vacant', 1),
-(45, 'Drainage Ma', '2025-08-15', '14:00:00', 'Completed', 0);
+(45, 'Drainage Ma', '2025-08-15', '14:00:00', 'Completed', 0),
+(48, 'Cutting of ', '2025-10-03', '11:00:00', 'Completed', 0),
+(49, 'Grass-Cutti', '2025-10-14', '08:00:00', 'Scheduled', 0);
 
 -- --------------------------------------------------------
 
@@ -1413,6 +1426,7 @@ CREATE TABLE `sensor` (
   `id` int(11) NOT NULL,
   `sensor_id` int(11) NOT NULL,
   `count` int(225) NOT NULL,
+  `brgy_id` int(11) NOT NULL,
   `location_id` int(11) NOT NULL,
   `timestamp` datetime NOT NULL DEFAULT current_timestamp(),
   `distance` float DEFAULT NULL
@@ -1422,21 +1436,29 @@ CREATE TABLE `sensor` (
 -- Dumping data for table `sensor`
 --
 
-INSERT INTO `sensor` (`id`, `sensor_id`, `count`, `location_id`, `timestamp`, `distance`) VALUES
-(1, 1, 250, 1754767868, '2025-08-16 21:38:21', NULL),
-(2, 1, 300, 1754767868, '2025-08-16 21:38:21', NULL),
-(3, 1, 320, 1754767868, '2025-08-04 05:00:00', NULL),
-(4, 1, 410, 1754767868, '2025-08-05 05:00:00', NULL),
-(5, 1, 250, 1754767868, '2025-08-12 05:00:00', NULL),
-(6, 1, 350, 1754767868, '2025-08-13 05:00:00', NULL),
-(7, 1, 500, 1754767868, '2025-08-14 05:00:00', NULL),
-(8, 1, 460, 1754767868, '2025-08-15 05:00:00', NULL),
-(11, 1, 320, 1754767868, '2025-08-11 05:00:00', NULL),
-(12, 1, 250, 1754767868, '2025-08-12 05:00:00', NULL),
-(13, 1, 350, 1754767868, '2025-08-13 05:00:00', NULL),
-(14, 1, 500, 1754767868, '2025-08-14 05:00:00', NULL),
-(15, 1, 460, 1754767868, '2025-08-15 05:00:00', NULL),
-(16, 1, 0, 1754767868, '2025-08-16 05:00:00', NULL);
+INSERT INTO `sensor` (`id`, `sensor_id`, `count`, `brgy_id`, `location_id`, `timestamp`, `distance`) VALUES
+(2, 1, 350, 1, 1754767868, '2025-07-16 21:38:21', NULL),
+(3, 1, 320, 1, 1754767868, '2025-08-04 05:00:00', NULL),
+(4, 1, 410, 20, 1754767868, '2025-08-05 05:00:00', NULL),
+(11, 1, 500, 6, 1754767868, '2025-08-11 05:00:00', NULL),
+(12, 1, 250, 0, 1754767868, '2025-08-12 05:00:00', NULL),
+(13, 1, 350, 0, 1754767868, '2025-08-13 05:00:00', NULL),
+(14, 1, 500, 0, 1754767868, '2025-08-14 05:00:00', NULL),
+(15, 1, 460, 0, 1754767868, '2025-08-15 05:00:00', NULL),
+(18, 1, 500, 0, 0, '2025-08-20 03:24:02', NULL),
+(19, 1, 100, 0, 0, '2025-08-17 23:57:28', NULL),
+(20, 1, 3, 1, 1, '2025-09-01 08:30:00', NULL),
+(21, 1, 2, 1, 1, '2025-09-02 09:15:00', NULL),
+(22, 1, 4, 1, 2, '2025-09-02 10:20:00', NULL),
+(23, 1, 5, 1, 2, '2025-09-05 11:45:00', NULL),
+(24, 1, 1, 2, 3, '2025-09-07 14:10:00', NULL),
+(25, 1, 3, 2, 3, '2025-09-10 16:25:00', NULL),
+(26, 1, 550, 1, 1754767868, '2025-09-11 20:53:28', NULL),
+(27, 1, 900, 19, 0, '2025-10-06 08:00:42', NULL),
+(28, 1, 890, 19, 0, '2025-10-07 08:11:05', NULL),
+(29, 1, 450, 19, 0, '2025-10-08 11:11:41', NULL),
+(30, 1, 250, 1, 0, '2025-10-08 22:24:46', NULL),
+(31, 1, 300, 2, 0, '2025-10-08 22:26:37', NULL);
 
 -- --------------------------------------------------------
 
@@ -1518,11 +1540,21 @@ CREATE TABLE `tracking_table` (
 
 CREATE TABLE `waste_collection_table` (
   `waste_collection_id` int(11) NOT NULL,
-  `day` date NOT NULL,
+  `day` varchar(225) NOT NULL,
   `time` time NOT NULL,
   `waste_service_id` int(11) NOT NULL,
   `status` varchar(225) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `waste_collection_table`
+--
+
+INSERT INTO `waste_collection_table` (`waste_collection_id`, `day`, `time`, `waste_service_id`, `status`) VALUES
+(18, 'Monday', '08:00:00', 1, 'Morning'),
+(19, 'Tuesday', '13:00:00', 1, 'Afternoon'),
+(20, 'Thursday', '08:00:00', 1, 'Morning'),
+(21, 'Saturday', '13:00:00', 1, 'Afternoon');
 
 -- --------------------------------------------------------
 
@@ -1636,6 +1668,12 @@ ALTER TABLE `maintenance_table`
   ADD PRIMARY KEY (`maintenance_id`);
 
 --
+-- Indexes for table `monthly_waste_table`
+--
+ALTER TABLE `monthly_waste_table`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `past_events_log`
 --
 ALTER TABLE `past_events_log`
@@ -1707,7 +1745,7 @@ ALTER TABLE `waste_service_table`
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `admin_table`
@@ -1725,13 +1763,13 @@ ALTER TABLE `barangays_table`
 -- AUTO_INCREMENT for table `client_notifications`
 --
 ALTER TABLE `client_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `client_requests`
 --
 ALTER TABLE `client_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `client_table`
@@ -1761,13 +1799,19 @@ ALTER TABLE `gps_location`
 -- AUTO_INCREMENT for table `maintenance_table`
 --
 ALTER TABLE `maintenance_table`
-  MODIFY `maintenance_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `maintenance_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT for table `monthly_waste_table`
+--
+ALTER TABLE `monthly_waste_table`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `past_events_log`
 --
 ALTER TABLE `past_events_log`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `route_table`
@@ -1779,13 +1823,13 @@ ALTER TABLE `route_table`
 -- AUTO_INCREMENT for table `schedule_table`
 --
 ALTER TABLE `schedule_table`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `sensor`
 --
 ALTER TABLE `sensor`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `service_assignment_table`
@@ -1809,7 +1853,7 @@ ALTER TABLE `tracking_table`
 -- AUTO_INCREMENT for table `waste_collection_table`
 --
 ALTER TABLE `waste_collection_table`
-  MODIFY `waste_collection_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `waste_collection_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `waste_management`
