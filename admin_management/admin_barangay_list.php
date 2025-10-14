@@ -68,9 +68,10 @@ include '../backend/admin_fetch_brgy.php';
                   <label class="small text-muted mb-0">Lookback</label>
                   <select id="riskLookbackBrgyList" class="form-select form-select-sm" style="width: auto;">
                     <option value="7">7 days</option>
-                    <option value="14">14 days</option>
+                    <option value="14" selected>14 days</option>
                     <option value="30">30 days</option>
                   </select>
+                  <button id="toggleRiskBrgyList" class="btn btn-sm btn-outline-danger ms-2" title="Toggle Health Risk Prediction">Show Risk</button>
                   <!-- <button id="exportCsvBtn" class="btn btn-sm btn-outline-secondary">Export CSV</button> -->
                 </div>
               </div>
@@ -350,6 +351,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentShownBrgy = null;
     let latestRiskData = [];
     let lastRiskSnapshot = new Map();
+    let riskOverlayEnabled = false;
+    let riskRefreshTimer = null;
 
     function riskColor(r) {
         if (r === 'high') return '#e53935';
@@ -358,25 +361,34 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function loadRiskData(showToastOnChange = false) {
-        const lookback = document.getElementById('riskLookbackBrgyList').value || 7;
-        fetch(`../api/get_health_risk_map.php?lookback_days=${encodeURIComponent(lookback)}`)
+        const lookback = document.getElementById('riskLookbackBrgyList').value || 14;
+        const url = `../api/get_health_risk_ml.php?lookback_days=${encodeURIComponent(lookback)}`;
+        fetch(url)
             .then(r => r.json())
             .then(data => {
-                if (!data || !data.success || !Array.isArray(data.data)) return;
-                // Clear markers and hide any shown polygons
+                if (!data || !data.success || !Array.isArray(data.predictions)) return;
+                // Clear markers and polygons first
                 markersLayer.clearLayers();
                 Object.values(barangayPolygons).forEach(p => { try { map.removeLayer(p); } catch (e) {} });
-                latestRiskData = data.data;
+                latestRiskData = data.predictions;
                 populateBarangayFilter(latestRiskData);
                 const filtered = filterRiskData(latestRiskData);
                 if (showToastOnChange) notifyRiskChanges(filtered);
+                
+                // Only process and show markers if risk overlay is enabled
+                if (!riskOverlayEnabled) return;
+                
                 filtered.forEach(row => {
                     const name = row.barangay;
-                    const risk = row.risk;
-                    const tons = row.tons;
-                    // Update polygon style for later display (do not show now)
+                    const risk = row.predicted_risk;
+                    const tons = row.predicted_tons;
+                    const confidence = row.confidence;
+                    // Update polygon style and optionally show if overlay enabled
                     if (barangayPolygons[name]) {
                         barangayPolygons[name].setStyle({ fillColor: riskColor(risk), fillOpacity: 0.30, color: riskColor(risk), weight: 2 });
+                        if (riskOverlayEnabled) {
+                            try { barangayPolygons[name].addTo(map); } catch (e) {}
+                        }
                     }
                     // Add interactive marker
                     if (row.latitude && row.longitude) {
@@ -386,8 +398,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             iconSize: [14, 14],
                             iconAnchor: [7, 7]
                         });
-                        const marker = L.marker([row.latitude, row.longitude], { icon }).addTo(markersLayer)
-                            .bindPopup(`<b>${name}</b><br/>Risk: ${risk}<br/>Waste: ${tons.toFixed(2)} tons<br/><div class='mt-2 d-flex gap-2'><button class='btn btn-sm btn-outline-primary' data-action='route' data-name='${name}' data-lat='${row.latitude}' data-lng='${row.longitude}'>Route Assist</button><button class='btn btn-sm btn-outline-secondary' data-action='drill' data-name='${name}' data-brgy='${name}'>Drill-down</button></div>`);
+                        const marker = L.marker([row.latitude, row.longitude], { icon })
+                            .bindPopup(`<div class="text-center"><b>${name}</b><br/><span class="badge bg-${risk === 'high' ? 'danger' : risk === 'medium' ? 'warning text-dark' : 'success'}">${risk.toUpperCase()} RISK</span><br/><div class="mt-2 small"><div><strong>Confidence:</strong> ${confidence.toFixed(1)}%</div><div><strong>Forecasted:</strong> ${tons.toFixed(2)} tons</div></div><div class='mt-2'><button class='btn btn-sm btn-outline-secondary' data-action='drill' data-name='${name}' data-brgy='${name}'>Drill-down</button></div></div>`);
+                        
+                        // Add marker to map (we're already inside the riskOverlayEnabled check)
+                        marker.addTo(markersLayer);
                         marker.on('click', () => {
                             // Toggle: if same barangay is visible, hide it; otherwise show only this one
                             if (currentShownBrgy === name) {
@@ -407,8 +422,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         marker.on('popupopen', (ev) => {
                             const el = ev.popup.getElement();
                             if (!el) return;
-                            const routeBtn = el.querySelector("[data-action='route']");
-                            if (routeBtn) routeBtn.addEventListener('click', () => startRouteAssist(parseFloat(routeBtn.dataset.lat), parseFloat(routeBtn.dataset.lng)));
                             const drillBtn = el.querySelector("[data-action='drill']");
                             if (drillBtn) drillBtn.addEventListener('click', () => openDrilldown(name));
                         });
@@ -432,13 +445,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const brgySel = document.getElementById('filterBarangay');
         let out = data;
         if (brgySel && brgySel.value && brgySel.value !== 'all') out = out.filter(d => d.barangay === brgySel.value);
-        if (onlyHigh && onlyHigh.checked) out = out.filter(d => d.risk === 'high');
-        else if (riskSel && riskSel.value && riskSel.value !== 'all') out = out.filter(d => d.risk === riskSel.value);
+        if (onlyHigh && onlyHigh.checked) out = out.filter(d => d.predicted_risk === 'high');
+        else if (riskSel && riskSel.value && riskSel.value !== 'all') out = out.filter(d => d.predicted_risk === riskSel.value);
         return out;
     }
 
     function notifyRiskChanges(list) {
-        const current = new Map(list.map(d => [d.barangay, d.risk]));
+        const current = new Map(list.map(d => [d.barangay, d.predicted_risk]));
         const changes = [];
         current.forEach((risk, name) => {
             const prev = lastRiskSnapshot.get(name);
@@ -447,14 +460,14 @@ document.addEventListener('DOMContentLoaded', function () {
         lastRiskSnapshot = new Map(current);
         if (changes.length && typeof Swal !== 'undefined') {
             const html = changes.slice(0, 5).map(c => `<div><b>${c.name}</b>: ${c.from} → <span style='color:${riskColor(c.to)}'>${c.to}</span></div>`).join('');
-            Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Risk updates', html, showConfirmButton: false, timer: 3500, timerProgressBar: true });
+            Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'ML Risk Prediction Updates', html, showConfirmButton: false, timer: 3500, timerProgressBar: true });
         }
     }
 
     // Export CSV for currently filtered list
     function exportCsv() {
         const filtered = filterRiskData(latestRiskData);
-        const rows = [['Barangay','Risk','Tons','Latitude','Longitude']].concat(filtered.map(d => [d.barangay, d.risk, d.tons, d.latitude || '', d.longitude || '']));
+        const rows = [['Barangay','Predicted Risk','Predicted Tons','Confidence','Latitude','Longitude']].concat(filtered.map(d => [d.barangay, d.predicted_risk, d.predicted_tons, d.confidence, d.latitude || '', d.longitude || '']));
         const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
@@ -578,8 +591,30 @@ document.addEventListener('DOMContentLoaded', function () {
     const exportBtn = document.getElementById('exportCsvBtn');
     if (exportBtn) exportBtn.addEventListener('click', exportCsv);
 
-    // Auto refresh every 45s with change toast
-    setInterval(() => loadRiskData(true), 45000);
+    // Risk overlay toggle + auto refresh
+    const toggleBtn = document.getElementById('toggleRiskBrgyList');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function(){
+            riskOverlayEnabled = !riskOverlayEnabled;
+            if (riskOverlayEnabled) {
+                this.classList.remove('btn-outline-danger');
+                this.classList.add('btn-danger');
+                loadRiskData(true);
+                if (riskRefreshTimer) clearInterval(riskRefreshTimer);
+                riskRefreshTimer = setInterval(() => loadRiskData(false), 60000);
+            } else {
+                this.classList.remove('btn-danger');
+                this.classList.add('btn-outline-danger');
+                if (riskRefreshTimer) { clearInterval(riskRefreshTimer); riskRefreshTimer = null; }
+                // Hide polygons and markers when disabled
+                Object.values(barangayPolygons).forEach(p => { try { map.removeLayer(p); } catch (e) {} });
+                markersLayer.clearLayers();
+            }
+        });
+    }
+
+    // Auto refresh every 45s toast for risk changes (only when overlay enabled)
+    setInterval(() => { if (riskOverlayEnabled) loadRiskData(true); }, 45000);
 });
 </script>
       <style>

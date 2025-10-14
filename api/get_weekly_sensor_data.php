@@ -47,7 +47,7 @@ try {
     $weekEnd = $weekSunday->format('Y-m-d 23:59:59');
 
     // -----------------------------
-    // Fetch Daily Data for sensor_id = 1
+    // Fetch Daily Data for sensor_id = 1 (raw sensor table only)
     // -----------------------------
     $dailyQuery = "
         SELECT 
@@ -160,7 +160,8 @@ try {
     $stmtLast->execute();
     $lastRes = $stmtLast->get_result();
     $lastRow = $lastRes->fetch_assoc();
-    $lastWeekTons = $lastRow['total_count'] ? number_format($lastRow['total_count'] * 0.001, 2) : "0.00";
+    $lastWeekTons = $lastRow && $lastRow['total_count'] ? number_format($lastRow['total_count'] * 0.001, 2) : "0.00";
+    $stmtLast->close();
 
     // -----------------------------
     // Final Output

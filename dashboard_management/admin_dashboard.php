@@ -69,6 +69,8 @@ $row = $result->fetch_assoc();
 
 $collected = $row['collected'] ?? 0;
 $progress = $target > 0 ? round(($collected / $target) * 100, 1) : 0;
+// Limit progress to 98% maximum
+if ($progress > 98) $progress = 98;
 
 ?>
 <body class="g-sidenav-show bg-gray-100">
@@ -461,6 +463,37 @@ async function loadDashboardSummary() {
     }
 }
 
+// --- Waste Forecast Loading ---
+async function loadWasteForecast() {
+    try {
+        const res = await fetch('../api/get_waste_forecast.php?lookback_days=35');
+        const data = await res.json();
+        console.log('Waste forecast API response:', data); // Debug log
+
+        if (data.success && data.forecasts && data.forecasts.length > 0) {
+            // Calculate total forecasted waste for next week
+            const totalForecast = data.forecasts.reduce((sum, forecast) => {
+                return sum + (forecast.forecasted_tons || 0);
+            }, 0);
+            
+            // Update the forecast display
+            document.getElementById('forecastedWasteNextWeek').textContent = 
+                totalForecast.toFixed(2) + ' tons';
+            
+            // Add model info as tooltip or console log
+            console.log('Forecast model:', data.model_info);
+            console.log('Total forecasted waste:', totalForecast.toFixed(2), 'tons');
+            console.log('Number of barangays with forecasts:', data.forecasts.length);
+            
+        } else {
+            throw new Error(data.error || 'No forecast data available');
+        }
+    } catch (error) {
+        console.error('Error loading waste forecast:', error);
+        document.getElementById('forecastedWasteNextWeek').textContent = 'Error';
+    }
+}
+
 // --- Brgy Waste Volume Dynamic Section ---
 let brgyChart;
 let brgyList = [];
@@ -618,9 +651,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial load
     loadDashboardSummary();
+    loadWasteForecast();
     loadWeeklyWasteData();
     setInterval(() => { 
         loadDashboardSummary(); 
+        loadWasteForecast();
         loadWeeklyWasteData(); 
         loadBrgyWasteVolume(); 
     }, 30000);
@@ -927,8 +962,8 @@ async function showDayBrgyDetails(dayIndex) {
     const totalCount = dayData.total_count;
     
     dayData.barangay_data.forEach((brgy, index) => {
-        const progressWidth = totalCount > 0 ? (brgy.daily_count / totalCount) * 100 : 0;
-        const percentage = totalCount > 0 ? (brgy.daily_count / totalCount) * 100 : 0;
+        const progressWidth = totalCount > 0 ? Math.min(98, (brgy.daily_count / totalCount) * 100) : 0;
+        const percentage = totalCount > 0 ? Math.min(98, (brgy.daily_count / totalCount) * 100) : 0;
         
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -1069,7 +1104,7 @@ function showDayBrgyDetailsFromData(data) {
     const totalCount = data.total_count || 0;
     
     data.barangay_data.forEach((brgy, index) => {
-        const progressWidth = totalCount > 0 ? (brgy.daily_count / totalCount) * 100 : 0;
+        const progressWidth = totalCount > 0 ? Math.min(98, (brgy.daily_count / totalCount) * 100) : 0;
         
         const row = document.createElement('tr');
         row.innerHTML = `

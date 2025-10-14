@@ -630,11 +630,12 @@ function loadVehicleInfo() {
             }
 
             if (statusEl) {
-                statusEl.textContent = d.status || 'On going';
-                statusEl.classList.remove('bg-secondary', 'bg-warning', 'bg-success');
+                statusEl.textContent = d.status || 'Ongoing';
+                statusEl.classList.remove('bg-secondary', 'bg-warning', 'bg-success', 'bg-primary');
                 const s = (d.status || '').toLowerCase();
                 if (s === 'collecting') statusEl.classList.add('bg-warning');
                 else if (s === 'collected') statusEl.classList.add('bg-success');
+                else if (s === 'route accomplished') statusEl.classList.add('bg-primary');
                 else statusEl.classList.add('bg-secondary');
             }
         })

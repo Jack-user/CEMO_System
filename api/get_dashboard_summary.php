@@ -3,15 +3,15 @@ header('Content-Type: application/json');
 include '../includes/conn.php';
 
 try {
-    // Today's count
+    // Today's latest reading (not sum)
     $today = date('Y-m-d');
 
-    $stmt = $conn->prepare("SELECT SUM(count) FROM sensor WHERE sensor_id = 1 AND DATE(timestamp) = ?");
+    $stmt = $conn->prepare("SELECT count FROM sensor WHERE sensor_id = 1 AND DATE(timestamp) = ? ORDER BY timestamp DESC LIMIT 1");
     $stmt->bind_param("s", $today);
     $stmt->execute();
     $todayRow = $stmt->get_result()->fetch_row();
-    $todaySumRaw = $todayRow[0];
-    $todayTons = ($todaySumRaw ?? 0) * 0.001;
+    $todayLatestRaw = $todayRow ? $todayRow[0] : 0;
+    $todayTons = ($todayLatestRaw ?? 0) * 0.001;
 
     // Last week: Mon–Sun
     $lastMon = date('Y-m-d', strtotime('last week monday'));
@@ -47,7 +47,7 @@ try {
     echo json_encode([
         'success' => true,
         'todayTons' => round($todayTons, 2),
-        'todaySumRaw' => $todaySumRaw ?? 0,
+        'todayLatestRaw' => $todayLatestRaw ?? 0,
         'lastWeekTons' => round($lastWeekTons, 2),
         'lastWeekPercentageChange' => $pctChange,           // capped growth %
         'weeklyUtilization' => $utilizationPercent         // 0–100% of capacity

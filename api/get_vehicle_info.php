@@ -91,13 +91,27 @@ try {
         }
     }
 
-    // 5) Derive status
-    if (!empty($endPointName) && $nearestBarangay === $endPointName) {
-        $status = 'Collected';
-    } elseif ($nearestBarangay) {
+    // 5) Derive status (four states)
+    // Fetch latest sensor sample (count and timestamp)
+    $sensorLatest = $pdo->query("SELECT count, timestamp FROM sensor ORDER BY timestamp DESC, sensor_id DESC LIMIT 1")->fetch();
+    $latestCount = isset($sensorLatest['count']) ? (int)$sensorLatest['count'] : 0;
+    $latestCountTs = isset($sensorLatest['timestamp']) ? strtotime($sensorLatest['timestamp']) : null;
+
+    // Consider sensor 'active' if recent (last 5 minutes)
+    $nowTs = time();
+    $sensorActive = ($latestCountTs !== null && ($nowTs - $latestCountTs) <= 300);
+    $isCollecting = $sensorActive && $latestCount > 0;
+    $nearEndPoint = (!empty($endPointName) && $nearestBarangay === $endPointName);
+    $insideAnyBarangay = !empty($nearestBarangay);
+
+    if ($nearEndPoint && !$isCollecting) {
+        $status = 'Route Accomplished';
+    } elseif ($isCollecting) {
         $status = 'Collecting';
+    } elseif ($insideAnyBarangay) {
+        $status = 'Collected';
     } else {
-        $status = 'On going';
+        $status = 'Ongoing';
     }
 
     // 6) Get sensor data for capacity calculation
