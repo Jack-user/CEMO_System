@@ -119,7 +119,7 @@ if ($progress > 98) $progress = 98;
                                     <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
                                         Waste Collection Progress
                                     </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" id="wasteCollectionProgress">
                                         <?php echo $progress . "%"; ?>
                                     </div>
                                 </div>
@@ -286,7 +286,7 @@ if ($progress > 98) $progress = 98;
 
 
             <div class="row">
-                <div class="col-lg-6 col-md-6 mt-4 mb-4">
+                <div class="col-lg-12 col-md-8 mt-4 mb-4">
                     <div class="card waste-volume-card">
                         <div class="card-body p-4">
                             <!-- Header Section -->
@@ -330,7 +330,7 @@ if ($progress > 98) $progress = 98;
                     </div>
                 </div>
 
-                <div class="col-lg-6 col-md-6 mt-4 mb-4">
+                <!-- <div class="col-lg-6 col-md-6 mt-4 mb-4">
                     <div class="card">
                         <div class="card-body">
                             <h6 class="mb-0">Dumpsite Area</h6>
@@ -347,7 +347,7 @@ if ($progress > 98) $progress = 98;
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
         </div>
     </div>
 </div>
@@ -727,6 +727,16 @@ async function loadWeeklyWasteData() {
             const efficiency = expectedTotal > 0 ? (totalWeekTons / expectedTotal) * 100 : 0;
             document.getElementById('collectionEfficiency').textContent =
                 efficiency.toFixed(0) + '%';
+
+            // --- Waste Collection Progress (Current Week Only) ---
+            const progressEl = document.getElementById('wasteCollectionProgress');
+            if (progressEl) {
+                // Prefer API-provided weekly utilization if available
+                const weeklyUtil = (data.weeklyUtilization !== undefined && data.weeklyUtilization !== null)
+                    ? Number(data.weeklyUtilization)
+                    : efficiency; // fallback to computed efficiency
+                progressEl.textContent = (isFinite(weeklyUtil) ? weeklyUtil.toFixed(1) : '0.0') + '%';
+            }
         }
 
         // --- Update week cards ---

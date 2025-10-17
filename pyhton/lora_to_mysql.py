@@ -3,182 +3,229 @@ import requests
 import json
 import time
 from datetime import datetime
+import os
 
-try:
-    # Optional: use the same geo-fence logic as logic_status.py if Shapely is available
-    from shapely.geometry import Point, shape
-    import os
-    SHAPELY_AVAILABLE = True
-except Exception:
-    SHAPELY_AVAILABLE = False
+# ---------------- BARANGAY MAP SETUP ----------------
+# Load barangay polygons from GeoJSON and map names to brgy_id via API
 
-# -------------------- CONFIG --------------------
-PORT = "COM8"       # Change if your Arduino uses another port
-BAUD = 9600
+_geo_polygons = []  # list of tuples: (name, [ (lng, lat), ... ] for each ring) supports MultiPolygon
+_name_to_id = None
 
-# Endpoints
-# POST_URL = "http://localhost/CEMO_System/final/api/insert_lora.php"  # local combined insert
-POST_URL = "https://bagowastetracker.bccbsis.com/api/insert_lora.php"  # online
-
-# Single-endpoint flow: only use insert_lora.php
-
-# Static IDs (adjust as needed)
-DEFAULT_SENSOR_ID = 1
-DEFAULT_BRGY_ID = 1
-
-
-# -------------------- SETUP --------------------
-print(f"🔌 Connecting to Arduino on {PORT} ...")
-ser = serial.Serial(PORT, BAUD, timeout=2)
-print("✅ Connected successfully!\n")
-print("📡 Listening for sensor data from Arduino...\n")
-
-# --- Optional geo-fence (replicates logic_status.py behavior) ---
-geo_shape = None
-if SHAPELY_AVAILABLE:
+def _load_barangay_geojson():
+    global _geo_polygons
     try:
-        geojson_path = os.path.join("barangay_api", "brgy.geojson")
+        geojson_path = os.path.join("..", "barangay_api", "brgy.geojson")
         with open(geojson_path, "r", encoding="utf-8") as f:
-            geojson_data = json.load(f)
-        # Build map of polygons and names
-        geo_features = geojson_data["features"]
-        geo_polygons = []  # list of (name, shapely_shape)
-        for feat in geo_features:
-            try:
-                name = feat.get("properties", {}).get("name") or feat.get("properties", {}).get("barangay")
-                shp = shape(feat["geometry"]) if feat.get("geometry") else None
-                if name and shp:
-                    geo_polygons.append((name, shp))
-            except Exception:
+            gj = json.load(f)
+        feats = gj.get("features", [])
+        result = []
+        for feat in feats:
+            props = feat.get("properties", {})
+            name = props.get("name") or props.get("barangay")
+            geom = feat.get("geometry") or {}
+            gtype = geom.get("type")
+            coords = geom.get("coordinates")
+            if not name or not coords:
                 continue
-        print(f"🗺️ Geo-fence loaded: {len(geo_polygons)} barangay polygons.")
+            # GeoJSON coordinates are [lng, lat]
+            if gtype == "Polygon":
+                # coords: [ [ [lng, lat], ... ] outer ring, holes... ]
+                rings = []
+                for ring in coords:
+                    rings.append([(pt[0], pt[1]) for pt in ring])
+                result.append((name, rings))
+            elif gtype == "MultiPolygon":
+                # coords: [ [ [ [lng, lat], ... ] ], ... ]
+                for poly in coords:
+                    rings = []
+                    for ring in poly:
+                        rings.append([(pt[0], pt[1]) for pt in ring])
+                    result.append((name, rings))
+        _geo_polygons = result
+        print(f"🗺️ Geo-fence loaded: {len(_geo_polygons)} barangay polygons.")
     except Exception as e:
+        _geo_polygons = []
         print("⚠️ Could not load geo-fence:", e)
-        geo_polygons = []
 
-# Track last GPS for movement detection
-last_lat = None
-last_lng = None
-last_location_id = None
-last_brgy_name = None
-last_brgy_id = DEFAULT_BRGY_ID
-
-# Per-barangay baseline for sensor counts
-per_brgy_baseline = {}
-
-# -------------------- LOOP --------------------
-while True:
+def _fetch_barangays_map():
+    global _name_to_id
+    if _name_to_id is not None:
+        return _name_to_id
     try:
-        if ser.in_waiting:
-            line = ser.readline().decode('utf-8', errors='ignore').strip()
-            if not line:
+        resp = requests.get("https://bagowastetracker.bccbsis.com/barangay_api/get_barangays.php", timeout=10)
+        data = resp.json()
+        mapping = {}
+        for b in data:
+            nm = b.get("barangay")
+            try:
+                bid = int(b.get("brgy_id", 0))
+            except Exception:
+                bid = 0
+            if nm and bid:
+                mapping[nm] = bid
+        _name_to_id = mapping
+    except Exception as e:
+        print("⚠️ Failed to fetch barangay map:", e)
+        _name_to_id = {}
+    return _name_to_id
+
+def _point_in_ring(lng, lat, ring):
+    # Ray casting algorithm for a single ring (closed polygon). ring: list of (lng, lat)
+    inside = False
+    n = len(ring)
+    if n < 3:
+        return False
+    x, y = lng, lat
+    for i in range(n):
+        x1, y1 = ring[i]
+        x2, y2 = ring[(i + 1) % n]
+        # Check if point is between y1 and y2 in y-axis and to the left of edge
+        if ((y1 > y) != (y2 > y)):
+            xinters = (x2 - x1) * (y - y1) / (y2 - y1 + 1e-12) + x1
+            if x < xinters:
+                inside = not inside
+    return inside
+
+def _point_in_polygon(lng, lat, rings):
+    # Outer ring determines inclusion; holes (if any) exclude
+    if not rings:
+        return False
+    if not _point_in_ring(lng, lat, rings[0]):
+        return False
+    # If inside outer, ensure not inside any hole rings
+    for hole in rings[1:]:
+        if _point_in_ring(lng, lat, hole):
+            return False
+    return True
+
+def compute_brgy_id(latitude, longitude, default_id=1):
+    # Ensure geo and name map are loaded
+    if not _geo_polygons:
+        _load_barangay_geojson()
+    name_to_id = _fetch_barangays_map()
+    lng = float(longitude)
+    lat = float(latitude)
+    found_name = None
+    for name, rings in _geo_polygons:
+        try:
+            if _point_in_polygon(lng, lat, rings):
+                found_name = name
+                break
+        except Exception:
+            continue
+    if found_name and found_name in name_to_id:
+        return name_to_id[found_name]
+    return default_id
+
+# ---------------- CONFIG ----------------
+SERIAL_PORT = "COM8"   # Change this to your LoRa receiver port
+BAUD_RATE = 9600
+DB_URL = "https://bagowastetracker.bccbsis.com/api/insert_lora.php"  # Update with your local or hosted PHP API
+
+# ---------------- FUNCTION ----------------
+def send_to_database(latitude, longitude, distance, count):
+    # Handle invalid GPS coordinates (0,0)
+    if latitude == 0 and longitude == 0:
+        print("📍 Using default location for invalid GPS coordinates")
+        # You can set default coordinates here if needed
+        # latitude = 14.5995  # Example: Manila coordinates
+        # longitude = 120.9842
+        brgy_id = 1  # Use default barangay ID
+    else:
+        brgy_id = compute_brgy_id(latitude, longitude, default_id=1)
+    
+    payload = {
+        "sensor_id": 1,          # or dynamically assign if needed
+        "brgy_id": brgy_id,
+        "location_id": 1,
+        "latitude": latitude,
+        "longitude": longitude,
+        "distance": distance,
+        "count": count,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    # Retry logic for database connection
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(DB_URL, data=payload, timeout=10)
+            if response.status_code == 200:
+                print(f"✅ Data sent successfully: {payload}")
+                return  # Success, exit retry loop
+            else:
+                print(f"⚠️ Server error ({response.status_code}): {response.text}")
+                if attempt < max_retries - 1:
+                    print(f"🔄 Retrying in 2 seconds... (attempt {attempt + 2}/{max_retries})")
+                    time.sleep(2)
+        except requests.exceptions.ConnectionError as e:
+            print(f"❌ Connection failed (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                print("💡 Make sure XAMPP is running and Apache is started")
+                print(f"🔄 Retrying in 3 seconds...")
+                time.sleep(3)
+        except Exception as e:
+            print(f"❌ Failed to send data: {e}")
+            break  # Don't retry for other types of errors
+
+# ---------------- MAIN ----------------
+try:
+    ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+    print("📡 Waiting for LoRa JSON data...")
+    print(f"🔌 Connected to {SERIAL_PORT} at {BAUD_RATE} baud")
+    print("📋 Status messages will be filtered out\n")
+
+    while True:
+        if ser.in_waiting > 0:
+            line = ser.readline().decode(errors="ignore").strip()
+
+            # Ignore empty lines and decorative separators
+            if not line or line.startswith("-"):
+                continue
+            
+            # Filter out Arduino status messages
+            if any(status in line for status in [
+                "✅ LoRa Receiver ready", 
+                "📡 Listening for packets", 
+                "Initializing LoRa Receiver",
+                "RSSI:"
+            ]):
+                print(f"🔧 Arduino status: {line}")
                 continue
 
-            print("📡 Raw Data:", line)
+            print(f"📨 Raw data received: {line}")
 
-            # Example format from Arduino: NoGPS,NoGPS,206.65,11
-            parts = line.split(',')
-            if len(parts) == 4:
-                lat_str, lng_str, distance_str, count_str = parts
+            try:
+                data = json.loads(line)
 
-                # Replace NoGPS with 0.0 for safety
-                lat = 0.0 if "NoGPS" in lat_str else float(lat_str)
-                lng = 0.0 if "NoGPS" in lng_str else float(lng_str)
-                distance = float(distance_str)
-                count = int(count_str)
+                latitude = data.get("latitude", 0)
+                longitude = data.get("longitude", 0)
+                distance = data.get("distance", 0)
+                count = data.get("count", 0)
+                raw_data = data.get("raw_data", "")
 
-                # --- Status logic (mirrors logic_status.py) ---
-                gps_moving = False
-                if last_lat is not None and last_lng is not None:
-                    gps_moving = (abs(lat - last_lat) > 0.00005 or abs(lng - last_lng) > 0.00005)
+                print(f"📥 Parsed JSON: {data}")
 
-                inside_fence = False
-                current_brgy_name = None
-                if SHAPELY_AVAILABLE and geo_polygons:
-                    try:
-                        pt = Point(lat, lng)
-                        for name, shp in geo_polygons:
-                            if shp.contains(pt):
-                                inside_fence = True
-                                current_brgy_name = name
-                                break
-                    except Exception:
-                        inside_fence = False
+                # Skip corrupted or invalid data
+                if raw_data in ["\\", "/", ""] and latitude == 0 and longitude == 0 and distance == 0 and count == 0:
+                    print("⚠️ Skipping corrupted data packet")
+                    continue
 
-                last_lat, last_lng = lat, lng
-                # Generate a fresh location_id similar to logic_status.py
-                last_location_id = int(datetime.now().timestamp())
+                # Always insert data, even with invalid GPS (0,0)
+                # The database will handle the coordinates as provided
+                print(f"📍 GPS Status: {'Valid' if latitude != 0 or longitude != 0 else 'Invalid (0,0) - will use default location'}")
+                
+                send_to_database(latitude, longitude, distance, count)
 
-                if inside_fence:
-                    if gps_moving and count == 0:
-                        status = "Ongoing"
-                    elif gps_moving and count > 0:
-                        status = "Collecting"
-                    else:
-                        status = "Idle"
-                else:
-                    status = "Collected"
+            except json.JSONDecodeError:
+                print(f"⚠️ Non-JSON line ignored: {line}")
+                print("💡 Make sure your LoRa transmitter is sending JSON format")
+            except Exception as e:
+                print(f"❌ Unexpected error: {e}")
 
-                # --- Determine brgy_id via local API mapping ---
-                # Cache barangay list for fast lookup
-                def fetch_barangays_map():
-                    try:
-                        resp = requests.get("https://bagowastetracker.bccbsis.com/barangay_api/get_barangays.php", timeout=10)
-                        data = resp.json()
-                        name_to_id = {}
-                        for b in data:
-                            name_to_id[b.get("barangay")] = int(b.get("brgy_id", 0))
-                        return name_to_id
-                    except Exception as e:
-                        print("⚠️ Failed to fetch barangays:", e)
-                        return {}
+        time.sleep(0.2)
 
-                if not hasattr(fetch_barangays_map, "cache"):
-                    fetch_barangays_map.cache = fetch_barangays_map()
-                name_to_id = fetch_barangays_map.cache
-
-                current_brgy_id = last_brgy_id
-                if current_brgy_name and current_brgy_name in name_to_id:
-                    current_brgy_id = name_to_id[current_brgy_name]
-                elif current_brgy_id == 0 or current_brgy_id is None:
-                    # Fallback to default if no valid barangay detected
-                    current_brgy_id = DEFAULT_BRGY_ID
-
-                # --- Per-barangay baseline reset logic ---
-                if current_brgy_name != last_brgy_name and current_brgy_name is not None:
-                    # Entered a new barangay: capture baseline for that barangay
-                    per_brgy_baseline[current_brgy_id] = count
-                    print(f"🔄 Baseline set for {current_brgy_name} (id={current_brgy_id}) at count {count}")
-                    last_brgy_name = current_brgy_name
-                    last_brgy_id = current_brgy_id
-
-                # Compute per-barangay relative count
-                baseline = per_brgy_baseline.get(current_brgy_id, 0)
-                relative_count = max(0, count - baseline)
-
-                # Prepare JSON payload
-                json_data = {
-                    "sensor_id": DEFAULT_SENSOR_ID,
-                    "count": relative_count,
-                    "brgy_id": current_brgy_id,
-                    "location_id": last_location_id,
-                    "distance": distance,
-                    "latitude": lat,
-                    "longitude": lng,
-                    "status": status
-                }
-
-                print("📦 JSON Data to Send:", json.dumps(json_data))
-
-                # Send combined insert to PHP
-                response = requests.post(POST_URL, json=json_data, timeout=10)
-
-                # Show response
-                if response.status_code == 200:
-                    print("✅ Server Response:", response.text)
-                else:
-                    print(f"❌ Server error {response.status_code}: {response.text}")
-
-                print("-" * 50)
-    except Exception as e:
-        print("⚠️ Error:", e)
+except serial.SerialException as e:
+    print(f"❌ Serial port error: {e}")
+except KeyboardInterrupt:
+    print("\n🛑 Exiting program.")

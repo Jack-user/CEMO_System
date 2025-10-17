@@ -48,8 +48,8 @@ try {
         'barangay_data' => $barangayData
     ];
 
-    // Call Python script
-    $pythonScript = __DIR__ . '/../ml_health_risk_classifier.py';
+    // Call Python script (correct path under pyhton/)
+    $pythonScript = __DIR__ . '/../pyhton/ml_health_risk_classifier.py';
     $pythonCommand = "py " . escapeshellarg($pythonScript) . " 2>nul";
     
     // Alternative commands if py is not available
@@ -73,15 +73,25 @@ try {
     $process = proc_open($pythonCommand, $descriptorspec, $pipes);
     
     if (is_resource($process)) {
-        // Write input to Python script
-        fwrite($pipes[0], json_encode($pythonInput));
-        fclose($pipes[0]);
+        // Write input to Python script (safe write with error handling)
+        $inputJson = json_encode($pythonInput);
+        $writeOk = true;
+        if (is_resource($pipes[0])) {
+            stream_set_blocking($pipes[0], true);
+            $bytesWritten = @fwrite($pipes[0], $inputJson);
+            if ($bytesWritten === false || $bytesWritten === 0) {
+                $writeOk = false;
+            }
+            @fclose($pipes[0]);
+        } else {
+            $writeOk = false;
+        }
         
         // Read output
-        $pythonOutput = stream_get_contents($pipes[1]);
-        $pythonError = stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
+        $pythonOutput = is_resource($pipes[1]) ? stream_get_contents($pipes[1]) : null;
+        $pythonError = is_resource($pipes[2]) ? stream_get_contents($pipes[2]) : null;
+        if (is_resource($pipes[1])) { fclose($pipes[1]); }
+        if (is_resource($pipes[2])) { fclose($pipes[2]); }
         
         $returnValue = proc_close($process);
         
@@ -90,13 +100,18 @@ try {
             foreach ($alternativeCommands as $altCommand) {
                 $process = proc_open($altCommand, $descriptorspec, $pipes);
                 if (is_resource($process)) {
-                    fwrite($pipes[0], json_encode($pythonInput));
-                    fclose($pipes[0]);
+                    // Safe write
+                    $inputJson = json_encode($pythonInput);
+                    if (is_resource($pipes[0])) {
+                        stream_set_blocking($pipes[0], true);
+                        @fwrite($pipes[0], $inputJson);
+                        @fclose($pipes[0]);
+                    }
                     
-                    $pythonOutput = stream_get_contents($pipes[1]);
-                    $pythonError = stream_get_contents($pipes[2]);
-                    fclose($pipes[1]);
-                    fclose($pipes[2]);
+                    $pythonOutput = is_resource($pipes[1]) ? stream_get_contents($pipes[1]) : null;
+                    $pythonError = is_resource($pipes[2]) ? stream_get_contents($pipes[2]) : null;
+                    if (is_resource($pipes[1])) { fclose($pipes[1]); }
+                    if (is_resource($pipes[2])) { fclose($pipes[2]); }
                     
                     $returnValue = proc_close($process);
                     if ($returnValue === 0) {

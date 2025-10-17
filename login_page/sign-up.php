@@ -142,6 +142,11 @@
         .validation-icon {
             pointer-events: none;
             font-size: 1rem;
+            background-color: transparent !important;
+            border: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            line-height: 1;
         }
 
         .modal-title {
@@ -250,15 +255,16 @@
                         <small id="email-format-hint" class="text-muted d-block mb-2" style="display: none;">Only @gmail.com emails allowed.</small>
                     </div>
 
-                    <!-- Phone Number (Floating Style) -->
+                    <!-- Phone Number (Philippines format) -->
                     <div class="custom-input-group position-relative mb-3">
-                        <input type="tel" class="custom-input" id="signup-contact" name="contact"
-                                maxlength="11" minlength="11" pattern="^\d{11}$" required
-                                placeholder="Enter your contact number" autocomplete="off"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
+                        <!-- Visible, formatted input -->
+                        <input type="tel" class="custom-input" id="signup-contact" name="contact_display"
+                                required placeholder="+63 9XX XXX XXXX" autocomplete="off">
                         <label for="signup-contact" class="custom-label">Contact Number</label>
                         <span class="input-group-text validation-icon position-absolute" style="top: 45%; right: 10px; transform: translateY(-50%);"></span>
                         <small id="contact-error" class="text-danger d-block mt-1 mb-1"></small>
+                        <!-- Hidden, normalized 11-digit local number (e.g., 09XXXXXXXXX) used for submit and checks -->
+                        <input type="hidden" id="signup-contact-hidden" name="contact" value="">
                     </div>
 
                     <!-- Barangay Dropdown (Floating Style) -->
@@ -442,34 +448,49 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function validateContact() {
-        const value = contactInput.value.trim();
-        if (!/^\d{11}$/.test(value)) {
-            contactError.textContent = "Contact must be 11 digits.";
+        const display = contactInput.value;
+        // Normalize to 11-digit local format (09XXXXXXXXX)
+        let digits = display.replace(/[^0-9]/g, '');
+        // Accept +63 or 63 prefix
+        if (digits.startsWith('63')) {
+            digits = '0' + digits.slice(2);
+        }
+        // Accept leading 9 (without 0) -> add 0
+        if (digits.length === 10 && digits.startsWith('9')) {
+            digits = '0' + digits;
+        }
+        // Update hidden normalized field
+        const hidden = document.getElementById('signup-contact-hidden');
+        hidden.value = digits.slice(0, 11);
+
+        if (!/^0\d{10}$/.test(hidden.value)) {
+            contactError.textContent = "Enter a valid PH number: +63 9XX XXX XXXX";
             contactIcon.textContent = "❌";
             contactValid = false;
-        } else {
-            fetch("check-phone.php?contact=" + encodeURIComponent(value))
-                .then(response => response.json())
-                .then(data => {
-                    if (data.exists) {
-                        contactError.textContent = "Contact is already registered!";
-                        contactIcon.textContent = "❌";
-                        contactValid = false;
-                    } else {
-                        contactError.textContent = "";
-                        contactIcon.textContent = "✅";
-                        contactValid = true;
-                    }
-                    updateSubmit();
-                })
-                .catch(() => {
-                    contactError.textContent = "Could not check contact.";
+            updateSubmit();
+            return;
+        }
+
+        fetch("check-phone.php?contact=" + encodeURIComponent(hidden.value))
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    contactError.textContent = "Contact is already registered!";
                     contactIcon.textContent = "❌";
                     contactValid = false;
-                    updateSubmit();
-                });
-        }
-        updateSubmit();
+                } else {
+                    contactError.textContent = "";
+                    contactIcon.textContent = "✅";
+                    contactValid = true;
+                }
+                updateSubmit();
+            })
+            .catch(() => {
+                contactError.textContent = "Could not check contact.";
+                contactIcon.textContent = "❌";
+                contactValid = false;
+                updateSubmit();
+            });
     }
 
     function validatePassword() {
@@ -497,7 +518,44 @@ document.addEventListener("DOMContentLoaded", function () {
     firstNameInput.addEventListener("input", validateFirstName);
     lastNameInput.addEventListener("input", validateLastName);
     emailInput.addEventListener("input", validateEmail);
-    contactInput.addEventListener("input", validateContact);
+    contactInput.addEventListener("input", (e) => {
+        // Apply visual PH formatting while typing: +63 9XX XXX XXXX
+        let value = e.target.value.replace(/[^0-9+]/g, '');
+        // Normalize leading +63 or 63
+        if (value.startsWith('+63')) {
+            value = '+63 ' + value.slice(3);
+        } else if (value.startsWith('63')) {
+            value = '+63 ' + value.slice(2);
+        }
+        // If starts with 0 or 9, transform to +63 9...
+        if (!value.startsWith('+63')) {
+            const digits = value.replace(/\D/g, '');
+            if (digits.startsWith('0')) {
+                value = '+63 ' + digits.slice(1);
+            } else if (digits.startsWith('9')) {
+                value = '+63 ' + digits;
+            }
+        }
+        // Spacing: +63 9XX XXX XXXX
+        const digitsOnly = value.replace(/\D/g, ''); // e.g., 639XXXXXXXXX or 9XXXXXXXXX
+        let formatted = '+63 ';
+        let local = digitsOnly.startsWith('63') ? digitsOnly.slice(2) : (digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly);
+        local = local.slice(0, 10); // limit to 10 local digits after +63
+        if (local.length > 0) {
+            formatted += local.slice(0, 1);
+        }
+        if (local.length > 1) {
+            formatted += local.slice(1, 3) ? local.slice(1, 3) : '';
+        }
+        if (local.length > 3) {
+            formatted = '+63 ' + local.slice(0, 3) + ' ' + local.slice(3, 6);
+        }
+        if (local.length > 6) {
+            formatted = '+63 ' + local.slice(0, 3) + ' ' + local.slice(3, 6) + ' ' + local.slice(6, 10);
+        }
+        e.target.value = formatted.trim();
+        validateContact();
+    });
     passwordInput.addEventListener("input", validatePassword);
     barangayInput.addEventListener("change", validateBarangay);
 
@@ -571,6 +629,7 @@ document.addEventListener("DOMContentLoaded", function () {
             title: 'Verifying ID...',
             html: 'Extracting text from the ID image.<br><b>Please wait.</b>',
             allowOutsideClick: false,
+            showConfirmButton: false,
             didOpen: () => Swal.showLoading()
         });
 

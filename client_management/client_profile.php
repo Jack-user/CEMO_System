@@ -32,6 +32,15 @@ while ($row = $barangayQuery->fetch_assoc()) {
 }
 
 $profile_image = '../assets/img/logo.png';
+// Try to use user's uploaded profile if exists
+$profileBase = '../assets/img/profiles/client_' . intval($client_id);
+foreach (['jpg', 'jpeg', 'png', 'webp'] as $ext) {
+  $candidate = $profileBase . '.' . $ext;
+  if (file_exists($candidate)) {
+    $profile_image = $candidate;
+    break;
+  }
+}
 ?>
 <body class="g-sidenav-show bg-gray-200">
 <?php include '../sidebar/client_sidebar.php'; ?>

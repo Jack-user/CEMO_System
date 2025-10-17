@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 include '../includes/conn.php';
 
 try {
-    // Today's latest reading (not sum)
+    // Today's latest reading (not sum) - still use sensor table for latest reading
     $today = date('Y-m-d');
 
     $stmt = $conn->prepare("SELECT count FROM sensor WHERE sensor_id = 1 AND DATE(timestamp) = ? ORDER BY timestamp DESC LIMIT 1");
@@ -13,17 +13,19 @@ try {
     $todayLatestRaw = $todayRow ? $todayRow[0] : 0;
     $todayTons = ($todayLatestRaw ?? 0) * 0.001;
 
-    // Last week: Mon–Sun
+    // Last week: Use raw sensor table only
     $lastMon = date('Y-m-d', strtotime('last week monday'));
     $lastSun = date('Y-m-d', strtotime('last week sunday'));
+    
     $stmt = $conn->prepare("SELECT SUM(count) FROM sensor WHERE sensor_id = 1 AND timestamp BETWEEN ? AND ?");
     $stmt->bind_param("ss", $lastMon, $lastSun);
     $stmt->execute();
     $lastWeekTons = ($stmt->get_result()->fetch_row()[0] ?? 0) * 0.001;
 
-    // Two weeks ago
+    // Two weeks ago: Use raw sensor table only
     $twoMon = date('Y-m-d', strtotime('last week monday -7 days'));
     $twoSun = date('Y-m-d', strtotime('last week sunday -7 days'));
+    
     $stmt = $conn->prepare("SELECT SUM(count) FROM sensor WHERE sensor_id = 1 AND timestamp BETWEEN ? AND ?");
     $stmt->bind_param("ss", $twoMon, $twoSun);
     $stmt->execute();

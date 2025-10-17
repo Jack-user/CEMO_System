@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CEMO - City Environment Managemeng Office</title>
     
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
   </head>
   <body>
     <div class="main-bg" id="home">
@@ -111,9 +113,9 @@
         <!-- Services Section -->
         <section id="services" class="services">
             <div class="container">
-                <h2 class="section-title">Our Green Solutions</h2>
+                <h2 class="section-title">System Capabilities</h2>
                 <p class="section-subtitle">
-                    Comprehensive waste management services designed for a sustainable future
+                    End-to-end IoT waste management with real-time monitoring, AI forecasting, and actionable insights
                 </p>
 
                 <div class="services-grid">
@@ -128,9 +130,9 @@
                                 <path d="M7 19h10a2 2 0 0 0 1.85-2.77L17 14H7l-1.85 2.77A2 2 0 0 0 7 19Z"/>
                             </svg>
                         </div>
-                        <h3 class="service-title">Smart Recycling</h3>
+                        <h3 class="service-title">Real-time Vehicle Monitoring</h3>
                         <p class="service-description">
-                            AI-powered sorting systems that maximize recycling efficiency and minimize contamination
+                            Live GPS tracking of collection vehicles with recent trails, last update time, and status on the map
                         </p>
                     </div>
 
@@ -141,9 +143,9 @@
                                 <path d="m2 2 20 20"/>
                             </svg>
                         </div>
-                        <h3 class="service-title">Organic Composting</h3>
+                        <h3 class="service-title">Route Optimization</h3>
                         <p class="service-description">
-                            Transform organic waste into nutrient-rich compost for sustainable agriculture
+                            Optimize routes to reduce travel time with dynamic re-routing based on live conditions
                         </p>
                     </div>
 
@@ -155,9 +157,9 @@
                                 <path d="m14 9 3 3-3 3"/>
                             </svg>
                         </div>
-                        <h3 class="service-title">Water Recovery</h3>
+                        <h3 class="service-title">Predictive Waste Forecasting</h3>
                         <p class="service-description">
-                            Advanced filtration systems that recover and purify water from waste streams
+                            Machine learning forecasts of weekly and monthly waste volumes per barangay to plan collection
                         </p>
                     </div>
 
@@ -169,9 +171,9 @@
                                 <path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>
                             </svg>
                         </div>
-                        <h3 class="service-title">Zero Emissions</h3>
+                        <h3 class="service-title">Health Risk Mapping</h3>
                         <p class="service-description">
-                            Carbon-neutral waste processing with renewable energy integration
+                            Visualize predicted health risks areas and hotspots using sensor data, ML models, and community reports
                         </p>
                     </div>
 
@@ -182,9 +184,9 @@
                                 <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
                             </svg>
                         </div>
-                        <h3 class="service-title">Circular Economy</h3>
+                        <h3 class="service-title">Smart Notifications</h3>
                         <p class="service-description">
-                            Complete lifecycle management turning waste into valuable resources
+                            Real-time alerts for schedule changes, unexpected delays, and request updates for admins and clients
                         </p>
                     </div>
 
@@ -199,9 +201,9 @@
                                 <path d="M7 19h10a2 2 0 0 0 1.85-2.77L17 14H7l-1.85 2.77A2 2 0 0 0 7 19Z"/>
                             </svg>
                         </div>
-                        <h3 class="service-title">Waste Analytics</h3>
+                        <h3 class="service-title">Analytics & Reporting</h3>
                         <p class="service-description">
-                            Real-time monitoring and reporting for optimized waste reduction strategies
+                            Role-based dashboards, KPIs, and exportable reports for operations, planning, and compliance
                         </p>
                     </div>
                 </div>
@@ -259,10 +261,10 @@
                     <div class="footer-section">
                         <h4>Services</h4>
                         <ul class="footer-links">
-                            <li><a href="#">Smart Recycling</a></li>
-                            <li><a href="#">Organic Composting</a></li>
-                            <li><a href="#">Water Recovery</a></li>
-                            <li><a href="#">Zero Emissions</a></li>
+                            <li><a href="https://www.google.com/search?q=Smart+Recycling" target="_blank" rel="noopener noreferrer">Smart Recycling</a></li>
+                            <li><a href="https://www.google.com/search?q=Organic+Composting" target="_blank" rel="noopener noreferrer">Organic Composting</a></li>
+                            <li><a href="https://www.google.com/search?q=Water+Recovery" target="_blank" rel="noopener noreferrer">Water Recovery</a></li>
+                            <li><a href="https://www.google.com/search?q=Zero+Emissions" target="_blank" rel="noopener noreferrer">Zero Emissions</a></li>
                         </ul>
                     </div>
                     
@@ -283,28 +285,28 @@
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                                 </svg>
-                                <span>1-800-ECO-WASTE</span>
+                                <span>+63 9482367208</span>
                             </div>
                             <div class="footer-contact-item">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                                     <polyline points="22,6 12,13 2,6"/>
                                 </svg>
-                                <span>info@ecowaste.com</span>
+                                <span>cemo.waste.tracker@gmail.com</span>
                             </div>
                             <div class="footer-contact-item">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                                     <circle cx="12" cy="10" r="3"/>
                                 </svg>
-                                <span>Green Valley, CA</span>
+                                <span>Bago City, Negros Occidental</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="footer-bottom">
-                    <p>&copy; 2024 EcoWaste. All rights reserved. Building a sustainable future together.</p>
+                    <p>&copy; 2025 CEMO. All rights reserved. Building a sustainable future together.</p>
                 </div>
             </div>
         </footer>
@@ -312,7 +314,7 @@
     <!-- Loading Overlay -->
 <div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(6, 78, 59, 0.9); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; color: white; font-family: sans-serif;">
     <div class="loading-spinner"></div>
-    <p style="margin-top: 1rem; font-size: 1.2rem;">Loading Your Green Journey...</p>
+    <p style="margin-top: 1rem; font-size: 1.2rem;">Loading Your Waste Management Journey...</p>
 </div>
 </body>
 </html>
@@ -389,6 +391,58 @@
                     }, 1500);
                 });
             });
+        });
+
+        // Intercept CTA buttons: Schedule Consultation and Get Free Quote
+        document.addEventListener('DOMContentLoaded', function () {
+            const consultationBtn = document.querySelector('a[href="#consultation"]');
+            const quoteBtn = document.querySelector('a[href="#quote"]');
+
+            function showUnavailableAlert(e) {
+                e.preventDefault();
+                if (window.Swal && typeof Swal.fire === 'function') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Not available right now',
+                        text: 'This feature is currently unavailable. Please check back later.',
+                        confirmButtonColor: '#059669'
+                    });
+                } else {
+                    alert('This feature is currently unavailable. Please check back later.');
+                }
+            }
+
+            if (consultationBtn) consultationBtn.addEventListener('click', showUnavailableAlert);
+            if (quoteBtn) quoteBtn.addEventListener('click', showUnavailableAlert);
+        });
+
+        // Intercept Company footer links to show not available alert
+        document.addEventListener('DOMContentLoaded', function () {
+            const footerSections = document.querySelectorAll('.footer .footer-section');
+            let companyLinks = [];
+
+            footerSections.forEach(section => {
+                const heading = section.querySelector('h4');
+                if (heading && heading.textContent.trim().toLowerCase() === 'company') {
+                    companyLinks = Array.from(section.querySelectorAll('ul.footer-links a'));
+                }
+            });
+
+            function showUnavailable(e) {
+                e.preventDefault();
+                if (window.Swal && typeof Swal.fire === 'function') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Not available right now',
+                        text: 'This feature is currently unavailable. Please check back later.',
+                        confirmButtonColor: '#059669'
+                    });
+                } else {
+                    alert('This feature is currently unavailable. Please check back later.');
+                }
+            }
+
+            companyLinks.forEach(link => link.addEventListener('click', showUnavailable));
         });
     </script>
     <style>

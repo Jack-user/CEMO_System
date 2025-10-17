@@ -119,18 +119,18 @@ $page_title = $page_title ?? 'Dashboard';
                         <i class="fa-solid fa-gear fa-lg"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
-                        <li>
+                        <!-- <li>
                             <a class="dropdown-item" href="#" onclick="showSoundSettingsModal()">
                                 <i class="fa-solid fa-volume-up me-2"></i>Sound Settings
                             </a>
-                        </li>
+                        </li> -->
                         <li>
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="https://www.google.com/" >
                                 <i class="fa-solid fa-sliders me-2"></i>Preferences
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="https://www.facebook.com/CEMOBago">
                                 <i class="fa-regular fa-circle-question me-2"></i>Help
                             </a>
                         </li>
@@ -187,9 +187,15 @@ $page_title = $page_title ?? 'Dashboard';
                         <!-- View All Footer -->
                         <li><hr class="dropdown-divider my-0"></li>
                         <li>
-                            <a class="dropdown-item text-center py-2 text-primary fw-medium" href="../api/view_all.php">
-                                <i class="fa-solid fa-eye me-1"></i>View All Notifications
-                            </a>
+                            <?php if ($user_data['role'] === 'client'): ?>
+                                <a class="dropdown-item text-center py-2 text-primary fw-medium" href="../client_management/client_notifications.php">
+                                    <i class="fa-solid fa-eye me-1"></i>View All Notifications
+                                </a>
+                            <?php else: ?>
+                                <a class="dropdown-item text-center py-2 text-primary fw-medium" href="../api/view_all.php">
+                                    <i class="fa-solid fa-eye me-1"></i>View All Notifications
+                                </a>
+                            <?php endif; ?>
                         </li>
                     </ul>
                 </li>
@@ -322,6 +328,73 @@ $page_title = $page_title ?? 'Dashboard';
     </div>
   </div>
 </div>
+
+<!-- Preferences Modal -->
+<div class="modal fade" id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-secondary text-white">
+        <h5 class="modal-title" id="preferencesModalLabel">
+          <i class="fas fa-sliders me-2"></i>Preferences
+        </h5>
+        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Theme</label>
+          <select class="form-select" id="prefThemeSelect">
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="prefCompactLayout">
+          <label class="form-check-label" for="prefCompactLayout">Compact layout</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" id="savePreferencesBtn">
+          <i class="fas fa-save me-2"></i>Save Preferences
+        </button>
+      </div>
+    </div>
+  </div>
+    </div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title" id="helpModalLabel">
+          <i class="fa-regular fa-circle-question me-2"></i>Help
+        </h5>
+        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Quick access to common areas:</p>
+        <div class="list-group">
+          <a href="../client_management/client_notifications.php" class="list-group-item list-group-item-action">
+            <i class="fa-regular fa-bell me-2"></i>Client Notifications
+          </a>
+          <a href="../api/view_all.php" class="list-group-item list-group-item-action">
+            <i class="fa-solid fa-bell me-2"></i>Admin Notifications
+          </a>
+          <a href="../client_management/client_profile.php" class="list-group-item list-group-item-action">
+            <i class="fa-solid fa-user me-2"></i>Profile
+          </a>
+          <a href="../client_management/client_request.php" class="list-group-item list-group-item-action">
+            <i class="fa-solid fa-clipboard-list me-2"></i>Submit Request
+          </a>
+        </div>
+        <hr>
+        <small class="text-muted">For additional support, contact your system administrator.</small>
+      </div>
+    </div>
+  </div>
+    </div>
 
 <!-- Notification Details Modal -->
 <div class="modal fade" id="notificationDetailsModal" tabindex="-1" aria-labelledby="notificationDetailsModalLabel" aria-hidden="true">
@@ -797,6 +870,90 @@ $page_title = $page_title ?? 'Dashboard';
         setupSoundSettingsModal();
     }
 
+    // Preferences modal logic
+    window.showPreferencesModal = function() {
+        const modal = new bootstrap.Modal(document.getElementById('preferencesModal'));
+        loadPreferencesIntoModal();
+        modal.show();
+    };
+
+    function loadPreferencesIntoModal() {
+        const prefs = getAppPreferences();
+        const themeSelect = document.getElementById('prefThemeSelect');
+        const compactCheckbox = document.getElementById('prefCompactLayout');
+        if (themeSelect) themeSelect.value = prefs.theme || 'system';
+        if (compactCheckbox) compactCheckbox.checked = !!prefs.compact;
+    }
+
+    function applyPreferences(prefs) {
+        const root = document.documentElement;
+        if (prefs.theme === 'dark') {
+            root.setAttribute('data-bs-theme', 'dark');
+        } else if (prefs.theme === 'light') {
+            root.setAttribute('data-bs-theme', 'light');
+        } else {
+            root.removeAttribute('data-bs-theme');
+        }
+
+        if (prefs.compact) {
+            document.body.classList.add('compact-layout');
+        } else {
+            document.body.classList.remove('compact-layout');
+        }
+    }
+
+    function saveAppPreferences(prefs) {
+        localStorage.setItem('appPreferences', JSON.stringify(prefs));
+    }
+
+    function getAppPreferences() {
+        const defaults = { theme: 'system', compact: false };
+        try {
+            const saved = localStorage.getItem('appPreferences');
+            return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+        } catch (_) {
+            return defaults;
+        }
+    }
+
+    // Save button handler
+    (function setupPreferencesHandlers() {
+        const saveBtn = document.getElementById('savePreferencesBtn');
+        if (!saveBtn) return;
+        saveBtn.addEventListener('click', function() {
+            const theme = document.getElementById('prefThemeSelect')?.value || 'system';
+            const compact = !!document.getElementById('prefCompactLayout')?.checked;
+            const prefs = { theme, compact };
+            saveAppPreferences(prefs);
+            applyPreferences(prefs);
+            const modalEl = document.getElementById('preferencesModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Preferences Saved',
+                    icon: 'success',
+                    timer: 1600,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            }
+        });
+    })();
+
+    // Apply preferences on load
+    (function applySavedPreferencesOnLoad() {
+        const prefs = getAppPreferences();
+        applyPreferences(prefs);
+    })();
+
+    // Help modal
+    window.showHelpModal = function() {
+        const modal = new bootstrap.Modal(document.getElementById('helpModal'));
+        modal.show();
+    };
+
     /**
      * Show sound settings modal
      */
@@ -1208,6 +1365,16 @@ $page_title = $page_title ?? 'Dashboard';
 .notification-actions .btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Compact layout adjustments */
+.compact-layout .navbar,
+.compact-layout .card,
+.compact-layout .dropdown-menu {
+    --bs-border-radius: 0.5rem;
+    --bs-body-font-size: 0.95rem;
+    padding-top: .25rem;
+    padding-bottom: .25rem;
 }
 
 /* Modal responsiveness */

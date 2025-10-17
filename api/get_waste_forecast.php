@@ -48,7 +48,7 @@ try {
     ];
 
     // Call Python script
-    $pythonScript = __DIR__ . '/../ml_waste_forecaster.py';
+    $pythonScript = __DIR__ . '/../pyhton/ml_waste_forecaster.py';
     $pythonCommand = "py " . escapeshellarg($pythonScript) . " 2>nul";
     
     // Alternative commands if py is not available
@@ -61,49 +61,64 @@ try {
 
     $pythonOutput = null;
     $pythonError = null;
+    $returnValue = -1;
     
-    // Try primary command first
-    $descriptorspec = [
-        0 => ["pipe", "r"],  // stdin
-        1 => ["pipe", "w"],  // stdout
-        2 => ["pipe", "w"]   // stderr
-    ];
-    
-    $process = proc_open($pythonCommand, $descriptorspec, $pipes);
-    
-    if (is_resource($process)) {
-        // Write input to Python script
-        fwrite($pipes[0], json_encode($pythonInput));
-        fclose($pipes[0]);
+    // Try primary command first, but only if script exists
+    if (is_file($pythonScript)) {
+        $descriptorspec = [
+            0 => ["pipe", "r"],  // stdin
+            1 => ["pipe", "w"],  // stdout
+            2 => ["pipe", "w"]   // stderr
+        ];
         
-        // Read output
-        $pythonOutput = stream_get_contents($pipes[1]);
-        $pythonError = stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
+        $process = @proc_open($pythonCommand, $descriptorspec, $pipes);
         
-        $returnValue = proc_close($process);
-        
-        if ($returnValue !== 0) {
-            // Try alternative commands
-            foreach ($alternativeCommands as $altCommand) {
-                $process = proc_open($altCommand, $descriptorspec, $pipes);
-                if (is_resource($process)) {
-                    fwrite($pipes[0], json_encode($pythonInput));
-                    fclose($pipes[0]);
-                    
-                    $pythonOutput = stream_get_contents($pipes[1]);
-                    $pythonError = stream_get_contents($pipes[2]);
-                    fclose($pipes[1]);
-                    fclose($pipes[2]);
-                    
-                    $returnValue = proc_close($process);
-                    if ($returnValue === 0) {
-                        break;
+        if (is_resource($process)) {
+            $status = proc_get_status($process);
+            if ($status && !empty($status['running'])) {
+                $writeOk = @fwrite($pipes[0], json_encode($pythonInput));
+            } else {
+                $writeOk = false;
+            }
+            @fclose($pipes[0]);
+            
+            $pythonOutput = stream_get_contents($pipes[1]);
+            $pythonError = stream_get_contents($pipes[2]);
+            @fclose($pipes[1]);
+            @fclose($pipes[2]);
+            
+            $returnValue = proc_close($process);
+            
+            if ($returnValue !== 0 || $writeOk === false) {
+                // Try alternative commands
+                foreach ($alternativeCommands as $altCommand) {
+                    $process = @proc_open($altCommand, $descriptorspec, $pipes);
+                    if (is_resource($process)) {
+                        $status = proc_get_status($process);
+                        if ($status && !empty($status['running'])) {
+                            $writeOk = @fwrite($pipes[0], json_encode($pythonInput));
+                        } else {
+                            $writeOk = false;
+                        }
+                        @fclose($pipes[0]);
+                        
+                        $pythonOutput = stream_get_contents($pipes[1]);
+                        $pythonError = stream_get_contents($pipes[2]);
+                        @fclose($pipes[1]);
+                        @fclose($pipes[2]);
+                        
+                        $returnValue = proc_close($process);
+                        if ($returnValue === 0 && $writeOk !== false) {
+                            break;
+                        }
                     }
                 }
             }
+        } else {
+            $pythonError = 'Failed to start Python process';
         }
+    } else {
+        $pythonError = 'Python script not found: ' . $pythonScript;
     }
     
     // Check if Python script executed successfully

@@ -107,7 +107,7 @@ try {
     }
 
     // -----------------------------
-    // Get All Weekly Totals for This Month
+    // Get All Weekly Totals for This Month (with utilization)
     // -----------------------------
     $weeklyData = [];
     $currentWeekStart = clone $firstMonday;
@@ -138,10 +138,18 @@ try {
                 ? "$startMonth $startDay-$endDay"
                 : "$startMonth $startDay - $endMonth $endDay";
 
+            // Compute utilization against a simple expected target
+            // ExpectedPerDayTons can be tuned; keep aligned with frontend's 2 tons/day
+            $expectedPerDayTons = 2.0;
+            $expectedWeekTons = $expectedPerDayTons * 7.0;
+            $weekTons = $totalCount * 0.001;
+            $utilization = $expectedWeekTons > 0 ? ($weekTons / $expectedWeekTons) * 100.0 : 0.0;
+
             $weeklyData[] = [
                 'week_of_month' => count($weeklyData) + 1,
                 'date_range' => $dateRange,
-                'total_count' => $totalCount
+                'total_count' => $totalCount,
+                'utilization' => round($utilization, 1)
             ];
         }
 
@@ -149,7 +157,7 @@ try {
     }
 
     // -----------------------------
-    // Last Week's Total (Previous Mon–Sun)
+    // Last Week's Total (Previous Mon–Sun) - Use raw sensor table only
     // -----------------------------
     $lastWeekStart = date('Y-m-d', strtotime('last week monday'));
     $lastWeekEnd = date('Y-m-d', strtotime('last week sunday'));
@@ -164,8 +172,17 @@ try {
     $stmtLast->close();
 
     // -----------------------------
-    // Final Output
+    // Final Output (include weeklyUtilization for the selected week)
     // -----------------------------
+    // Determine utilization for the selected week card if available
+    $selectedWeekUtil = null;
+    foreach ($weeklyData as $w) {
+        if ((int)$w['week_of_month'] === (int)$week) {
+            $selectedWeekUtil = $w['utilization'];
+            break;
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'month' => date('F Y', mktime(0, 0, 0, $month, 1, $year)),
@@ -173,7 +190,8 @@ try {
         'dailyData' => $fullWeekData,
         'selectedWeek' => $week,
         'weekRange' => $weekMonday->format('j') . ' - ' . $weekSunday->format('j'),
-        'lastWeekWaste' => $lastWeekTons
+        'lastWeekWaste' => $lastWeekTons,
+        'weeklyUtilization' => $selectedWeekUtil
     ]);
 
 } catch (Exception $e) {

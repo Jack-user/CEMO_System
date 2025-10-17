@@ -1,8 +1,13 @@
 <?php
 header('Content-Type: application/json');
 
-// Connect to database
-$conn = new mysqli("localhost", "root", "", "cemo_db");
+// Use online database credentials
+$host = 'localhost'; 
+$dbname = 'u520834156_DBWasteTracker'; 
+$username = 'u520834156_userWT2025'; 
+$password = '^Lx|Aii1'; 
+
+$conn = new mysqli($host, $username, $password, $dbname);
 if ($conn->connect_error) {
     die(json_encode(["status" => "error", "message" => "DB connection failed: " . $conn->connect_error]));
 }
@@ -29,6 +34,16 @@ if (is_array($asJson) && isset($asJson['status'])) {
     $status = trim((string)$_POST['status']);
 } elseif (isset($_GET['status'])) {
     $status = trim((string)$_GET['status']);
+}
+
+// Optional timestamp field (string)
+$timestamp = null;
+if (is_array($asJson) && isset($asJson['timestamp'])) {
+    $timestamp = trim((string)$asJson['timestamp']);
+} elseif (isset($_POST['timestamp'])) {
+    $timestamp = trim((string)$_POST['timestamp']);
+} elseif (isset($_GET['timestamp'])) {
+    $timestamp = trim((string)$_GET['timestamp']);
 }
 
 // Basic validation guards
@@ -65,13 +80,30 @@ if ($res = $conn->query($colCheckSql)) {
     $res->close();
 }
 
+// Use provided timestamp or fallback to NOW()
+$timestampValue = ($timestamp !== null && $timestamp !== '') ? $timestamp : 'NOW()';
+$useTimestamp = ($timestamp !== null && $timestamp !== '');
+
 if ($hasStatusCol && $status !== null && $status !== '') {
-    $sql = "INSERT INTO sensor (sensor_id, count, brgy_id, location_id, timestamp, distance, status)
-            VALUES (?, ?, ?, ?, NOW(), ?, ?)";
-    $stmt = $conn->prepare($sql);
+    if ($useTimestamp) {
+        $sql = "INSERT INTO sensor (sensor_id, count, brgy_id, location_id, timestamp, distance, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $dist = isset($distance) ? (float)$distance : 0.0;
+            $stmt->bind_param("iiiisds", $sensor_id, $count, $brgy_id, $location_id, $timestamp, $dist, $status);
+        }
+    } else {
+        $sql = "INSERT INTO sensor (sensor_id, count, brgy_id, location_id, timestamp, distance, status)
+                VALUES (?, ?, ?, ?, NOW(), ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $dist = isset($distance) ? (float)$distance : 0.0;
+            $stmt->bind_param("iiiids", $sensor_id, $count, $brgy_id, $location_id, $dist, $status);
+        }
+    }
+    
     if ($stmt) {
-        $dist = isset($distance) ? (float)$distance : 0.0;
-        $stmt->bind_param("iiiids", $sensor_id, $count, $brgy_id, $location_id, $dist, $status);
         $rawOk = $stmt->execute();
         $rawMsg = $rawOk ? "✅ Raw insert OK (with status)" : ("❌ Raw insert failed: " . $stmt->error);
         $stmt->close();
@@ -80,12 +112,25 @@ if ($hasStatusCol && $status !== null && $status !== '') {
         $rawMsg = "❌ Prepare failed for raw insert (with status): " . $conn->error;
     }
 } else {
-    $sql = "INSERT INTO sensor (sensor_id, count, brgy_id, location_id, timestamp, distance)
-            VALUES (?, ?, ?, ?, NOW(), ?)";
-    $stmt = $conn->prepare($sql);
+    if ($useTimestamp) {
+        $sql = "INSERT INTO sensor (sensor_id, count, brgy_id, location_id, timestamp, distance)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $dist = isset($distance) ? (float)$distance : 0.0;
+            $stmt->bind_param("iiiisd", $sensor_id, $count, $brgy_id, $location_id, $timestamp, $dist);
+        }
+    } else {
+        $sql = "INSERT INTO sensor (sensor_id, count, brgy_id, location_id, timestamp, distance)
+                VALUES (?, ?, ?, ?, NOW(), ?)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $dist = isset($distance) ? (float)$distance : 0.0;
+            $stmt->bind_param("iiiid", $sensor_id, $count, $brgy_id, $location_id, $dist);
+        }
+    }
+    
     if ($stmt) {
-        $dist = isset($distance) ? (float)$distance : 0.0; // bind requires a value
-        $stmt->bind_param("iiiid", $sensor_id, $count, $brgy_id, $location_id, $dist);
         $rawOk = $stmt->execute();
         $rawMsg = $rawOk ? "✅ Raw insert OK" : ("❌ Raw insert failed: " . $stmt->error);
         $stmt->close();
@@ -134,12 +179,25 @@ if ($stmtAgg) {
 $gpsOk = false;
 $gpsMsg = "⚠️ GPS not provided";
 if ($latitude !== null && $longitude !== null && is_numeric($latitude) && is_numeric($longitude)) {
-    $gpsSql = "INSERT INTO gps_location (latitude, longitude, timestamp) VALUES (?, ?, NOW())";
-    $stmtGps = $conn->prepare($gpsSql);
+    if ($useTimestamp) {
+        $gpsSql = "INSERT INTO gps_location (latitude, longitude, timestamp) VALUES (?, ?, ?)";
+        $stmtGps = $conn->prepare($gpsSql);
+        if ($stmtGps) {
+            $latf = (float)$latitude;
+            $lngf = (float)$longitude;
+            $stmtGps->bind_param("dds", $latf, $lngf, $timestamp);
+        }
+    } else {
+        $gpsSql = "INSERT INTO gps_location (latitude, longitude, timestamp) VALUES (?, ?, NOW())";
+        $stmtGps = $conn->prepare($gpsSql);
+        if ($stmtGps) {
+            $latf = (float)$latitude;
+            $lngf = (float)$longitude;
+            $stmtGps->bind_param("dd", $latf, $lngf);
+        }
+    }
+    
     if ($stmtGps) {
-        $latf = (float)$latitude;
-        $lngf = (float)$longitude;
-        $stmtGps->bind_param("dd", $latf, $lngf);
         $gpsOk = $stmtGps->execute();
         $gpsMsg = $gpsOk ? "✅ GPS insert OK" : ("❌ GPS insert failed: " . $stmtGps->error);
         $stmtGps->close();
